@@ -7,6 +7,9 @@
     "start": "SET NODE_OPTIONS=--openssl-legacy-provider && cross-env UMI_ENV=dev umi dev"
   },
   "license": "MIT",
+  "engines": {
+    "node": "16.20.2"
+  },
   "devDependencies": {
     "@vuepress/plugin-back-to-top": "^1.9.10",
     "@vuepress/plugin-google-analytics": "^1.9.10",
