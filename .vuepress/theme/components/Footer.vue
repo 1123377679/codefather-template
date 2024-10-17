@@ -7,7 +7,7 @@
             </a>
         </div>
         <div class="copy-right">
-           <span class="name">{{`${currentYear} 编程导航 &nbsp; |  &nbsp; `}} </span>
+           <span class="name">{{`${currentYear} 失败才是人生的主旋律 &nbsp; |  &nbsp; `}} </span>
             <a :href="government.href" target="_blank" rel="noreferrer" >
               {{government.name}}
             </a>
