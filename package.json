@@ -2,8 +2,8 @@
   "name": "codefather",
   "version": "1.0.0",
   "scripts": {
-    "docs:dev": "vuepress dev .",
-    "docs:build": "set NODE_OPTIONS=--openssl-legacy-provider --max_old_space_size=8192 && vuepress build ."
+    "docs:dev": "SET NODE_OPTIONS=--openssl-legacy-provider && vuepress dev .",
+    "docs:build": "SET NODE_OPTIONS=--openssl-legacy-provider && vuepress build ."
   },
   "license": "MIT",
   "devDependencies": {
