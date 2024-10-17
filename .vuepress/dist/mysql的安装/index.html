@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Mysql安装 | 李某人的编程宝库</title>
+    <meta name="generator" content="VuePress 1.9.10">
+    <link rel="icon" href="/favicon.ico">
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?2675818a983a3131404cee835018f016";
+          var s = document.getElementsByTagName("script")[0]; 
+          s.parentNode.insertBefore(hm, s);
+        })();
+      </script>
+    <meta name="description" content="前后端课程资料">
+    <meta property="og:site_name" content="李某人的编程宝库">
+    <meta property="og:title" content="Mysql安装">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://codefather.cn/mysql%E7%9A%84%E5%AE%89%E8%A3%85/">
+    <meta name="twitter:title" content="Mysql安装">
+    <meta name="twitter:url" content="https://codefather.cn/mysql%E7%9A%84%E5%AE%89%E8%A3%85/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:label1" content="Written by">
+    <meta name="twitter:label2" content="Filed under">
+    <meta name="twitter:data2" content="程序员, 编程, 计算机">
+    <meta property="article:tag" content="程序员">
+    <meta name="keywords" content="李某人, 编程学习路线, 编程知识百科, Java, 编程导航, 前端, 开发, 编程分享, 项目, IT, 求职, 面经">
+    <meta name="referrer" content="no-referrer">
+    
+    <link rel="preload" href="/assets/css/0.styles.40c15e22.css" as="style"><link rel="preload" href="/assets/js/app.bfb9a41f.js" as="script"><link rel="preload" href="/assets/js/2.11372cd1.js" as="script"><link rel="preload" href="/assets/js/65.fb383e1b.js" as="script"><link rel="prefetch" href="/assets/js/1.772e8449.js"><link rel="prefetch" href="/assets/js/10.fc348f1d.js"><link rel="prefetch" href="/assets/js/11.5cb15a10.js"><link rel="prefetch" href="/assets/js/12.0b172212.js"><link rel="prefetch" href="/assets/js/13.db362dd7.js"><link rel="prefetch" href="/assets/js/14.91cf31cd.js"><link rel="prefetch" href="/assets/js/15.97ca09d4.js"><link rel="prefetch" href="/assets/js/16.0a8709a6.js"><link rel="prefetch" href="/assets/js/17.e4c6b844.js"><link rel="prefetch" href="/assets/js/18.d0f0bd51.js"><link rel="prefetch" href="/assets/js/19.5740e4d6.js"><link rel="prefetch" href="/assets/js/20.8885a4fa.js"><link rel="prefetch" href="/assets/js/21.468bfc8f.js"><link rel="prefetch" href="/assets/js/22.3e8347a6.js"><link rel="prefetch" href="/assets/js/23.ceb5a5ff.js"><link rel="prefetch" href="/assets/js/24.a121e824.js"><link rel="prefetch" href="/assets/js/25.15e1f641.js"><link rel="prefetch" href="/assets/js/26.35b2bbdc.js"><link rel="prefetch" href="/assets/js/27.abf3307e.js"><link rel="prefetch" href="/assets/js/28.7e4f3680.js"><link rel="prefetch" href="/assets/js/29.859b5924.js"><link rel="prefetch" href="/assets/js/3.4dc033c7.js"><link rel="prefetch" href="/assets/js/30.a8b8c321.js"><link rel="prefetch" href="/assets/js/31.34407a93.js"><link rel="prefetch" href="/assets/js/32.7b9696aa.js"><link rel="prefetch" href="/assets/js/33.86c359c6.js"><link rel="prefetch" href="/assets/js/34.71e963ef.js"><link rel="prefetch" href="/assets/js/35.99422ea8.js"><link rel="prefetch" href="/assets/js/36.b36ad629.js"><link rel="prefetch" href="/assets/js/37.8088ca20.js"><link rel="prefetch" href="/assets/js/38.ee59d0ef.js"><link rel="prefetch" href="/assets/js/39.e9e0818c.js"><link rel="prefetch" href="/assets/js/4.2f502b73.js"><link rel="prefetch" href="/assets/js/40.2d874ace.js"><link rel="prefetch" href="/assets/js/41.ff2b4925.js"><link rel="prefetch" href="/assets/js/42.56ac03bc.js"><link rel="prefetch" href="/assets/js/43.79ce3f44.js"><link rel="prefetch" href="/assets/js/44.63d3f43f.js"><link rel="prefetch" href="/assets/js/45.82b20480.js"><link rel="prefetch" href="/assets/js/46.3268de07.js"><link rel="prefetch" href="/assets/js/47.3ea663b6.js"><link rel="prefetch" href="/assets/js/48.237aef1d.js"><link rel="prefetch" href="/assets/js/49.359d7204.js"><link rel="prefetch" href="/assets/js/5.7b1f056c.js"><link rel="prefetch" href="/assets/js/50.32c15e42.js"><link rel="prefetch" href="/assets/js/51.514c9ee7.js"><link rel="prefetch" href="/assets/js/52.cdb02c77.js"><link rel="prefetch" href="/assets/js/53.ac097e8b.js"><link rel="prefetch" href="/assets/js/54.ecb4cc22.js"><link rel="prefetch" href="/assets/js/55.2a2a0fa9.js"><link rel="prefetch" href="/assets/js/56.5d97bdac.js"><link rel="prefetch" href="/assets/js/57.460ec670.js"><link rel="prefetch" href="/assets/js/58.4d0ec45b.js"><link rel="prefetch" href="/assets/js/59.f5d05d7b.js"><link rel="prefetch" href="/assets/js/6.056886f1.js"><link rel="prefetch" href="/assets/js/60.7f54cef1.js"><link rel="prefetch" href="/assets/js/61.359b4ac9.js"><link rel="prefetch" href="/assets/js/62.f833bb22.js"><link rel="prefetch" href="/assets/js/63.d1b52891.js"><link rel="prefetch" href="/assets/js/64.d78eda32.js"><link rel="prefetch" href="/assets/js/66.69754198.js"><link rel="prefetch" href="/assets/js/67.94dfad4b.js"><link rel="prefetch" href="/assets/js/68.22f255bb.js"><link rel="prefetch" href="/assets/js/69.cbdf2af2.js"><link rel="prefetch" href="/assets/js/7.a96cecf9.js"><link rel="prefetch" href="/assets/js/70.969affec.js"><link rel="prefetch" href="/assets/js/71.267dafdb.js"><link rel="prefetch" href="/assets/js/72.e9e91f67.js"><link rel="prefetch" href="/assets/js/73.2828bcaf.js"><link rel="prefetch" href="/assets/js/74.aebb67cf.js"><link rel="prefetch" href="/assets/js/75.14f12fdb.js"><link rel="prefetch" href="/assets/js/76.9983b53a.js"><link rel="prefetch" href="/assets/js/77.7504b553.js"><link rel="prefetch" href="/assets/js/78.90a66e5e.js"><link rel="prefetch" href="/assets/js/79.17426337.js"><link rel="prefetch" href="/assets/js/vendors~docsearch.9f962556.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.40c15e22.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/" class="home-link router-link-active"><img src="/logo.png" alt="李某人的编程宝库" class="logo"> <span class="site-name can-hide">李某人的编程宝库</span></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/Java基础/" class="nav-link">
+  Java基础
+</a></div><div class="nav-item"><a href="/Linux/" class="nav-link">
+  Linux
+</a></div><div class="nav-item"><a href="/Mysql/Mysql基础/" class="nav-link">
+  Mysql基础
+</a></div><div class="nav-item"><a href="/Mysql/Mysql进阶/" class="nav-link">
+  Mysql进阶
+</a></div><div class="nav-item"><a href="/MyBatis/" class="nav-link">
+  MyBatis
+</a></div> <a href="https://github.com/liyupi/codefather" target="_blank" rel="noopener noreferrer" class="repo-link">
+    GitHub
+    <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></nav></div></header> <div class="sidebar-mask"></div> <aside class="sidebar"><nav class="nav-links"><div class="nav-item"><a href="/Java基础/" class="nav-link">
+  Java基础
+</a></div><div class="nav-item"><a href="/Linux/" class="nav-link">
+  Linux
+</a></div><div class="nav-item"><a href="/Mysql/Mysql基础/" class="nav-link">
+  Mysql基础
+</a></div><div class="nav-item"><a href="/Mysql/Mysql进阶/" class="nav-link">
+  Mysql进阶
+</a></div><div class="nav-item"><a href="/MyBatis/" class="nav-link">
+  MyBatis
+</a></div> <a href="https://github.com/liyupi/codefather" target="_blank" rel="noopener noreferrer" class="repo-link">
+    GitHub
+    <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></nav>  <ul class="sidebar-links"><li><a href="/mysql%E5%9F%BA%E7%A1%80/" class="sidebar-link">Java基础</a></li><li><section class="sidebar-group depth-0"><p class="sidebar-heading open"><span>学习路线</span> <!----></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/mysql%E7%9A%84%E5%AE%89%E8%A3%85/" aria-current="page" class="active sidebar-link">Mysql安装</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header"><a href="/mysql%E7%9A%84%E5%AE%89%E8%A3%85/#配置环境变量" class="sidebar-link">配置环境变量</a></li><li class="sidebar-sub-header"><a href="/mysql%E7%9A%84%E5%AE%89%E8%A3%85/#my-ini文件配置" class="sidebar-link">my.ini文件配置</a></li><li class="sidebar-sub-header"><a href="/mysql%E7%9A%84%E5%AE%89%E8%A3%85/#开始安装" class="sidebar-link">开始安装</a></li><li class="sidebar-sub-header"><a href="/mysql%E7%9A%84%E5%AE%89%E8%A3%85/#启动服务及修改密码" class="sidebar-link">启动服务及修改密码</a></li></ul></li><li><a href="/%E5%88%A0%E9%99%A4mysql/" class="sidebar-link">/%E5%88%A0%E9%99%A4mysql/</a></li><li><a href="/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1/" class="sidebar-link">数据库设计</a></li><li><a href="/%E7%AC%AC%E4%B8%80%E7%AB%A0-%E6%95%B0%E6%8D%AE%E5%BA%93%E6%A6%82%E8%BF%B0-%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AE%89%E8%A3%85/" class="sidebar-link">Mysql课程介绍</a></li><li><a href="/%E7%AC%AC%E4%B8%89%E7%AB%A0-mysql%E5%B8%B8%E7%94%A8%E5%86%85%E7%BD%AE%E5%87%BD%E6%95%B0/" class="sidebar-link">函数</a></li><li><a href="/%E7%AC%AC%E4%BA%8C%E7%AB%A0-%E5%8D%95%E8%A1%A8%E6%9F%A5%E8%AF%A2/" class="sidebar-link">DQL</a></li><li><a href="/%E7%AC%AC%E4%BA%94%E7%AB%A0-dml-tcl-ddl%E4%BB%A5%E5%8F%8A%E5%A4%87%E4%BB%BD%E6%81%A2%E5%A4%8D/" class="sidebar-link">约束(constraint)</a></li><li><a href="/%E7%AC%AC%E5%9B%9B%E7%AB%A0-%E5%A4%9A%E8%A1%A8%E6%9F%A5%E8%AF%A2/" class="sidebar-link">多表查询</a></li></ul></section></li></ul> </aside> <main class="page"> <div class="content"><div style="width:100%"><div class="theme-default-content custom-content content__default"><h1 id="mysql安装"><a href="#mysql安装" class="header-anchor">#</a> Mysql安装</h1> <p>1.Mysql安装包下载地址:</p> <p>https://downloads.mysql.com/archives/community/</p> <p>2.下载</p> <p><img alt="image-20230215113304518" data-src="https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20230215113304518.png" loading="lazy" class="lazy"></p> <p>3.下载好之后，把它解压到你创建的文件夹里面去</p> <p><img alt="image-20230215113334500" data-src="https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20230215113334500.png" loading="lazy" class="lazy"></p> <h2 id="配置环境变量"><a href="#配置环境变量" class="header-anchor">#</a> 配置环境变量</h2> <p>1.右键我的电脑-&gt;属性-&gt;高级系统配置-&gt;环境变量</p> <p>2.在<strong>系统变量</strong>中选择Path,在其后面添加: 你mysql的<strong>bin文件夹</strong>的路径 ：</p> <h2 id="my-ini文件配置"><a href="#my-ini文件配置" class="header-anchor">#</a> my.ini文件配置</h2> <p>1.在<strong>安装目录</strong>下新键一个my.ini文件,注意后缀是.ini</p> <p>2.然后打开my.ini文件，填入下列内容。</p> <p>my.ini文件配置的内容:</p> <div class="language- line-numbers-mode"><pre class="language-text"><code>
+[mysqld]
+# 设置3306端口
+port=3306
+# 设置mysql的安装目录    -- 你mysql的安装路径
+basedir=D:\IT\Mysql8.0.26\mysql-8.0.26-winx64
+# 设置mysql数据库的数据的存放目录 --安装文件路径下的data文件夹会自行创建
+datadir=D:\IT\Mysql8.0.26\mysql-8.0.26-winx64\data
+# 允许最大连接数
+max_connections=200
+# 允许连接失败的次数。
+max_connect_errors=10
+# 服务端使用的字符集默认为utf8mb4
+character-set-server=utf8mb4
+# 创建新表时将使用的默认存储引擎
+default-storage-engine=INNODB
+# 默认使用“mysql_native_password”插件认证
+#mysql_native_password
+default_authentication_plugin=mysql_native_password
+[mysql]
+# 设置mysql客户端默认字符集
+default-character-set=utf8mb4
+[client]
+# 设置mysql客户端连接服务端时默认使用的端口
+port=3306
+default-character-set=utf8mb4
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br><span class="line-number">26</span><br></div></div><p>记得把basedir和datadir改成你的对应目录。</p> <h2 id="开始安装"><a href="#开始安装" class="header-anchor">#</a> 开始安装</h2> <h3 id="_1-cmd打开命令提示符"><a href="#_1-cmd打开命令提示符" class="header-anchor">#</a> 1.cmd打开命令提示符.</h3> <p><strong>注意</strong>：要以<strong>管理员</strong>的<strong>方式启动</strong>。</p> <p><img alt="在这里插入图片描述" data-src="https://img-blog.csdnimg.cn/fbd1c8db2ae54305bfac5e69d305d7b8.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mjg2ODYwNQ==,size_16,color_FFFFFF,t_70" loading="lazy" class="lazy"></p> <h3 id="_2-输入命令"><a href="#_2-输入命令" class="header-anchor">#</a> 2.输入命令</h3> <div class="language- line-numbers-mode"><pre class="language-text"><code>mysqld --initialize --console
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div><p><img alt="image-20230215121343442" data-src="https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20230215121343442.png" loading="lazy" class="lazy"></p> <p>安装成功会出现一个临时密码：(前后不要包含空格)</p> <p><strong>临时密码要记住了！等下要用！</strong></p> <p>如果你因为一些原因，导致这里没有出现临时密码，那请查看这篇文章,希望可以帮到你。
+<strong>临时密码没出现的解决方式：</strong></p> <p>https://blog.csdn.net/weixin_42868605/article/details/119802629</p> <h3 id="_2-安装服务"><a href="#_2-安装服务" class="header-anchor">#</a> 2.安装服务</h3> <div class="language- line-numbers-mode"><pre class="language-text"><code>mysqld --install
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div><p>提示<strong>Service successfully installed</strong>.则<strong>代表成功</strong>。</p> <p><img alt="image-20230215121525462" data-src="https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20230215121525462.png" loading="lazy" class="lazy"></p> <p>如果是<strong>The service already exists!</strong>，则说明有问题了，可以看一下这篇文章：
+<strong>The service already exists!错误解决：</strong></p> <p>https://blog.csdn.net/weixin_42868605/article/details/119800929</p> <h2 id="启动服务及修改密码"><a href="#启动服务及修改密码" class="header-anchor">#</a> 启动服务及修改密码</h2> <h3 id="_1-启动服务"><a href="#_1-启动服务" class="header-anchor">#</a> 1.启动服务</h3> <p>输入：</p> <div class="language- line-numbers-mode"><pre class="language-text"><code>net start mysql
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div><p><img alt="image-20230215121616134" data-src="https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20230215121616134.png" loading="lazy" class="lazy"></p> <p>如果你的服务启动不成功，可以参考一下这篇文章：
+<strong>mysql服务启动不成功的解决方式：</strong>
+https://blog.csdn.net/weixin_42868605/article/details/119801144</p> <h3 id="_2-登录root账户。"><a href="#_2-登录root账户。" class="header-anchor">#</a> 2.登录root账户。</h3> <p>命令行输入：</p> <div class="language- line-numbers-mode"><pre class="language-text"><code>mysql -uroot -p
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div><p>在跳出的Enter password后输入密码，即可登录。（<strong>这里的密码就是上面提到的临时密码</strong>）
+一般临时密码都包含着数字字符和符号，手打容易出错，建议复制。
+<strong>命令行复制的方式</strong>：<strong>ctrl+c复制</strong>之后，在<strong>要粘贴的位置</strong>点击一下<strong>鼠标右键</strong>即可粘贴。</p> <p><img alt="image-20230215121712360" data-src="https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20230215121712360.png" loading="lazy" class="lazy"></p> <h3 id="_3-修改密码"><a href="#_3-修改密码" class="header-anchor">#</a> 3.修改密码</h3> <p>命令行输入：</p> <div class="language- line-numbers-mode"><pre class="language-text"><code>ALTER USER 'root'@'localhost' IDENTIFIED BY '新的密码';
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div><p><strong>注意</strong>：这里的密码是有<strong>单引号</strong>的，而且还以<strong>分号结尾</strong>，还有都是<strong>英文状态下的符号</strong>，别搞错了。</p> <p>如下图则表示修改成功。</p> <p><img alt="image-20230215121808580" data-src="https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20230215121808580.png" loading="lazy" class="lazy"></p></div> <footer class="page-edit" style="margin:0;"><div class="edit-link"><a href="https://github.com/liyupi/codefather/edit/master/Mysql/Mysql基础/Mysql的安装.md" target="_blank" rel="noopener noreferrer">完善页面</a> <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></div> <!----></footer> <!----></div> <div class="toc-container-sidebar"><div class="pos-box"><div class="icon-arrow"></div> <div class="scroll-box" style="max-height:86vh"><div style="font-weight:bold;">Mysql安装</div> <hr> <div class="toc-box"><ul class="toc-sidebar-links"><li><a href="/mysql%E7%9A%84%E5%AE%89%E8%A3%85/#配置环境变量" class="toc-sidebar-link">配置环境变量</a><ul class="toc-sidebar-sub-headers"></ul></li><li><a href="/mysql%E7%9A%84%E5%AE%89%E8%A3%85/#my-ini文件配置" class="toc-sidebar-link">my.ini文件配置</a><ul class="toc-sidebar-sub-headers"></ul></li><li><a href="/mysql%E7%9A%84%E5%AE%89%E8%A3%85/#开始安装" class="toc-sidebar-link">开始安装</a><ul class="toc-sidebar-sub-headers"><li class="toc-sidebar-sub-header"><a href="/mysql%E7%9A%84%E5%AE%89%E8%A3%85/#_1-cmd打开命令提示符" class="toc-sidebar-link">1.cmd打开命令提示符.</a></li><li class="toc-sidebar-sub-header"><a href="/mysql%E7%9A%84%E5%AE%89%E8%A3%85/#_2-输入命令" class="toc-sidebar-link">2.输入命令</a></li><li class="toc-sidebar-sub-header"><a href="/mysql%E7%9A%84%E5%AE%89%E8%A3%85/#_2-安装服务" class="toc-sidebar-link">2.安装服务</a></li></ul></li><li><a href="/mysql%E7%9A%84%E5%AE%89%E8%A3%85/#启动服务及修改密码" class="toc-sidebar-link">启动服务及修改密码</a><ul class="toc-sidebar-sub-headers"><li class="toc-sidebar-sub-header"><a href="/mysql%E7%9A%84%E5%AE%89%E8%A3%85/#_1-启动服务" class="toc-sidebar-link">1.启动服务</a></li><li class="toc-sidebar-sub-header"><a href="/mysql%E7%9A%84%E5%AE%89%E8%A3%85/#_2-登录root账户。" class="toc-sidebar-link">2.登录root账户。</a></li><li class="toc-sidebar-sub-header"><a href="/mysql%E7%9A%84%E5%AE%89%E8%A3%85/#_3-修改密码" class="toc-sidebar-link">3.修改密码</a></li></ul></li></ul></div></div></div></div></div>  <main class="footer"> <div class="copy-right"><span class="name"> 失败才是人生的主旋律   |     </span> <a target="_blank" rel="noreferrer">
+          
+        </a></div></main></main> <aside class="page-sidebar"> <div class="page-side-toolbar"></div>  </aside></div><div class="global-ui"><!----></div></div>
+    <script src="/assets/js/app.bfb9a41f.js" defer></script><script src="/assets/js/2.11372cd1.js" defer></script><script src="/assets/js/65.fb383e1b.js" defer></script>
+  </body>
+</html>

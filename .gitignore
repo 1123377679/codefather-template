@@ -1,7 +1,6 @@
 ### Node template
 .idea
 .DS_Store
-dist
 
 # Logs
 logs
@@ -89,7 +88,6 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
 .cache/
@@ -98,7 +96,6 @@ dist
 # assets
 
 # vuepress build output
-.vuepress/dist
 
 # Serverless directories
 .serverless/
@@ -121,5 +118,3 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-
-/.vuepress/dist/
