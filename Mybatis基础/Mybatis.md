@@ -1576,7 +1576,11 @@ public void insertMoreByList() throws Exception {
 
 # Mybatis的缓存
 
-缓存只针对于查询功能
+**什么地方会有缓存?**
+
+->浏览器(最常见的)
+
+Mybatis中也有缓存，如果缓存中有数据我们就从缓存中拿，如果没有缓存，咱们就从数据库中拿
 
 ## Mybtais一级缓存
 
@@ -1584,7 +1588,13 @@ public void insertMoreByList() throws Exception {
 
 直接获取，不会从数据库重新访问
 
-使一级缓存失效的四种情况：
+### 案例
+
+(1)创建一个mapper接口实现根据id查询数据（缓存只针对于查询功能）
+
+(2)测试:通过同一个SqlSession查询出来的数据，不会从数据库中访问
+
+**使一级缓存失效的四种情况：**
 
 1)不同的SqlSession对应不同的一级缓存
 
