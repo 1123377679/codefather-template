@@ -9,6 +9,7 @@ const domain = "https://codefather.cn";
 const tags = ["程序员", "编程", "计算机"];
 
 export default defineConfig({
+  base: "/",
   title: "李某人的编程宝库",
   description: "前后端课程资料",
   head: [
