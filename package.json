@@ -10,6 +10,9 @@
   "engines": {
     "node": "16.20.2"
   },
+  "dev": {
+    "port": 8002
+  },
   "devDependencies": {
     "@vuepress/plugin-back-to-top": "^1.9.10",
     "@vuepress/plugin-google-analytics": "^1.9.10",
