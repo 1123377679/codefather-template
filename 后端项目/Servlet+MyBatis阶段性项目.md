@@ -1436,9 +1436,152 @@ service
 }
 ```
 
+### 管理员删除
 
+注意：需要先获取到该行对象的id
 
+如何获取id
 
+```js
+onst deleteButton = document.createElement('button');
+        deleteButton.bgColor = '#EEEEEE'
+        deleteButton.textContent = '删除';
+		//在创建删除按钮的时候给按钮绑定用户ID
+        deleteButton.setAttribute('data-user-id', user.id); // 绑定用户ID
+```
+
+前端发送请求
+
+```js
+// 为删除按钮添加事件监听器
+        deleteButton.addEventListener('click', (event) => {
+          event.preventDefault(); // 防止任何可能的默认行为
+
+          if (confirm("您确定要删除该管理员吗?")) {
+            const userId = event.target.getAttribute('data-user-id');
+
+            axios({
+              url: "http://localhost:8080/tAdminServlet/delete",
+              method: "post",
+              data: {
+                userId: userId
+              }
+            }).then((response) => {
+              if (response.data.code == '305') {
+                alert("删除管理员失败");
+              } else if (response.data.code == '306') {
+                alert("删除管理员异常，请联系管理员");
+              } else {
+                alert("删除管理员成功");
+                location.reload();//手动刷新一下
+                // 可以在这里从DOM中移除已删除的行
+                // 例如：event.target.closest('tr').remove();
+              }
+            }).catch((error) => {
+              alert('请求失败：' + error);
+            });
+          }
+        });
+```
+
+后端
+
+controller
+
+```java
+@WebServlet("/tAdminServlet/delete")
+public class TAdminServletDelete extends HttpServlet {
+    TAdminService tAdminService = new TAdminServiceImpl();
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            //处理请求和响应编码
+            request.setCharacterEncoding("UTF-8");
+            response.setContentType("text/html;charset=utf-8");
+            JSONObject jsonObject = JsonRequestUtil.readJsonFromRequest(request);
+            Integer userId = JsonRequestUtil.getJsonValue(jsonObject, "userId", Integer.class);
+            int result = tAdminService.deleteById(userId);
+            if (result == 0) {
+                //添加失败
+                PrintWriter wr = response.getWriter();
+                ResponseUtils responseUtils = new ResponseUtils<>(305, "删除管理员失败");
+                String jsonString = JSON.toJSONString(responseUtils);
+                wr.write(jsonString);
+            }else {
+                //添加成功
+                PrintWriter wr = response.getWriter();
+                ResponseUtils responseUtils = new ResponseUtils<>(200, "删除管理员成功");
+                String jsonString = JSON.toJSONString(responseUtils);
+                wr.write(jsonString);
+            }
+        } catch (RuntimeException e) {
+            PrintWriter wr = response.getWriter();
+            ResponseUtils responseUtils = new ResponseUtils<>(306, "删除管理员异常");
+            String jsonString = JSON.toJSONString(responseUtils);
+            wr.write(jsonString);
+            //打印异常信息
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        this.doGet(request, response);
+    }
+}
+
+```
+
+mapper
+
+```xml
+/**
+     * 根据ID删除管理员
+     */
+    int deleteById(@Param("id") int id);
+    
+    <update id="deleteById">
+        update t_admin set  is_delete = 1 where id = #{id}
+    </update>
+```
+
+service
+
+```java
+/**
+     * 根据ID删除管理员
+     */
+    int deleteById(@Param("id") int id);
+
+ @Override
+    public int deleteById(int id) {
+        SqlSession sqlSession = null;
+        try {
+            // 获取SqlSession实例
+            sqlSession = SqlSessionUtils.getSqlSession();
+            // 获取TAdminMapper接口的实现
+            TAdminMapper tAdminMapper = sqlSession.getMapper(TAdminMapper.class);
+            // 执行删除操作
+            int result = tAdminMapper.deleteById(id);
+            // 如果添加成功，则提交事务，并返回结果
+            if (result > 0) {
+                return result;  // 返回成功的结果
+            } else {
+                // 添加失败，返回0
+                return 0;
+            }
+        } catch (Exception e) {
+            //最完美的写法应该是使用自定义异常(数据库异常)
+            //这个异常会抛给调用者
+            throw new RuntimeException();
+        } finally {
+            // 确保SqlSession被关闭，防止资源泄露
+            if (sqlSession != null) {
+                sqlSession.close();
+            }
+        }
+    }
+```
 
 
 
