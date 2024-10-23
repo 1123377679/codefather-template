@@ -1274,7 +1274,155 @@ function registerButton(){
     }
 ```
 
+### 管理员个人信息
 
+1）通过后端发送cookie 携带id到前端页面
+
+2）前端页面携带id发送axios请求到后端查询数据再响应给前端
+
+前端代码
+
+```js
+<tr>
+<td height="20" colspan="2" align="center" bgcolor="#EEEEEE" class="tablestyle_title">
+个人信息列表 &nbsp;</td>
+</tr>
+<tr>
+<td width="21%" height="20" align="right" bgcolor="#FFFFFF">姓名:</td>
+<td width="74%" bgcolor="#FFFFFF" id="nickname"></td>
+</tr>
+<tr>
+<td height="20" align="right" bgcolor="#FFFFFF">编号:</td>
+<td bgcolor="#FFFFFF" id="userId"></td>
+</tr>
+<tr>
+<td align="right" bgcolor="#FFFFFF">身份:</td>
+<td bgcolor="#FFFFFF">管理员</td>
+</tr>
+<!--第一步：前端发送请求应该使用什么技术 axios(AJAX)-->
+<script src="../js/axios.min.js"></script>
+<script>
+	// 传入cookie名能够拿到cookie的值
+	function getCookieValue(name) {
+		let value = `; ${document.cookie}`;
+		let parts = value.split(`; ${name}=`);
+		if (parts.length === 2) return parts.pop().split(';').shift();
+	}
+	let userId = getCookieValue("userId");
+	//发送axios请求携带id到后端查询相关数据
+	axios({
+		// 这里是发送到后端的请求地址(url地址)
+		url: "http://localhost:8080//tAdminServletSelectOne/selectById",
+		method: "post",
+		data: {
+			userId : userId
+		}
+	}).then((response) => {
+		// console.log(response)
+		//渲染数据
+		if (response.data.code == '200') {
+			// 获取响应数据
+			const data = response.data.data;
+			// 渲染数据到页面
+			document.getElementById('nickname').textContent = data.nickname;
+			document.getElementById('userId').textContent = data.id; // 或者根据需要选择对应的字段
+		} else {
+			alert('请求成功，但没有数据返回');
+		}
+	}).catch((error) => {
+		alert('请求失败：', error);
+	});
+</script>
+```
+
+后端代码
+
+```java
+@WebServlet("/tAdminServletSelectOne/selectById")
+public class TAdminServletSelectOne extends HttpServlet {
+    TAdminService tAdminService = new TAdminServiceImpl();
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        //处理请求和响应编码
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=utf-8");
+        // 读取请求体并转换为JSON对象
+        JSONObject jsonObject = JsonRequestUtil.readJsonFromRequest(request);
+        // 从JSON对象中获取相应的字段(userId)
+        Integer userId = JsonRequestUtil.getJsonValue(jsonObject, "userId", Integer.class);
+        TAdmin tAdmin = tAdminService.selectTAdminById(userId);
+        if (tAdmin!=null){
+            //数据没有问题
+            PrintWriter wr = response.getWriter();
+            ResponseUtils responseUtils = new ResponseUtils<>(200,"管理员根据Id数据查询成功",tAdmin);
+            //将responseUtils里面封装的数据转换成JSON数据响应给前端(fastJSON)
+            String jsonString = JSON.toJSONString(responseUtils);
+            wr.write(jsonString);
+        }else {
+            //数据有问题
+            PrintWriter wr = response.getWriter();
+            //响应工具类
+            ResponseUtils responseUtils = new ResponseUtils<>(305,"管理员根据Id数据查询有误");
+            //将responseUtils里面封装的数据转换成JSON数据响应给前端(fastJSON)
+            String jsonString = JSON.toJSONString(responseUtils);
+            wr.write(jsonString);
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        this.doGet(request, response);
+    }
+}
+```
+
+mapper
+
+```xml
+/**
+     * 根据ID查询管理员信息
+     */
+
+TAdmin selectTAdminById(@Param("id") int id);
+
+
+    <select id="selectTAdminById" resultType="cn.lanqiao.pojo.TAdmin">
+        select * from t_admin where id = #{id} and is_delete = 0
+    </select>
+```
+
+service
+
+```java
+    @Override
+    public TAdmin selectTAdminById(int id) {
+        SqlSession sqlSession = null;
+        try {
+            // 获取SqlSession实例
+            sqlSession = SqlSessionUtils.getSqlSession();
+            // 获取TAdminMapper接口的实现
+            TAdminMapper tAdminMapper = sqlSession.getMapper(TAdminMapper.class);
+            // 执行校验操作
+            TAdmin tAdmin = tAdminMapper.selectTAdminById(id);
+            if (tAdmin!=null){
+                return tAdmin;
+            }else {
+                return null;
+            }
+        } catch (Exception e) {
+            // 处理异常，这里可以根据具体的异常类型做更细粒度的处理
+            e.printStackTrace();  // 输出异常信息到控制台（或日志）
+            // 可以根据需要抛出异常或返回一个错误码
+        } finally {
+            // 确保SqlSession被关闭，防止资源泄露
+            if (sqlSession != null) {
+                sqlSession.close();
+            }
+        }
+        return null;
+    }
+}
+```
 
 
 
