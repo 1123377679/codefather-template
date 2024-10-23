@@ -575,6 +575,18 @@ controller
 前端页面渲染
 
 ```js
+ <tr>
+<td width="6%" align="center" bgcolor="#EEEEEE">选择</td>
+<td width="9%" height="20" align="center" bgcolor="#EEEEEE">编号</td>
+<td width="9%" align="center" bgcolor="#EEEEEE">管理员账号</td>
+<td width="9%" align="center" bgcolor="#EEEEEE">管理员密码</td>
+<td width="9%" align="center" bgcolor="#EEEEEE">管理员别名</td>
+<td width="19%" align="center" bgcolor="#EEEEEE">操作</td>
+</tr>
+<tbody id="adminTable">
+<!-- 用户数据将会在这里动态加载 -->
+</tbody>
+
 <!--第一步：前端发送请求应该使用什么技术 axios(AJAX)-->
 <script src="../js/axios.min.js"></script>
 <!--第二步:通过axios发送前端请求到服务器(后端)-->
