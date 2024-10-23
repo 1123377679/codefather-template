@@ -175,8 +175,8 @@ public class SqlSessionUtils {
 
 ## 前端页面导入
 
-通过网盘分享的文件：studentmanager-master.7z
-链接: https://pan.baidu.com/s/1AzfWfrJDRoDKE_fVyYZY6g 提取码: i8s9
+通过网盘分享的文件：92.学生信息管理系统
+链接: https://pan.baidu.com/s/1FrZryAbPmU-YvI-x1qeqXQ 提取码: wi2v
 
 导入网页源码到编码工具中
 
