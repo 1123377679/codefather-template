@@ -1553,7 +1553,7 @@ service
      */
     int deleteById(@Param("id") int id);
 
- @Override
+ 	@Override
     public int deleteById(int id) {
         SqlSession sqlSession = null;
         try {
@@ -1583,7 +1583,218 @@ service
     }
 ```
 
+### 管理员编辑
 
+前端页面
+
+```html
+// 创建编辑按钮
+        const editButton = document.createElement('button');
+        editButton.textContent = '编辑';
+        editButton.className = 'edit-button';
+        editButton.setAttribute('data-id', user.id);
+        editButton.setAttribute('data-username', user.username);
+        editButton.setAttribute('data-password', user.password);
+        editButton.setAttribute('data-nickname', user.nickname);
+
+        // 绑定编辑按钮的点击事件
+        document.querySelectorAll('.edit-button').forEach(button => {
+          button.addEventListener('click', function(event) {
+            event.preventDefault();
+            const id = this.getAttribute('data-id');
+            const username = this.getAttribute('data-username');
+            const password = this.getAttribute('data-password');
+            const nickname = this.getAttribute('data-nickname');
+
+            // 显示模态框并填充数据
+            document.getElementById('editId').value = id;
+            document.getElementById('editUsername').value = username;
+            document.getElementById('editPassword').value = password;
+            document.getElementById('editNickname').value = nickname;
+
+            document.getElementById('editModal').style.display = 'block';
+          });
+        });
+        // 关闭模态框
+        document.querySelector('.close').addEventListener('click', function() {
+          document.getElementById('editModal').style.display = 'none';
+        });
+
+        document.querySelector('.cancel').addEventListener('click', function() {
+          document.getElementById('editModal').style.display = 'none';
+        });
+
+        // 点击模态框外区域关闭模态框
+        window.onclick = function(event) {
+          const modal = document.getElementById('editModal');
+          if (event.target === modal) {
+            modal.style.display = 'none';
+          }
+        };
+
+
+
+
+<!-- 模态框 -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>编辑管理员信息</h2>
+      <form id="editForm">
+        <label for="editId">编号:</label>
+        <input type="text" id="editId" name="editId" readonly><br>
+        <label for="editUsername">用户名:</label>
+        <input type="text" id="editUsername" name="editUsername"><br>
+        <label for="editPassword">密码:</label>
+        <input type="password" id="editPassword" name="editPassword"><br>
+        <label for="editNickname">昵称:</label>
+        <input type="text" id="editNickname" name="editNickname"><br>
+        <button type="submit">保存</button>
+        <button type="button" class="cancel">取消</button>
+      </form>
+    </div>
+  </div>
+```
+
+```js
+ <!--  修改按钮提交-->
+  let updateButton = document.querySelector('.updateButton');
+  updateButton.addEventListener('click',(event) =>{
+    let userId = document.querySelector('#editId').value;
+    let username = document.querySelector('#editUsername').value;
+    let password = document.querySelector('#editPassword').value;
+    let nickname = document.querySelector('#editNickname').value;
+    //获取修改过后的数据
+    axios({
+      url: "http://localhost:8080/tAdminServlet/update",
+      method: "post",
+      data:{
+        userId : userId,
+        username : username,
+        password : password,
+        nickname : nickname
+      }
+    }).then((response) => {
+      if (response.data.code == '305') {
+        alert("修改管理员失败");
+      } else if (response.data.code == '306') {
+        alert("修改管理员异常，请联系管理员");
+      } else {
+        alert("修改管理员成功");
+        //指定页面跳转
+        location.href = 'adminList.html'
+        // location.reload();//手动刷新一下
+        // 可以在这里从DOM中移除已删除的行
+        // 例如：event.target.closest('tr').remove();
+      }
+    }).catch((error) => {
+      alert('请求失败：', error);
+    });
+  })
+```
+
+后端代码
+
+controller
+
+```java
+@WebServlet("/tAdminServlet/update")
+public class TAdminServletUpdate extends HttpServlet {
+    TAdminService tAdminService = new TAdminServiceImpl();
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            //处理请求和响应编码
+            request.setCharacterEncoding("UTF-8");
+            response.setContentType("text/html;charset=utf-8");
+            System.out.println("请求携带过来了");
+            JSONObject jsonObject = JsonRequestUtil.readJsonFromRequest(request);
+            Integer userId = JsonRequestUtil.getJsonValue(jsonObject, "userId",Integer.class);
+            String username = JsonRequestUtil.getJsonValue(jsonObject, "username",String.class);
+            String password = JsonRequestUtil.getJsonValue(jsonObject, "password",String.class);
+            String nickname = JsonRequestUtil.getJsonValue(jsonObject, "nickname",String.class);
+            //拿到四个参数之后，就可以访问数据库了(写接口)
+            int result = tAdminService.updateById(new TAdmin(userId, username, password, nickname));
+            if (result == 0) {
+                //修改失败
+                PrintWriter wr = response.getWriter();
+                ResponseUtils responseUtils = new ResponseUtils<>(305, "修改管理员失败");
+                String jsonString = JSON.toJSONString(responseUtils);
+                wr.write(jsonString);
+            }else {
+                //修改成功
+                PrintWriter wr = response.getWriter();
+                ResponseUtils responseUtils = new ResponseUtils<>(200, "修改管理员成功");
+                String jsonString = JSON.toJSONString(responseUtils);
+                wr.write(jsonString);
+            }
+        } catch (RuntimeException e) {
+            PrintWriter wr = response.getWriter();
+            ResponseUtils responseUtils = new ResponseUtils<>(306, "修改管理员异常");
+            String jsonString = JSON.toJSONString(responseUtils);
+            wr.write(jsonString);
+            //打印异常信息
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        this.doGet(request, response);
+    }
+}
+```
+
+```xml
+/**
+     * 根据Id修改管理员
+     */
+    int updateById(TAdmin tAdmin);
+
+<update id="updateById">
+        update t_admin set username = #{username} , nickname = #{nickname} , password = #{password} where id = #{id}
+    </update>
+```
+
+service
+
+```java
+/**
+     * 根据Id修改管理员
+     */
+    int updateById(TAdmin tAdmin);
+
+@Override
+    public int updateById(TAdmin tAdmin) {
+        SqlSession sqlSession = null;
+        try {
+            // 获取SqlSession实例
+            sqlSession = SqlSessionUtils.getSqlSession();
+            // 获取TAdminMapper接口的实现
+            TAdminMapper tAdminMapper = sqlSession.getMapper(TAdminMapper.class);
+            // 执行删除操作
+            int result = tAdminMapper.updateById(tAdmin);
+            // 如果添加成功，则提交事务，并返回结果
+            if (result > 0) {
+                return result;  // 返回成功的结果
+            } else {
+                // 修改失败，返回0
+                return 0;
+            }
+        } catch (Exception e) {
+            //最完美的写法应该是使用自定义异常(数据库异常)
+            //这个异常会抛给调用者
+            throw new RuntimeException();
+        } finally {
+            // 确保SqlSession被关闭，防止资源泄露
+            if (sqlSession != null) {
+                sqlSession.close();
+            }
+        }
+    }
+```
+
+完结！！！！![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/12C0782A.gif)
 
 
 
