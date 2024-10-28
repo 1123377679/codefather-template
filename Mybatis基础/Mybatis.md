@@ -61,7 +61,7 @@ https://gitcode.net/mirrors/mybatis/mybatis-3?utm_source=csdn_github_accelerator
 
 - 引入依赖
 
-- ```xml
+- ```java
   <dependencies>
   	<!-- Mybatis核心 -->
   	<dependency>
@@ -591,7 +591,7 @@ jdbc.password=123456
 >核心配置文件中的标签必须按照固定的顺序(有的标签可以不写，但顺序一定不能乱)：
 >properties、settings、typeAliases、typeHandlers、objectFactory、objectWrapperFactory、reflectorFactory、plugins、environments、databaseIdProvider、mappers
 
-```xml
+```java
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE configuration
         PUBLIC "-//MyBatis.org//DTD Config 3.0//EN"
@@ -851,7 +851,7 @@ test
 User getUserById(@Param("id") int id);
 ```
 
-```xml
+```java
 <select id="getUserById" resultType = "User">
 	select * from t_user where id = #{id}
 </select>
@@ -889,7 +889,7 @@ User getUserById(@Param("id") int id);
 Map<String,Object> getUserByIdToMap(@Param("id") Integer id);
 ```
 
-```xml
+```java
  	<select id="getUserByIdToMap" resultType="map">
         select * from t_user where id = #{id}
     </select>
@@ -901,7 +901,7 @@ Map<String,Object> getUserByIdToMap(@Param("id") Integer id);
 List<Map<String,Object>> getAllUserToMap();
 ```
 
-```xml
+```java
  	<select id="getAllUserToMap" resultType="map">
         select * from t_user
     </select>
@@ -918,7 +918,7 @@ List<Map<String,Object>> getAllUserToMap();
     List<User> getUserByLike(@Param("name") String name);
 ```
 
-```xml
+```java
 	<select id="getUserByLike" resultType="cn.lanqiao.pojo.User">
         SELECT * FROM account where name like '%${name}%'
         SELECT * FROM account where name like concat('%',#{name},'%')
@@ -935,7 +935,7 @@ List<Map<String,Object>> getAllUserToMap();
     int DeleteAll(@Param("id") String id);
 ```
 
-```xml
+```java
 	<delete id="deleteMore">
 	delete from t_user where id in (${ids})
     </delete>
@@ -947,7 +947,7 @@ List<Map<String,Object>> getAllUserToMap();
 List<User> getAllUser(@Param("tableName") String tableName);
 ```
 
-```xml
+```java
 <select id="getAllUser" resultType="User">
 	select * from ${tableName}
 </select>
@@ -1506,7 +1506,7 @@ close:foreach标签所循环的所有内容的结束符
 int deleteMoreByArray(@Param("arr") Integer[] arr);
 ```
 
-```xml
+```java
 <delete id="deleteMoreByArray">
     DELETE FROM t_emp WHERE eid in(
         <foreach collection="arr" item="eid" separator=",">
@@ -1525,7 +1525,7 @@ int deleteMoreByArray(@Param("arr") Integer[] arr);
     int insertMoreByList(@Param("emps") List<Emp> emps);
 ```
 
-```xml
+```java
 <insert id="insertMoreByList">
     insert into t_emp values
     <foreach collection="emps" item="emp" separator=",">
@@ -1555,7 +1555,7 @@ public void insertMoreByList() throws Exception {
 
 将常用的SQL片段记录下来，方便调用
 
-```xml
+```java
 <sql id="empCloums">eid,emp_name,age,sex,email</sql>
 <select id="getEmpByCondition" resultMap="getEmpByConditionMap">
     SELECT <include refid="empCloums"></include>  FROM t_emp where

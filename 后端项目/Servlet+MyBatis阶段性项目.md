@@ -8,7 +8,7 @@
 
 **pom.xml依赖**
 
-```xml
+```java
 <dependencies>
     <!-- junit测试 -->
     <dependency>
@@ -75,7 +75,7 @@ jdbc.url=jdbc:mysql://localhost:3306/data_class_4?&useSSL=false&serverTimezone=U
 
 **log4j.xml**
 
-```xml
+```java
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
@@ -101,7 +101,7 @@ jdbc.url=jdbc:mysql://localhost:3306/data_class_4?&useSSL=false&serverTimezone=U
 
 **mybatis-config.xml**
 
-```xml
+```java
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE configuration
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
@@ -184,7 +184,7 @@ public class SqlSessionUtils {
 
 修改web.xml文件,访问登录页面
 
-```xml
+```java
   <welcome-file-list>
     <welcome-file>login.html</welcome-file>
   </welcome-file-list>
@@ -507,7 +507,7 @@ mapper接口
     List<TAdmin> selectAll();
 ```
 
-```xml
+```java
 <mapper namespace="cn.lanqiao.mapper.TAdminMapper">
     <resultMap id="TAdminMapperResultMap" type="cn.lanqiao.pojo.TAdmin">
         <id property="id" column="id"/>
@@ -699,7 +699,7 @@ Mapper
     int insertTAdmin(TAdmin tAdmin);
 ```
 
-```xml
+```java
 <insert id="insertTAdmin">
         insert into t_admin values (null,#{username},#{password},#{nickname},0)
     </insert>
@@ -871,7 +871,7 @@ Mapper接口
     List<TAdmin> checkUserName(String username);
 ```
 
-```xml
+```java
 <select id="checkUserName" resultType="cn.lanqiao.pojo.TAdmin">
         select * from t_admin where username = #{username} and is_delete = 0
     </select>
@@ -1390,7 +1390,7 @@ public class TAdminServletSelectOne extends HttpServlet {
 
 mapper
 
-```xml
+```java
 /**
      * 根据ID查询管理员信息
      */
@@ -1534,7 +1534,7 @@ public class TAdminServletDelete extends HttpServlet {
 
 mapper
 
-```xml
+```java
 /**
      * 根据ID删除管理员
      */
@@ -1745,7 +1745,7 @@ public class TAdminServletUpdate extends HttpServlet {
 }
 ```
 
-```xml
+```java
 /**
      * 根据Id修改管理员
      */

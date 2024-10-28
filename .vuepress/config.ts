@@ -49,7 +49,7 @@ export default defineConfig({
   permalink: "/:slug",
 
   // 监听文件变化，热更新
-  extraWatchFiles: [".vuepress/*.ts", ".vuepress/sidebars/*.ts"],
+  extraWatchFiles: [".vuepress/*.ts", ".vuepress/sidebars/*.ts",".vuepress/theme/*.ts"],
   markdown: {
     // 开启代码块的行号
     lineNumbers: true,

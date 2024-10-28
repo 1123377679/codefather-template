@@ -7,6 +7,7 @@ import mysqlAdvancedSideBar from "./sidebars/mysqlAdvancedSideBar";
 import JavaWebSideBar from "./sidebars/JavaWebSideBar";
 import mybatisSideBar from "./sidebars/mybatisSideBar";
 import BackEndProject from "./sidebars/BackEndProject";
+import SpringSideBar from "./sidebars/SpringSideBar";
 // @ts-ignore
 export default {
     "/Java基础/": JavaSideBar,
@@ -16,6 +17,7 @@ export default {
     "/JavaWeb/": JavaWebSideBar,
     "/Mybatis/": mybatisSideBar,
     "/后端项目/": BackEndProject,
+    "/Spring/": SpringSideBar,
     // 降级，默认根据文章标题渲染侧边栏
     "/": "auto",
 } as SidebarConfig4Multiple;

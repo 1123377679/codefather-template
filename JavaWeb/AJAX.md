@@ -356,7 +356,7 @@ public interface BrandMapper {
 
 BrandMapper.xml
 
-```xml
+```java
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
@@ -383,7 +383,7 @@ BrandMapper.xml
 
 mybatis-config.xml
 
-```xml
+```java
 <!--引入映射文件-->
     <mappers>
         <mapper resource="org/lanqiao/mapper/UserMapper.xml"/>
@@ -601,7 +601,7 @@ BrandMapper
 
 BrandMapper.xml
 
-```xml
+```java
     <insert id="addBrand">
         INSERT INTO brands(brand_name,company_name,display_order,brand_description,status)
         VALUES(

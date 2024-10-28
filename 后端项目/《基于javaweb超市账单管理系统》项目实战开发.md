@@ -5624,7 +5624,7 @@ public class EncoderFilter implements Filter {
 
 web.xml
 
-```xml
+```java
 <!--配置Filter-->
   <filter>
     <filter-name>EncoderFilter</filter-name>

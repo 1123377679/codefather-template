@@ -14,7 +14,7 @@ JSP的作用：简化开发，避免了在Servlet中直接输出HTML标签
 
 ## 1.导入Jsp坐标
 
-```xml
+```java
 <!--JSP坐标 -->
     <dependency>
       <groupId>javax.servlet.jsp</groupId>

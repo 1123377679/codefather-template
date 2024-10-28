@@ -24,7 +24,7 @@ Servlet是javaEE规范之一，其实就是一个接口，将来我们需要定�
 
 1.创建web项目，导入Servlet依赖坐标，记得配置本地Tomcat
 
-```xml
+```java
 	<dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
@@ -1131,7 +1131,7 @@ UserMapper
 
 UserMapper.xml
 
-```xml
+```java
 <select id="login" resultType="cn.lanqiao.pojo.User">
         SELECT * FROM db1 where username = #{username} and password = #{password}
     </select>
