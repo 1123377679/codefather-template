@@ -4,7 +4,7 @@
     <slot name="top" />
       <div class="content">
           <div style="width:100%">
-              <Content class="theme-default-content custom-content"  />
+              <Content class="theme-default-content custom-content" style="max-width: 1270px" />
               <PageEdit style="margin: 0"/>
               <!--      <div class="option-box-toc-fixed">-->
               <!--         -->
