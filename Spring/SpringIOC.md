@@ -1137,7 +1137,7 @@ public class BookServiceImpl implements BookService{
 public class BookServiceImpl implements BookService {
     private BookDao bookDao;
     private UserDao userDao;
-
+	
     public BookServiceImpl(BookDao bookDao, UserDao userDao) {
         this.bookDao = bookDao;
         this.userDao = userDao;
@@ -1313,7 +1313,1139 @@ public class BookDaoImpl implements BookDao {
   - 建议使用setter注入
   - 第三方技术根据情况选择
 
-### 自动配置
+### 自动装配
+
+前面花了大量的时间把Spring的注入去学习了下，总结起来就两个字`麻烦`。
+
+- 问:麻烦在哪?
+  - 答:配置文件的编写配置上。
+- 问:有更简单方式么?
+  - 答:有，自动配置
+
+所以什么是自动配置以及如何实现自动配置，就是接下来要学习的内容
+
+#### 什么是依赖自动装配？
+
+IOC容器根据bean所依赖的资源在容器中`自动查找并注入`到bean中的过程称为自动装配
+
+#### 自动装配方式有哪些？
+
+- 按类型（常用）
+- 按名称
+- 按构造方法
+- 不启用自动装配
+
+#### 环境准备
+
+修改BookDao、BookDaoImpl、BookService和BookServiceImpl类
+
+```java
+public interface BookDao {
+    public void save();
+}
+public class BookDaoImpl implements BookDao {
+    
+    private String databaseName;
+    private int connectionNum;
+    
+    public void save() {
+        System.out.println("book dao save ...");
+    }
+}
+public interface BookService {
+    public void save();
+}
+public class BookServiceImpl implements BookService{
+    private BookDao bookDao;
+
+    public void setBookDao(BookDao bookDao) {
+        this.bookDao = bookDao;
+    }
+
+    public void save() {
+        System.out.println("book service save ...");
+        bookDao.save();
+    }
+}
+```
+
+配置文件
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="bookDao" class="com.blog.dao.impl.BookDaoImpl"/>
+    <bean id="bookService" class="com.blog.service.impl.BookServiceImpl">
+        <property name="bookDao" ref="bookDao"/>
+    </bean>
+</beans>
+```
+
+App运行类
+
+```java
+public class App {
+    public static void main( String[] args ) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("applicationContext.xml");
+        BookService bookService = (BookService) ctx.getBean("bookService");
+        bookService.save();
+    }
+}
+```
+
+#### 完成自动装配的配置
+
+自动装配只需要修改applicationContext.xml配置文件即可:
+
+1. 将`<property>`标签删除
+2. 在`<bean>`标签中添加autowire属性
+
+- 首先来实现按照类型注入的配置
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<!--    <bean id="bookDao" class="com.blog.dao.impl.BookDaoImpl"/>-->
+<!--    既然是按类型注入了，那么id写不写都无所谓了-->
+    <bean class="com.blog.dao.impl.BookDaoImpl"/>
+    <bean id="bookService" class="com.blog.service.impl.BookServiceImpl" autowire="byType"/>
+</beans>
+```
+
+运行程序，结果如下，说明已经成功注入了
+
+```java
+book service save …
+book dao save …
+```
+
+>注意事项：
+>
+>- 需要注入属性的类中对应属性的`setter`方法不能省略
+>- 被注入的对象必须要被Spring的IOC容器管理
+>- 按照类型在Spring的IOC容器中如果找到多个对象，会报`NoUniqueBeanDefinitionException`
+
+当一个类型在IOC中有多个对象，还想要注入成功，这个时候就需要按照名称注入，配置方式如下
+
+```java
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--这里就有两个同一类型的bean，但是id不一样-->
+    <bean id="bookDao1" class="com.blog.dao.impl.BookDaoImpl"/>
+    <bean id="bookDao2" class="com.blog.dao.impl.BookDaoImpl"/>
+    <bean class="com.blog.dao.impl.BookDaoImpl"/>
+    <bean id="bookService" class="com.blog.service.impl.BookServiceImpl" autowire="byName"/>
+</beans>
+```
+
+同时修改BookServiceImpl类汇总的`setBookDao`方法，将其重命名为`setBookDao1`
+
+```java
+public class BookServiceImpl implements BookService{
+    private BookDao bookDao;
+
+    public void setBookDao1(BookDao bookDao) {
+        this.bookDao = bookDao;
+    }
+
+    public void save() {
+        System.out.println("book service save ...");
+        bookDao.save();
+    }
+}
+```
+
+运行程序，结果如下，说明已经成功注入了
+
+```java
+book service save …
+book dao save …
+```
+
+>- 疑惑：为什么刚刚修改的是setBookDao的方法名，而不是将bookDao属性修改为bookDao1呢？按照名称注入中的名称指的是什么?
+>- 解惑：
+>  - 因为bookDao是private修饰的，外部类无法直接访问
+>  - 所以外部类只能通过属性的set方法进行访问
+>  - 对外部类来说，setBookDao方法名，去掉set后首字母小写是其属性名
+>    - 为什么是去掉set首字母小写?
+>    - 这个规则是set方法生成的`默认规则`，set方法的生成是把属性名首字母大写前面加set形成的方法名
+>  - 所以按照名称注入，其实是和对应的set方法有关，但是如果按照标准起名称，属性名和set对应的名是一致的
+
+#### 小结
+
+- 如果按照名称去找对应的bean对象，找不到则注入Null
+- 当某一个类型在IOC容器中有多个对象，按照名称注入只找其指定名称对应的bean对象，不会报错
+- 两种方式介绍完后，以后用的更多的是`按照类型`注入。
+- 最后对于依赖注入，需要注意一些其他的配置特征:
+  1. 自动装配用于引用类型依赖注入，不能对简单类型进行操作
+  2. 使用按类型装配时（byType）必须保障容器中相同类型的bean唯一，推荐使用
+  3. 使用按名称装配时（byName）必须保障容器中具有指定名称的bean，因变量名与配置耦合，不推荐使用
+  4. 自动装配优先级低于setter注入与构造器注入，同时出现时自动装配配置失效
+
+### 集合注入
+
+前面我们已经能完成引入数据类型和简单数据类型的注入，但是还有一种数据类型`集合`，集合中既可以装
+
+简单数据类型也可以装引用数据类型，对于集合，在Spring中该如何注入呢?
+
+先来回顾下，常见的集合类型有哪些?
+
+- 数组
+- List
+- Set
+- Map
+- Properties
+
+针对不同的集合类型，该如何实现注入呢?接着往下看
+
+#### 环境准备
+
+```java
+public interface BookDao {
+    public void save();
+}
+public class BookDaoImpl implements BookDao {
+
+    private int[] array;
+
+    private List<String> list;
+
+    private Set<String> set;
+
+    private Map<String,String> map;
+
+    private Properties properties;
+
+    public void save() {
+        System.out.println("book dao save ...");
+
+        System.out.println("遍历数组:" + Arrays.toString(array));
+
+        System.out.println("遍历List" + list);
+
+        System.out.println("遍历Set" + set);
+
+        System.out.println("遍历Map" + map);
+
+        System.out.println("遍历Properties" + properties);
+    }
+
+    public void setArray(int[] array) {
+        this.array = array;
+    }
+
+    public void setList(List<String> list) {
+        this.list = list;
+    }
+
+    public void setSet(Set<String> set) {
+        this.set = set;
+    }
+
+    public void setMap(Map<String, String> map) {
+        this.map = map;
+    }
+
+    public void setProperties(Properties properties) {
+        this.properties = properties;
+    }
+}
+```
+
+修改配置文件
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="bookDao" class="com.blog.dao.impl.BookDaoImpl"/>
+</beans>
+```
+
+修改App运行时类
+
+```java
+public class App {
+    public static void main( String[] args ) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("applicationContext.xml");
+        BookDao bookDao = (BookDao) ctx.getBean("bookDao");
+        bookDao.save();
+    }
+}
+```
+
+- 准备工作完毕，接下来，在上面这个环境中来完成`集合注入`的学习，下面所有的配置方式，都是在bookDao的bean标签中使用`<property>`进行注入
+
+#### 注入数组类型
+
+```xml
+<property name="array">
+    <array>
+        <value>100</value>
+        <value>200</value>
+        <value>300</value>
+    </array>
+</property>
+```
+
+#### 注入List类型
+
+```xml
+<property name="list">
+    <list>
+        <value>张三</value>
+        <value>ABC</value>
+        <value>123</value>
+    </list>
+</property>
+```
+
+#### 注入Set类型
+
+```xml
+<property name="set">
+    <set>
+        <value>100</value>
+        <value>200</value>
+        <value>ABC</value>
+        <value>ABC</value>
+    </set>
+</property>
+```
+
+#### 注入Map类型
+
+```xml
+<property name="map">
+    <map>
+        <entry key="探路者" value="马文"/>
+        <entry key="次元游记兵" value="恶灵"/>
+        <entry key="易位窃贼" value="罗芭"/>
+    </map>
+</property>
+```
+
+#### 注入Properties类型
+
+```xml
+<property name="properties">
+    <props>
+        <prop key="暴雷">沃尔特·菲茨罗伊</prop>
+        <prop key="寻血猎犬">布洛特·亨德尔</prop>
+        <prop key="命脉">阿杰·切</prop>
+    </props>
+</property>
+```
+
+配置完成之后，运行查看结果
+
+>book dao save …
+>
+>遍历数组:[100, 200, 300]
+>
+>遍历List[张三, ABC, 123]
+>
+>遍历Set[100, 200, ABC]
+>
+>遍历Map{探路者=马文, 次元游记兵=恶灵, 易位窃贼=罗芭}
+>
+>遍历Properties{命脉=阿杰·切, 寻血猎犬=布洛特·亨德尔, 暴雷=沃尔特·菲茨罗伊}
+
+说明：
+
+- property标签表示setter方式注入，构造方式注入constructor-arg标签内部也可以写`<array>`、`<list>`、`<set>`、`<map>`、`<props>`标签
+- List的底层也是通过数组实现的，所以`<list>`和`<array>`标签是可以混用
+- 集合中要添加引用类型，只需要把`<value>`标签改成`<ref>`标签，这种方式用的比较少
+
+## 核心容器
+
+前面已经完成bean与依赖注入的相关知识学习，接下来我们主要学习的是IOC容器中的`核心容器`。
+
+这里所说的核心容器，我们可以把它简单的理解为`ApplicationContext`，前面虽然已经用到过，但是并没有系统的学习，接下来我们从以下几个问题入手来学习下容器的相关知识:
+
+- 如何创建容器?
+- 创建好容器后，如何从容器中获取bean对象?
+- 容器类的层次结构是什么?
+- BeanFactory是什么?
+
+### 环境准备
+
+- 创建一个Maven项目
+- pom.xml添加Spring的依赖
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.2.10.RELEASE</version>
+    </dependency>
+</dependencies>
+```
+
+resources下添加applicationContext.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+        ">
+    <bean id="bookDao" class="com.blog.dao.impl.BookDaoImpl"/>
+</beans>
+```
+
+添加BookDao和BookDaoImpl类
+
+```java
+public interface BookDao {
+    public void save();
+}
+
+public class BookDaoImpl implements BookDao {
+    public void save() {
+        System.out.println("book dao save ..." );
+    }
+}
+```
+
+创建运行类App
+
+```java
+public class App {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("applicationContext.xml");
+        BookDao bookDao = (BookDao) ctx.getBean("bookDao");
+        bookDao.save();
+    }
+}
+```
+
+### 容器
+
+#### 容器的创建方式
+
+- 案例中创建`ApplicationContext`的方式如下
+- 这种方式翻译为：类路径下的XML配置文件
+
+```java
+ApplicationContext ctx = new ClassPathXmlApplicationContext("applicationContext.xml");
+```
+
+- 除了上面这种方式，Spring还提供了另外一种创建方式
+- 这种方式翻译为：文件系统下的XML配置文件，路径需要写绝对路径
+- 这种方式虽能实现，但是当项目的位置发生变化后，代码也需要跟着改，耦合度高，不推荐使用。
+
+```java
+ApplicationContext ctx = new FileSystemXmlApplicationContext("D:\xxx/xxx\applicationContext.xml");
+```
+
+#### 获取bean的三种方式
+
+- 方式一，就是我们之前用的方式
+- 这种方式存在的问题是每次获取的时候都需要进行类型转换，有没有更简单的方式呢?
+
+```java
+BookDao bookDao = (BookDao) ctx.getBean("bookDao");
+```
+
+方式二
+
+这种方式可以解决类型强转问题，但是参数又多加了一个，相对来说没有简化多少。
+
+```java
+BookDao bookDao = ctx.getBean("bookDao"，BookDao.class);
+```
+
+- 方式三
+- 这种方式就类似我们之前所学习依赖注入中的按类型注入。必须要确保IOC容器中该类型对应的bean对象只能有一个。
+
+```java
+BookDao bookDao = ctx.getBean(BookDao.class);
+```
+
+#### BeanFactory的使用
+
+容器的最上级的父接口为`BeanFactory`
+
+使用`BeanFactory`也可以创建IOC容器
+
+```java
+public class AppForBeanFactory {
+    public static void main(String[] args) {
+        Resource resources = new ClassPathResource("applicationContext.xml");
+        BeanFactory bf = new XmlBeanFactory(resources);
+        BookDao bookDao = bf.getBean(BookDao.class);
+        bookDao.save();
+    }
+}
+```
+
+为了更好的看出`BeanFactory`和`ApplicationContext`之间的区别，在BookDaoImpl添加如下构造函数
+
+```java
+public class BookDaoImpl implements BookDao {
+    public BookDaoImpl() {
+        System.out.println("constructor");
+    }
+    public void save() {
+        System.out.println("book dao save ..." );
+    }
+}
+```
+
+如果不去获取bean对象，打印会发现：
+
+- BeanFactory是延迟加载，只有在获取bean对象的时候才会去创建
+- ApplicationContext是立即加载，容器加载的时候就会创建bean对象
+- ApplicationContext要想成为延迟加载，只需要将lazy-init设为true
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="bookDao" class="com.blog.dao.impl.BookDaoImpl"  lazy-init="true"/>
+</beans>
+```
+
+### 核心容器总结
+
+#### 容器相关
+
+- BeanFactory是IoC容器的顶层接口，初始化BeanFactory对象时，加载的bean延迟加载
+- ApplicationContext接口是Spring容器的核心接口，初始化时bean立即加载
+- ApplicationContext接口提供基础的bean操作相关方法，通过其他接口扩展其功能
+- ApplicationContext接口常用初始化类
+  - ClassPathXmlApplicationContext(常用)
+  - FileSystemXmlApplicationContext
+
+#### bean相关
+
+![image-20241029155810175](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241029155810175.png)
+
+#### 依赖注入相关
+
+![image-20241029155824578](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241029155824578.png)
+
+## IOC/DI注解开发
+
+Spring的IOC/DI对应的配置开发就已经讲解完成，但是使用起来相对来说还是比较复杂的，复杂的地方在`配置文件`。
+Spring到底是如何简化代码开发的呢?
+要想真正简化开发，就需要用到Spring的注解开发，Spring对注解支持的版本历程:
+
+- 2.0版开始支持注解
+- 2.5版注解功能趋于完善
+- 3.0版支持纯注解开发
+
+关于注解开发，这里会讲解两块内容`注解开发定义bean`和`纯注解开发`。
+注解开发定义bean用的是2.5版提供的注解，纯注解开发用的是3.0版提供的注解。
+
+### 环境准备
+
+- 创建一个Maven项目
+- pom.xml添加Spring的依赖
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.2.10.RELEASE</version>
+    </dependency>
+</dependencies>
+```
+
+resources下添加applicationContext.xml
+
+```java
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="bookDao" class="com.blog.dao.impl.BookDaoImpl"/>
+</beans>
+```
+
+添加BookDao、BookDaoImpl、BookService、BookServiceImpl类
+
+```java
+public interface BookDao {
+    public void save();
+}
+public class BookDaoImpl implements BookDao {
+    public void save() {
+        System.out.println("book dao save ..." );
+    }
+}
+public interface BookService {
+    public void save();
+}
+public class BookServiceImpl implements BookService {
+    public void save() {
+        System.out.println("book service save ...");
+    }
+}
+```
+
+创建运行类App
+
+```java
+public class App {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("applicationContext.xml");
+        BookDao bookDao = (BookDao) ctx.getBean("bookDao");
+        bookDao.save();
+    }
+}
+```
+
+### 注解开发定义bean
+
+`步骤一：`删除原有的XML配置
+
+将配置文件中的bean标签删除掉
+
+`步骤二：`在Dao上添加注解
+在BookDaoImpl类上添加`@Component`注解
+
+```java
+@Component("bookDao")
+public class BookDaoImpl implements BookDao {
+    public void save() {
+        System.out.println("book dao save ...");
+    }
+}
+```
+
+注意：@Component注解不可以添加在接口上，因为接口是无法创建对象的。
+
+`步骤三：`配置Spring的注解包扫描
+为了让Spring框架能够扫描到写在类上的注解，需要在配置文件上进行包扫描
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context.xsd
+        ">
+    <context:component-scan base-package="com.blog"/>
+</beans>
+```
+
+- 说明：component-scan
+  - component:组件,Spring将管理的bean视作自己的一个组件
+  - scan:扫描
+    base-package指定Spring框架扫描的包路径，它会扫描指定包及其子包中的所有类上的注解。
+  - 包路径越多`如:com.blog.dao.impl`，扫描的范围越小速度越快
+  - 包路径越少`如:com.blog`,扫描的范围越大速度越慢
+  - 一般扫描到项目的组织名称即Maven的groupId下`如:com.blog`即可。\
+
+- `步骤四：`运行程序
+
+  > book dao save …
+
+`步骤五：`Service上添加注解
+
+在BookServiceImpl类上也添加`@Component`交给Spring框架管理
+
+```java
+@Component
+public class BookServiceImpl implements BookService {
+    public void save() {
+        System.out.println("book service save ...");
+    }
+}
+```
+
+`步骤六：`运行程序
+
+在App类中，从IOC容器中获取BookServiceImpl对应的bean对象
+
+```java
+public class App {
+    public static void main(String[] args) {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+        //按照名称获取bean
+        BookDao bookDao = (BookDao) context.getBean("bookDao");
+        //按照类型获取bean
+        BookService bookService = context.getBean(BookService.class);
+        bookDao.save();
+        bookService.save();
+    }
+}
+```
+
+结果如下
+
+> book dao save …
+> book service save …
+
+**说明:**
+
+- BookServiceImpl类没有起名称，所以在App中是按照类型来获取bean对象
+- `@Component`注解如果不起名称，会有一个默认值就是`当前类名首字母小写`，所以也可以按照名称获取，如
+
+```java
+BookService bookService = (BookService) context.getBean("bookServiceImpl");
+```
+
+对于@Component注解，还衍生出了其他三个注解`@Controller`、`@Service`、`@Repository`
+
+通过查看源码会发现：这三个注解和@Component注解的作用是一样的，为什么要衍生出这三个呢?
+
+这是方便我们后期在编写类的时候能很好的区分出这个类是属于`表现层`、`业务层`还是`数据层`的类。
+
+### 纯注解开发模式
+
+上面已经可以使用注解来配置bean,但是依然有用到配置文件，在配置文件中对包进行了扫描，Spring在3.0
+
+版已经支持纯注解开发，使用Java类替代配置文件，开启了Spring快速开发赛道，那么具体如何实现?
+
+#### 思路分析
+
+实现思路为：
+
+- 将配置文件applicationContext.xml删掉，用类来替换
+
+#### 实现步骤
+
+- `步骤一：`创建配置类
+- 创建一个配置类SpringConfig
+
+```java
+public class SpringConfig {
+}
+```
+
+`步骤二：`标识该类为配置类
+
+在配置类上面加一个`@Configuration`注解，将其标识为一个配置类，用于替换掉`applicationContext.XML`
+
+```java
+@Configuration
+public class SpringConfig {
+}
+```
+
+`步骤三：`用注解替换包扫描配置
+
+在配置类上添加包扫描注解`@ComponentScan`替换`<context:component-scan base-package=""/>`
+
+```java
+@Configuration
+@ComponentScan("com.blog")
+public class SpringConfig {
+}
+```
+
+`步骤四：`创建运行类并执行
+
+创建一个新的运行类`AppForAnnotation`
+
+```java
+public class AppForAnnotation {
+    public static void main(String[] args) {
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SpringConfig.class);
+        BookDao bookDao = (BookDao) context.getBean("bookDao");
+        bookDao.save();
+        BookService bookService = context.getBean(BookService.class);
+        bookService.save();
+    }
+}
+```
+
+运行AppForAnnotation,可以看到两个对象依然被获取成功
+
+```java
+book dao save …
+book service save …
+```
+
+至此，纯注解开发的方式就已经完成了，主要内容包括：
+
+- Java类替换Spring核心配置文件
+  - `@Configuration`注解用于设定当前类为配置类
+  - `@ComponentScan`注解用于设定扫描路径，此注解只能添加一次，多个数据请用数组格式
+
+```java
+@ComponentScan({com.blog.service","com.blog.dao"})
+```
+
+读取Spring核心配置文件初始化容器对象切换为读取Java配置类初始化容器对象
+
+```java
+AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SpringConfig.class);
+```
+
+- 知识点：`@Configuration`
+
+| 名称 |       @Configuration        |
+| :--: | :-------------------------: |
+| 类型 |           类注解            |
+| 位置 |         类定义上方          |
+| 作用 |   设置该类为spring配置类    |
+| 属性 | value（默认）：定义bean的id |
+
+- 知识点：`@ComponentScan`
+
+| 名称 |                      @ComponentScan                      |
+| :--: | :------------------------------------------------------: |
+| 类型 |                          类注解                          |
+| 位置 |                        类定义上方                        |
+| 作用 | 设置spring配置类扫描路径，用于加载使用注解格式定义的bean |
+| 属性 |     value（默认）：扫描路径，此路径可以逐层向下扫描      |
+
+#### 小结
+
+这部分要重点掌握的是使用注解完成Spring的bean管理，需要掌握的内容为:
+
+- 记住`@Component`、`@Controller`、`@Service`、`@Repository`这四个注解
+- applicationContext.xml中`<context:component-san/>`的作用是指定扫描包路径，注解为`@ComponentScan`
+- `@Configuration`标识该类为配置类，使用类替换`applicationContext.xml`文件
+- `ClassPathXmlApplicationContext`是加载XML配置文件
+- `AnnotationConfigApplicationContext`是加载配置类
+
+### 注解开发依赖注入
+
+Spring为了使用注解简化开发，并没有提供`构造函数注入`、`setter注入`对应的注解，只提供了自动装配的注解实现。
+
+#### 环境准备
+
+- 创建一个Maven项目
+
+- pom.xml添加Spring的依赖
+
+  ```xml
+  <dependencies>
+      <dependency>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-context</artifactId>
+          <version>5.2.10.RELEASE</version>
+      </dependency>
+  </dependencies>
+  ```
+
+- 添加一个配置类`SpringConfig`
+
+  ```java
+  @Configuration
+  @ComponentScan("com.blog")
+  public class SpringConfig {
+  }
+  ```
+
+- 添加BookDao、BookDaoImpl、BookService、BookServiceImpl类
+
+```java
+public interface BookDao {
+    public void save();
+}
+@Repository
+public class BookDaoImpl implements BookDao {
+    public void save() {
+        System.out.println("book dao save ..." );
+    }
+}
+public interface BookService {
+    public void save();
+}
+@Service
+public class BookServiceImpl implements BookService {
+    private BookDao bookDao;
+    public void setBookDao(BookDao bookDao) {
+        this.bookDao = bookDao;
+    }
+    public void save() {
+        System.out.println("book service save ...");
+        bookDao.save();
+    }
+}
+```
+
+创建运行类AppForAnnotation
+
+```java
+public class App {
+    public static void main(String[] args) {
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(SpringConfig.class);
+        BookService bookService = ctx.getBean(BookService.class);
+        bookService.save();
+    }
+}
+```
+
+- 环境准备好后，直接运行App类会有问题，因为还没有提供配置注入BookDao的，所以bookDao对象为Null,调用其save方法就会报`控指针异常`。
+
+#### 注解实现按照类型注入
+
+对于这个问题使用注解该如何解决?
+
+- 在BookServiceImpl类的bookDao属性上添加`@Autowired`注解
+
+```java
+@Service
+public class BookServiceImpl implements BookService {
+    @Autowired
+    private BookDao bookDao;
+
+//    public void setBookDao(BookDao bookDao) {
+//        this.bookDao = bookDao;
+//    }
+
+    public void save() {
+        System.out.println("book service save ...");
+        bookDao.save();
+    }
+}
+```
+
+>**注意:**
+>
+>- `@Autowired`可以写在属性上，也可也写在setter方法上，最简单的处理方式是`写在属性上并将setter方法删除掉`
+>- 为什么setter方法可以删除呢?
+>  - 自动装配基于反射设计创建对象并通过`暴力反射`为私有属性进行设值
+>  - 普通反射只能获取public修饰的内容
+>  - 暴力反射除了获取public修饰的内容还可以获取private修改的内容
+>  - 所以此处无需提供setter方法
+
+`@Autowired`是按照类型注入，那么对应BookDao接口如果有多个实现类，比如添加BookDaoImpl2
+
+```java
+@Repository
+public class BookDaoImpl2 implements BookDao {
+    public void save() {
+        System.out.println("book dao save ...2");
+    }
+}
+```
+
+- 这个时候再次运行App，就会报错`NoUniqueBeanDefinitionException`
+  此时，按照类型注入就无法区分到底注入哪个对象，解决方案:`按照名称注入`
+- 先给两个Dao类分别起个名称
+
+```java
+@Repository("bookDao")
+public class BookDaoImpl implements BookDao {
+    public void save() {
+        System.out.println("book dao save ..." );
+    }
+}
+@Repository("bookDao2")
+public class BookDaoImpl2 implements BookDao {
+    public void save() {
+        System.out.println("book dao save ...2" );
+    }
+}
+```
+
+此时就可以注入成功，但是得思考个问题:
+
+- @Autowired是按照类型注入的，给BookDao的两个实现起了名称，它还是有两个bean对象，为什么不报错?
+- @Autowired默认按照类型自动装配，如果IOC容器中同类的Bean找到多个，就按照变量名和Bean的名称匹配。因为变量名叫`bookDao`而容器中也有一个`booDao`，所以可以成功注入。
+- 那下面这种情况可以成功注入吗
+
+```java
+@Repository("bookDao1")
+public class BookDaoImpl implements BookDao {
+    public void save() {
+        System.out.println("book dao save ..." );
+    }
+}
+@Repository("bookDao2")
+public class BookDaoImpl2 implements BookDao {
+    public void save() {
+        System.out.println("book dao save ...2" );
+    }
+}
+```
+
+还是不行的，因为按照类型会找到多个bean对象，此时会按照`bookDao`名称去找，因为IOC容器只有名称叫`bookDao1`和`bookDao2`，所以找不到，会报`NoUniqueBeanDefinitionException`
+
+#### 注解实现按照名称注入
+
+当根据类型在容器中找到多个bean,注入参数的属性名又和容器中bean的名称不一致，这个时候该如何解
+
+决，就需要使用到`@Qualifier`来指定注入哪个名称的bean对象。`@Qualifier`注解后的值就是需要注入的
+
+bean的名称。
+
+```java
+@Service
+public class BookServiceImpl implements BookService {
+    @Autowired
+    @Qualifier("bookDao1")
+    private BookDao bookDao;
+    
+    public void save() {
+        System.out.println("book service save ...");
+        bookDao.save();
+    }
+}
+```
+
+>注意:@Qualifier不能独立使用，必须和@Autowired一起使用
+
+#### 简单数据类型注入
+
+引用类型看完，简单类型注入就比较容易懂了。简单类型注入的是基本数据类型或者字符串类型，下面在
+
+`BookDaoImpl`类中添加一个`name`属性，用其进行简单类型注入
+
+```java
+@Repository
+public class BookDaoImpl implements BookDao {
+    private String name;
+    public void save() {
+        System.out.println("book dao save ..." + name);
+    }
+}
+```
+
+数据类型换了，对应的注解也要跟着换，这次使用`@Value`注解，将值写入注解的参数中就行了
+
+```java
+@Repository
+public class BookDaoImpl implements BookDao {
+    @Value("Stephen")
+    private String name;
+    public void save() {
+        System.out.println("book dao save ..." + name);
+    }
+}
+```
+
+注意数据格式要匹配，如将”abc”注入给int值，这样程序就会报错。
+
+介绍完后，会有一种感觉就是这个注解好像没什么用，跟直接赋值是一个效果，还没有直接赋值简单，所
+
+以这个注解存在的意义是什么?继续往下看
+
+#### 注解读取properties配置文件
+
+`@Value`一般会被用在从properties配置文件中读取内容进行使用，具体如何实现?
+
+`步骤一：`在resource下准备一个properties文件
+
+```properties
+name=Stephen
+```
+
+`步骤二：`使用注解加载properties配置文件
+
+在配置类上添加`@PropertySource`注解
+
+```java
+@Configuration
+@ComponentScan("com.blog")
+@PropertySource("jdbc.properties")
+public class SpringConfig {
+}
+```
+
+`步骤三：`使用@Value读取配置文件中的内容
+
+```java
+@Repository
+public class BookDaoImpl implements BookDao {
+    @Value("${name}")
+    private String name;
+    public void save() {
+        System.out.println("book dao save ..." + name);
+    }
+}
+```
+
+- `步骤四：`运行程序
+
+- 运行App类，查看运行结果，说明配置文件中的内容已经被加载
+
+  > book service save …
+  > book dao save …Stephen
+
+**注意:**
+
+- 如果读取的properties配置文件有多个，可以使用@PropertySource的属性来指定多个
+
+  ```java
+  @PropertySource({"jdbc.properties","xxx.properties"})
+  ```
+
+- ```java
+  @PropertySource
+  ```
+
+  注解属性中不支持使用通配符*,运行会报错
+
+  ```java
+  @PropertySource({"*.properties"})
+  ```
+
+  @PropertySource注解属性中可以把classpath:加上,代表从当前项目的根路径找文件
+
+  ```java
+  @PropertySource({"classpath:jdbc.properties"})
+  ```
+
+知识点1：`@Autowired`
+
+| 名称 |                          @Autowired                          |
+| :--: | :----------------------------------------------------------: |
+| 类型 |     属性注解 或 方法注解（了解） 或 方法形参注解（了解）     |
+| 位置 | 属性定义上方 或 标准set方法上方 或 类set方法上方 或 方法形参前面 |
+| 作用 |                     为引用类型属性设置值                     |
+| 属性 |        required：true/false，定义该属性是否允许为null        |
+
+知识点2：`@Qualifier`
+
+| 名称 |                    @Qualifier                    |
+| :--: | :----------------------------------------------: |
+| 类型 |           属性注解 或 方法注解（了解）           |
+| 位置 | 属性定义上方 或 标准set方法上方 或 类set方法上方 |
+| 作用 |          为引用类型属性指定注入的beanId          |
+| 属性 |         value（默认）：设置注入的beanId          |
+
+知识点3：`@Value`
+
+| 名称 |                      @Value                      |
+| :--: | :----------------------------------------------: |
+| 类型 |           属性注解 或 方法注解（了解）           |
+| 位置 | 属性定义上方 或 标准set方法上方 或 类set方法上方 |
+| 作用 |     为 基本数据类型 或 字符串类型 属性设置值     |
+| 属性 |          value（默认）：要注入的属性值           |
+
+知识点4：`@PropertySource`
+
+| 名称 |                       @PropertySource                        |
+| :--: | :----------------------------------------------------------: |
+| 类型 |                            类注解                            |
+| 位置 |                          类定义上方                          |
+| 作用 |                 加载properties文件中的属性值                 |
+| 属性 | value（默认）：设置加载的properties文件对应的文件名或文件名组成的数组 |
+
+## 注解开发总结
+
+![image-20241029172823809](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241029172823809.png)
 
 
 
