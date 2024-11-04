@@ -642,6 +642,7 @@ public class App {
   > 错误大概的意思是:`空的返回不匹配原始方法的int返回`
 
 - void就是返回Null
+  
   - 原始方法的返回值是BookDao下的select方法
 - 所以如果我们使用环绕通知的话，要根据原始方法的返回值来设置环绕通知的返回值，具体解决方案为:
 
@@ -705,7 +706,7 @@ INSERT INTO tbl_account(`name`,money) VALUES
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
-      <version>6.1.14</version>
+      <version>5.2.10.RELEASE</version>
     </dependency>
     <dependency>
       <groupId>com.alibaba</groupId>
@@ -734,26 +735,28 @@ INSERT INTO tbl_account(`name`,money) VALUES
 `步骤四：`创建Dao接口（在之前是Mapper接口，且要配置一个对应的xml文件，不过这里没涉及到复杂的sql语句，所以没配置xml文件，采用注解开发）
 
 ```java
-public interface AccountDao {
-
-    @Insert("insert into tbl_account(name, money) VALUES (#{name}, #{money})")
-    void save(Account account);
-
-    @Delete("delete from tbl_account where id = #{id}")
-    void delete(Integer id);
-
-    @Update("update tbl_account set `name` = #{name}, money = #{money}")
-    void update(Account account);
-
-    @Select("select * from tbl_account")
-    List<Account> findAll();
-
-    @Select("select * from tbl_account where id = #{id}")
-    Account findById(Integer id);
+public interface TAdminDao {
+    @Select("select * from t_admin where is_delete = 0")
+    List<TAdmin> selectAll();
 }
 ```
 
 `步骤五：`创建Service接口和实现类
+
+```java
+public interface TAdminService {
+    List<TAdmin> selectAll();
+}
+@Service
+public class TAdminServiceImpl implements TAdminService {
+    @Autowired
+    private TAdminDao tAdminDao;
+    @Override
+    public List<TAdmin> selectAll() {
+        return tAdminDao.selectAll();
+    }
+}
+```
 
 `步骤六：`添加jdbc.properties文件
 
@@ -767,34 +770,36 @@ jdbc.password=123456
 `步骤七：`添加Mybatis核心配置文件
 
 ```java
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE configuration
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+        "https://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
-    <!--读取外部properties配置文件-->
-    <properties resource="jdbc.properties"></properties>
-    <!--别名扫描的包路径-->
-    <typeAliases>
-        <package name="com.blog.domain"/>
-    </typeAliases>
-    <!--数据源-->
-    <environments default="mysql">
-        <environment id="mysql">
-            <transactionManager type="JDBC"></transactionManager>
+    <properties resource="jdbc.properties"/>
+<!--    <settings>-->
+<!--        &lt;!&ndash;如果字段名有下划线，那就会自动转换成驼峰命名&ndash;&gt;-->
+<!--        <setting name="mapUnderscoreToCamelCase" value="true"/>-->
+<!--    </settings>-->
+    <settings>
+        <setting name="lazyLoadingEnabled" value="true"/>
+    </settings>
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
             <dataSource type="POOLED">
-                <property name="driver" value="${jdbc.driver}"></property>
-                <property name="url" value="${jdbc.url}"></property>
-                <property name="username" value="${jdbc.username}"></property>
-                <property name="password" value="${jdbc.password}"></property>
+                <property name="driver" value="${jdbc.driver}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
             </dataSource>
         </environment>
     </environments>
-    <!--映射文件扫描包路径-->
     <mappers>
-        <package name="com.blog.dao"></package>
+<!--        <mapper resource=""></mapper>-->
+        <package name="cn.lanqiao"/>
     </mappers>
 </configuration>
+
 ```
 
 `步骤八：`编写应用程序
@@ -836,7 +841,7 @@ public class App {
 <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-jdbc</artifactId>
-      <version>6.1.14</version>
+      <version>5.2.10.RELEASE</version>
     </dependency>
     <dependency>
       <groupId>org.mybatis</groupId>
@@ -851,7 +856,7 @@ public class App {
 //配置类注解
 @Configuration
 //包扫描，主要扫描的是项目中的AccountServiceImpl类
-@ComponentScan("com.blog")
+@ComponentScan("cn.lanqiao")
 public class SpringConfig {
 }
 ```
@@ -860,7 +865,6 @@ public class SpringConfig {
 在配置类中完成数据源的创建
 
 ```java
-
 
 public class JdbcConfig {
     @Value("${jdbc.driver}")
@@ -889,8 +893,8 @@ public class JdbcConfig {
   ```java
   
   @Configuration
-  @ComponentScan("com.blog")
-  @PropertySource("jdbc.properties")
+  @ComponentScan("cn.lanqiao")
+  @PropertySource("classpath:jdbc.properties")
   @Import(JdbcConfig.class)
   public class SpringConfig {
   }
@@ -907,7 +911,7 @@ public class JdbcConfig {
           //定义bean，SqlSessionFactoryBean，用于产生SqlSessionFactory对象
           SqlSessionFactoryBean sqlSessionFactory = new SqlSessionFactoryBean();
           //设置模型类的别名扫描
-          sqlSessionFactory.setTypeAliasesPackage("com.blog.domain");
+          sqlSessionFactory.setTypeAliasesPackage("cn.lanqiao.pojo");
           //设置数据源
           sqlSessionFactory.setDataSource(dataSource);
           return sqlSessionFactory;
@@ -916,7 +920,7 @@ public class JdbcConfig {
       @Bean
       public MapperScannerConfigurer mapperScannerConfigurer() {
           MapperScannerConfigurer msc = new MapperScannerConfigurer();
-          msc.setBasePackage("com.blog.dao");
+          msc.setBasePackage("cn.lanqiao.dao");
           return msc;
       }
   }
@@ -925,12 +929,11 @@ public class JdbcConfig {
 - `sqlSessionFactory.setTypeAliasesPackage("com.blog.domain");`，替换掉配置文件中的
 
   ```xml
-  
   <typeAliases>
       <package name="com.blog.domain"/>
   </typeAliases>
   ```
-
+  
 - `sqlSessionFactory.setDataSource(dataSource);`，替换掉配置文件中的
 
 ```xml
@@ -950,11 +953,12 @@ public class JdbcConfig {
 - `步骤六：`主配置类中引入Mybatis配置类
 
   ```java
-  
+  //配置类注解
   @Configuration
-  @ComponentScan("com.blog")
-  @PropertySource("jdbc.properties")
-  @Import({JdbcConfig.class, MyBatisConfig.class})
+  //包扫描，主要扫描的是项目中的AccountServiceImpl类
+  @ComponentScan("cn.lanqiao")
+  @PropertySource("classpath:jdbc.properties")
+  @Import({JdbcConfig.class,MybatisConfig.class})
   public class SpringConfig {
   }
   ```
