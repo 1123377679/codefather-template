@@ -990,13 +990,104 @@ public class JdbcConfig {
 
 2)通知类型选择前后均可以得到增强的类型--**环绕通知**
 
+### 功能开发
 
+`步骤一：`开启SpringAOP的注解功能
+在Spring的主配置文件SpringConfig类中添加注解
 
+```java
 
+@EnableAspectJAutoProxy
+```
 
+- `步骤二：`创建AOP的通知类
 
+- 该类要被Spring管理，需要添加`@Component`
+- 要标识该类是一个AOP的切面类，需要添加`@Aspect`
+- 配置切入点表达式，需要添加一个方法，并添加`@Pointcut`
 
+```java
+@Component
+@Aspect
+public class ProjectAdvice {
+    @Pointcut("execution(* com.blog.service.*Service.*(..))")
+    public void servicePt() {
+    }
 
+    public void runSpeed() {
+
+    }
+}
+```
+
+`步骤三：`添加环绕通知
+
+在runSpeed()方法上添加@Around
+
+```java
+@Component
+@Aspect
+public class ProjectAdvice {
+    @Pointcut("execution(* com.blog.service.*Service.*(..))")
+    public void servicePt() {
+    }
+
+    @Around("servicePt()")
+    public Object runSpeed(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+
+        Object res = proceedingJoinPoint.proceed();
+        return res;
+    }
+}
+```
+
+`步骤四：`完成核心业务，记录万次执行的时间
+
+```java
+@Component
+@Aspect
+public class ProjectAdvice {
+    @Pointcut("execution(* com.blog.service.*Service.*(..))")
+    public void servicePt() {
+    }
+
+    @Around("servicePt()")
+    public void runSpeed(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 10000; i++) {
+            proceedingJoinPoint.proceed();
+        }
+        long end = System.currentTimeMillis();
+        System.out.println("业务层接口万次执行时间: " + (end - start) + "ms");
+    }
+}
+```
+
+`步骤五：`运行单元测试类
+
+`步骤六：` 程序优化
+目前还存在一个问题，当我们一次执行多个方法时，控制台输出的都是`业务层接口万次执行时间: XXXms`
+我们无法得知具体哪个方法的耗时，那么该如何优化呢？
+ProceedingJoinPoint中有一个getSignature()方法来获取签名，然后调用`getDeclaringTypeName`可以获取类名，`getName()`可以获取方法名
+
+```java
+@Around("servicePt()")
+public void runSpeed(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+    Signature signature = proceedingJoinPoint.getSignature();
+    String typeName = signature.getDeclaringTypeName();
+    String methodName = signature.getName();
+    long start = System.currentTimeMillis();
+    for (int i = 0; i < 10000; i++) {
+        proceedingJoinPoint.proceed();
+    }
+    long end = System.currentTimeMillis();
+    System.out.println("万次执行 " + typeName + "." + methodName + " 耗时" + (end - start) + "ms");
+}
+```
+
+>说明
+>当前测试的接口执行效率仅仅是一个理论值，并不是一次完整的执行过程。
+>这块只是通过该案例把AOP的使用进行了学习，具体的实际值是有很多因素共同决定的。
 
 
 
