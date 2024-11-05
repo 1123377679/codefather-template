@@ -1,6 +1,6 @@
 # SpringMVC
 
-SpringMVC是隶属于Spring框架的一部分，主要是用来进行Web开发，是对Servlet进行了封装。
+SpringMVC是隶属于Spring框架的一部分，主要是用来进行Web开发，是对Servlet进行了封装。111
 
 SpringMVC是处于Web层的框架，所以其主要作用就是用来接收前段发过来的请求和数据，然后经过处理之后将处理结果响应给前端，所以如何处理情趣和响应是SpringMVC中非常重要的一块内容。
 
