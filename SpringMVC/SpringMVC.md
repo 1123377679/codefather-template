@@ -287,11 +287,12 @@ protected String[] getServletMappings() {
 2. web容器发现该请求满足SpringMVC拦截规则，将请求交给SpringMVC处理
 3. 解析请求路径/save
 4. 由/save匹配执行对应的方法save()
+   
    - 上面的第5步已经将请求路径和方法建立了对应关系，通过`/save`就能找到对应的`save()`方法
 5. 执行`save()`
 6. 检测到有`@ResponseBody`直接将`save()`方法的返回值作为响应体返回给请求方
-7. 继续
-8. 
+
+   
 
 
 
