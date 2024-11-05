@@ -6,6 +6,7 @@ export default [
         children: [
             "SpringAOP.md",
             "SpringIOC.md",
+            "SpringMVC.md",
         ],
     },
 ];
