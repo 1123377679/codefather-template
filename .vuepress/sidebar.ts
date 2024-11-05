@@ -8,7 +8,6 @@ import JavaWebSideBar from "./sidebars/JavaWebSideBar";
 import mybatisSideBar from "./sidebars/mybatisSideBar";
 import BackEndProject from "./sidebars/BackEndProject";
 import SpringSideBar from "./sidebars/SpringSideBar";
-import SpringMVC from "./sidebars/SpringMVC";
 // @ts-ignore
 export default {
     "/Java基础/": JavaSideBar,
@@ -19,7 +18,6 @@ export default {
     "/Mybatis/": mybatisSideBar,
     "/后端项目/": BackEndProject,
     "/Spring/": SpringSideBar,
-    "/SpringMVC/": SpringMVC,
     // 降级，默认根据文章标题渲染侧边栏
     "/": "auto",
 } as SidebarConfig4Multiple;
