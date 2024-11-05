@@ -290,6 +290,8 @@ protected String[] getServletMappings() {
    - 上面的第5步已经将请求路径和方法建立了对应关系，通过`/save`就能找到对应的`save()`方法
 5. 执行`save()`
 6. 检测到有`@ResponseBody`直接将`save()`方法的返回值作为响应体返回给请求方
+7. 继续
+8. 
 
 
 
