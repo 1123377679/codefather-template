@@ -562,11 +562,284 @@ public class ServletContainerInitConfig extends AbstractAnnotationConfigDispatch
 
 ![image-20241105191944967](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241105191944967.png)
 
+## 请求与响应
+
+前面我们已经完成了入门案例相关的知识学习，接来了我们就需要针对SpringMVC相关的知识点进行系统的学习。
+SpringMVC是web层的框架，主要的作用是接收请求、接收数据、响应结果。
+
+所以这部分是学习SpringMVC的重点内容，这里主要会讲解四部分内容:
+
+- 请求映射路径
+- 请求参数
+- 日期类型参数传递
+- 响应JSON数据
+
+### 设置请求映射路径
+
+#### 环境准备
+
+- 创建一个Maven项目
+- 导入坐标
+  这里暂时只导`servlet`和`springmvc`的就行
+
+```xml
+<!--servlet-->
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <version>3.1.0</version>
+    <scope>provided</scope>
+</dependency>
+<!--springmvc-->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-webmvc</artifactId>
+    <version>5.2.10.RELEASE</version>
+</dependency>
+```
+
+编写UserController和BookController
+
+```java
+@Controller
+public class UserController {
+
+    @RequestMapping("/save")
+    @ResponseBody
+    public String save(){
+        System.out.println("user save ..");
+        return "{'module':'user save'}";
+    }
+
+    @RequestMapping("/delete")
+    @ResponseBody
+    public String delete(){
+        System.out.println("user delete ..");
+        return "{'module':'user delete'}";
+    }
+}
+
+@Controller
+public class UserController {
+
+    @RequestMapping("/save")
+    @ResponseBody
+    public String save(){
+        System.out.println("user save ..");
+        return "{'module':'user save'}";
+    }
+
+    @RequestMapping("/delete")
+    @ResponseBody
+    public String delete(){
+        System.out.println("user delete ..");
+        return "{'module':'user delete'}";
+    }
+}
+```
+
+创建`SpringMvcConfig`配置类
+
+```java
+@Configuration
+@ComponentScan("com.blog.controller")
+public class SpringMvcConfig {
+}
+```
+
+创建`ServletContainersInitConfig`类，初始化web容器
+
+```java
+public class ServletContainersInitConfig extends AbstractAnnotationConfigDispatcherServletInitializer {
+    protected Class<?>[] getRootConfigClasses() {
+        return new Class[0];
+    }
+
+    protected Class<?>[] getServletConfigClasses() {
+        return new Class[]{SpringMvcConfig.class};
+    }
+
+    protected String[] getServletMappings() {
+        return new String[]{"/"};
+    }
+}
+```
+
+直接启动Tomcat服务器，会报错
+
+>com.blog.controller.UserController#save()
+>to { /save}: There is already ‘bookController’ bean method
+>com.blog.controller.BookController#save() mapped.
+
+从错误信息可以看出:
+
+- `UserController`有一个save方法，访问路径为`http://localhost/save`
+- `BookController`也有一个save方法，访问路径为`http://localhost/save`
+- 当访问`http://localhost/save`的时候，到底是访问`UserController`还是`BookController`?
+
+#### 问题分析
+
+团队多人开发，每人设置不同的请求路径，冲突问题该如何解决?
+
+- 解决思路:为不同模块设置模块名作为请求路径前置
+  - 对于Book模块的save,将其访问路径设置`http://localhost/book/save`
+  - 对于User模块的save,将其访问路径设置`http://localhost/user/save`
+
+这样在同一个模块中出现命名冲突的情况就比较少了。
+
+#### 设置映射路径
+
+- 修改Controller
+
+```java
+@Controller
+@RequestMapping("/user")
+public class UserController {
+
+    @RequestMapping("/save")
+    @ResponseBody
+    public String save(){
+        System.out.println("user save ..");
+        return "{'module':'user save'}";
+    }
+
+    @RequestMapping("/delete")
+    @ResponseBody
+    public String delete(){
+        System.out.println("user delete ..");
+        return "{'module':'user delete'}";
+    }
+}
+@Controller
+@RequestMapping("/user")
+public class UserController {
+
+    @RequestMapping("/save")
+    @ResponseBody
+    public String save(){
+        System.out.println("user save ..");
+        return "{'module':'user save'}";
+    }
+
+    @RequestMapping("/delete")
+    @ResponseBody
+    public String delete(){
+        System.out.println("user delete ..");
+        return "{'module':'user delete'}";
+    }
+}
+```
+
+>注意:
+>
+>- 当类上和方法上都添加了`@RequestMapping`注解，前端发送请求的时候，要和两个注解的value值相加匹配才能访问到。
+>- `@RequestMapping`注解value属性前面加不加`/`都可以
+
+### 请求参数
+
+请求路径设置好后，只要确保页面发送请求地址和后台Controller类中配置的路径一致，就可以接收到前端
+
+的请求，接收到请求后，如何接收页面传递的参数?
+
+关于请求参数的传递与接收是和请求方式有关系的，目前比较常见的两种请求方式为：
+
+- `GET`
+- `POST`
+
+针对于不同的请求前端如何发送，后端如何接收?
+
+#### GET发送单个参数
+
+- 启动Tomcat服务器，发送请求与参数：http://localhost/commonParam?name=Jerry
+- 接收参数
+
+```java
+@Controller
+public class UserController {
+
+    @RequestMapping("/commonParam")
+    @ResponseBody
+    public String commonParam(String name){
+        System.out.println("普通参数传递name --> " + name);
+        return "{'module':'commonParam'}";
+    }
+}
+```
+
+注意get请求的key需与commonParam中的形参名一致
+
+控制台输出`普通参数传递name --> Jerry`
 
 
 
+#### GET发送多个参数
 
+- 发送请求与参数：`localhost:8080/user/commonParam?name=Jerry&age=18`
+- 接收参数
 
+```java
+@Controller
+@RequestMapping("/user")
+public class UserController {
+
+    @RequestMapping("/commonParam")
+    @ResponseBody
+    public String commonParam(String name,int age){
+        System.out.println("普通参数传递name --> " + name);
+        System.out.println("普通参数传递age --> " + age);
+        return "{'module':'commonParam'}";
+    }
+}
+```
+
+#### POST发送参数
+
+![image-20241106203554834](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241106203554834.png)
+
+接收参数
+和GET一致，不用做任何修改
+
+```java
+@Controller
+@RequestMapping("/user")
+public class UserController {
+
+    @RequestMapping("/commonParam")
+    @ResponseBody
+    public String commonParam(String name,int age){
+        System.out.println("普通参数传递name --> " + name);
+        System.out.println("普通参数传递age --> " + age);
+        return "{'module':'commonParam'}";
+    }
+}
+```
+
+- POST请求中文乱码
+  如果我们在发送post请求的时候，使用了中文，则会出现乱码
+
+```java
+public class ServletContainersInitConfig extends AbstractAnnotationConfigDispatcherServletInitializer {
+    protected Class<?>[] getRootConfigClasses() {
+        return new Class[0];
+    }
+
+    protected Class<?>[] getServletConfigClasses() {
+        return new Class[]{SpringMvcConfig.class};
+    }
+
+    protected String[] getServletMappings() {
+        return new String[]{"/"};
+    }
+
+    //处理乱码问题
+    @Override
+    protected Filter[] getServletFilters() {
+        CharacterEncodingFilter filter = new CharacterEncodingFilter();
+        filter.setEncoding("utf-8");
+        return new Filter[]{filter};
+    }
+}
+```
 
 
 
