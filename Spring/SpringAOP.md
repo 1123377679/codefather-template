@@ -155,7 +155,7 @@ public class BookDaoImpl implements BookDao {
 <dependency>
     <groupId>org.springframework</groupId>
     <artifactId>spring-context</artifactId>
-    <version>5.2.10.RELEASE</version>
+    <version>5.3.23</version>
 </dependency>
 ```
 
@@ -430,7 +430,7 @@ SpringAOP是在不改变原有设计(代码)的前提下对其进行增强的，
 <dependency>
     <groupId>org.springframework</groupId>
     <artifactId>spring-context</artifactId>
-    <version>5.2.10.RELEASE</version>
+    <version>5.3.23</version>
 </dependency>
 <dependency>
     <groupId>org.aspectj</groupId>
@@ -703,11 +703,11 @@ INSERT INTO tbl_account(`name`,money) VALUES
       <scope>test</scope>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.springframework/spring-context -->
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-      <version>5.2.10.RELEASE</version>
-    </dependency>
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-context</artifactId>
+    <version>5.3.23</version>
+</dependency>
     <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>druid</artifactId>
@@ -839,10 +839,10 @@ public class App {
 
 ```xml
 <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-jdbc</artifactId>
-      <version>5.2.10.RELEASE</version>
-    </dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-context</artifactId>
+    <version>5.3.23</version>
+</dependency>
     <dependency>
       <groupId>org.mybatis</groupId>
       <artifactId>mybatis-spring</artifactId>

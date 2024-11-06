@@ -69,11 +69,11 @@ IOC容器负责对象的创建、初始化等一系列工作，被创建或被�
 1.导入Spring坐标
 
 ```xml
-	<dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-context</artifactId>
-        <version>5.2.10.RELEASE</version>
-    </dependency>
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-context</artifactId>
+    <version>5.3.23</version>
+</dependency>
     <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
@@ -1685,13 +1685,11 @@ public class App {
 - pom.xml添加Spring的依赖
 
 ```xml
-<dependencies>
-    <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-context</artifactId>
-        <version>5.2.10.RELEASE</version>
-    </dependency>
-</dependencies>
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-context</artifactId>
+    <version>5.3.23</version>
+</dependency>
 ```
 
 resources下添加applicationContext.xml
@@ -1861,13 +1859,11 @@ Spring到底是如何简化代码开发的呢?
 - pom.xml添加Spring的依赖
 
 ```xml
-<dependencies>
-    <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-context</artifactId>
-        <version>5.2.10.RELEASE</version>
-    </dependency>
-</dependencies>
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-context</artifactId>
+    <version>5.3.23</version>
+</dependency>
 ```
 
 resources下添加applicationContext.xml
@@ -2137,15 +2133,13 @@ Spring为了使用注解简化开发，并没有提供`构造函数注入`、`se
 - pom.xml添加Spring的依赖
 
   ```xml
-  <dependencies>
-      <dependency>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-context</artifactId>
-          <version>5.2.10.RELEASE</version>
-      </dependency>
-  </dependencies>
+  <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <version>5.3.23</version>
+  </dependency>
   ```
-
+  
 - 添加一个配置类`SpringConfig`
 
   ```java

@@ -86,7 +86,7 @@ SpringMVC的制作过程和上述流程几乎是一致的，具体的实现流�
 <dependency>
     <groupId>org.springframework</groupId>
     <artifactId>spring-webmvc</artifactId>
-    <version>5.2.10.RELEASE</version>
+    <version>5.3.23</version>
 </dependency>
 ```
 
@@ -356,7 +356,7 @@ controller、service和dao这些类都需要被容器管理成bean对象，那�
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
-      <version>5.2.10.RELEASE</version>
+      <version>5.3.23</version>
     </dependency>
     <dependency>
       <groupId>com.alibaba</groupId>
@@ -388,7 +388,7 @@ controller、service和dao这些类都需要被容器管理成bean对象，那�
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-jdbc</artifactId>
-      <version>5.2.10.RELEASE</version>
+      <version>5.3.23</version>
     </dependency>
     <dependency>
       <groupId>org.mybatis</groupId>
