@@ -292,7 +292,285 @@ protected String[] getServletMappings() {
 5. 执行`save()`
 6. 检测到有`@ResponseBody`直接将`save()`方法的返回值作为响应体返回给请求方
 
-   
+## SpringMVC-bean加载控制
+
+### 问题分析
+
+入门案例的内容已经做完了，在入门案例中我们创建过一个`SpringMvcConfig`的配置类，在之前学习Spring的时候也创建过一个配置类`SpringConfig`。这两个配置类都需要加载资源，那么它们分别都需要加载哪些内容?
+
+我们先来回顾一下项目结构
+`com.blog`下有`config`、`controller`、`service`、`dao`这四个包
+
+config目录存入的是配置类，写过的配置类有:
+
+- ServletContainersInitConfig
+- SpringConfig
+- SpringMvcConfig
+- JdbcConfig
+- MybatisConfig
+
+- `controller`目录存放的是`SpringMVC`的`controller`类
+- `service`目录存放的是`service`接口和实现类
+- `dao`目录存放的是`dao/Mapper`接口
+
+controller、service和dao这些类都需要被容器管理成bean对象，那么到底是该让`SpringMVC`加载还是让`Spring`加载呢?
+
+- SpringMVC
+
+  控制的bean
+
+  - 表现层bean,也就是`controller`包下的类
+
+- Spring
+
+  控制的bean
+
+  - 业务bean(`Service`)
+  - 功能bean(`DataSource`,`SqlSessionFactoryBean`,`MapperScannerConfigurer`等)
+
+分析清楚谁该管哪些bean以后，接下来要解决的问题是如何让`Spring`和`SpringMVC`分开加载各自的内容。
+
+### 思路分析
+
+对于上面的问题，解决方案也比较简单
+
+- 加载Spring控制的bean的时候，`排除掉`SpringMVC控制的bean
+
+那么具体该如何实现呢？
+
+- 方式一：Spring加载的bean设定扫描范围`com.blog`，排除掉`controller`包内的bean
+- 方式二：Spring加载的bean设定扫描范围为精确扫描，具体到`service`包，`dao`包等
+- 方式三：不区分Spring与SpringMVC的环境，加载到同一个环境中(`了解即可`)
+
+### 环境准备
+
+在入门案例的基础上追加一些类来完成环境准备
+
+```xml
+<dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <version>5.2.10.RELEASE</version>
+    </dependency>
+    <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>druid</artifactId>
+      <version>1.1.16</version>
+    </dependency>
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>8.0.28</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mybatis</groupId>
+      <artifactId>mybatis</artifactId>
+      <version>3.5.7</version>
+    </dependency>
+    <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjweaver</artifactId>
+      <version>1.9.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.24</version>
+      <scope>provided</scope>
+    </dependency>
+<!--整合需要使用的jar包-->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jdbc</artifactId>
+      <version>5.2.10.RELEASE</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mybatis</groupId>
+      <artifactId>mybatis-spring</artifactId>
+      <version>1.3.0</version>
+    </dependency>
+```
+
+`com.blog.config`下新建`SpringConfig`类
+
+```java
+@Configuration
+@ComponentScan("com.blog")
+public class SpringConfig {
+}
+```
+
+新建`com.blog.service`，`com.blog.dao`，`com.blog.domain`包，并编写如下几个类
+
+```java
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class TAdmin implements Serializable {
+
+  private Integer id;
+  private String username;
+  private String password;
+  private String nickname;
+  private Integer isDelete;
+
+  public TAdmin(String username, String password) {
+    this.username = username;
+    this.password = password;
+  }
+
+  public TAdmin(String username, String password, String nickname) {
+    this.username = username;
+    this.password = password;
+    this.nickname = nickname;
+  }
+
+  public TAdmin(Integer id, String username, String password, String nickname) {
+    this.id = id;
+    this.username = username;
+    this.password = password;
+    this.nickname = nickname;
+  }
+}
+
+public interface TAdminDao {
+    @Select("select * from t_admin where is_delete = 0")
+    List<TAdmin> selectAll();
+}
+
+public interface TAdminService {
+    List<TAdmin> selectAll();
+}
+
+@Service
+public class TAdminServiceImpl implements TAdminService {
+    @Autowired
+    private TAdminDao tAdminDao;
+    @Override
+    public List<TAdmin> selectAll() {
+        List<TAdmin> tAdmins = tAdminDao.selectAll();
+        return tAdmins;
+    }
+}
+```
+
+编写App运行类
+
+```java
+public class App {
+    public static void main(String[] args) throws IOException {
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(SpringConfig.class);
+        TAdminService tAdminService = ctx.getBean(TAdminService.class);
+        List<TAdmin> tAdmins = tAdminService.selectAll();
+        System.out.println(tAdmins);
+    }
+}
+```
+
+### 设置Bean加载控制
+
+运行App运行类，如果Spring配置类扫描到了UserController类，则会正常输出，否则将报错
+
+当前配置环境下，将正常输出
+
+- 解决方案一：修改Spring配置类，设定扫描范围为精准范围
+
+  ```java
+  
+  @Configuration
+  @ComponentScan({"com.blog.dao","com.blog.service"})
+  public class SpringConfig {
+  }
+  ```
+
+  再次运行App运行类，报错`NoSuchBeanDefinitionException`，说明Spring配置类没有扫描到
+
+  UserController，目的达成
+
+最后一个问题，有了Spring的配置类，要想在tomcat服务器启动将其加载，我们需要修改
+
+ServletContainersInitConfig
+
+```java
+public class ServletContainerInitConfig extends AbstractDispatcherServletInitializer {
+    //加载SpringMvc配置
+    protected WebApplicationContext createServletApplicationContext() {
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        context.register(SpringMvcConfig.class);
+        return context;
+    }
+    //设置哪些请求归SpringMvc处理
+    protected String[] getServletMappings() {
+        return new String[]{"/"};
+    }
+
+    //加载Spring容器配置
+    protected WebApplicationContext createRootApplicationContext() {
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        context.register(SpringConfig.class);
+        return context;
+    }
+}
+```
+
+对于上面的`ServletContainerInitConfig`配置类，Spring还提供了一种更简单的配置方式，可以不用再去创
+
+建`AnnotationConfigWebApplicationContext`对象，不用手动`register`对应的配置类
+
+我们改用继承它的子类`AbstractAnnotationConfigDispatcherServletInitializer`，然后重写三个方法即可
+
+```java
+public class ServletContainerInitConfig extends AbstractAnnotationConfigDispatcherServletInitializer {
+
+    protected Class<?>[] getRootConfigClasses() {
+        return new Class[]{SpringConfig.class};
+    }
+
+    protected Class<?>[] getServletConfigClasses() {
+        return new Class[]{SpringMvcConfig.class};
+    }
+
+    protected String[] getServletMappings() {
+        return new String[]{"/"};
+    }
+}
+```
+
+## PostMan工具的使用
+
+- 官网下载：https://www.postman.com/downloads/
+
+### PostMan使用
+
+#### 创建WorkSpace工作空间
+
+![image-20241105191852631](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241105191852631.png)
+
+#### 发送请求
+
+![image-20241105191919873](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241105191919873.png)
+
+
+
+#### 保存当前请求
+
+![image-20241105191944967](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241105191944967.png)
+
+
+
+
+
+
+
+
+
+
 
 
 
