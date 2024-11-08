@@ -834,6 +834,155 @@ public class ServletContainersInitConfig extends AbstractAnnotationConfigDispatc
 }
 ```
 
+### 五种类型参数传递
+
+前面我们已经能够使用GET或POST来发送请求和数据，所携带的数据都是比较简单的数据，接下来在这个基础上，我们来研究一些比较复杂的参数传递，常见的参数种类有
+
+- 普通类型
+- POJO类型参数
+- 嵌套POJO类型参数
+- 数组类型参数
+- 集合类型参数
+
+#### 普通类型
+
+普通参数：url地址传参，地址参数名与形参变量名相同，定义形参即可接收参数。
+
+- 发送请求与参数：`localhost:8080/user/commonParam?name=Helsing&age=1024`
+- 后台接收参数
+
+```java
+@Controller
+@RequestMapping("/user")
+public class UserController {
+
+    @RequestMapping("/commonParam")
+    @ResponseBody
+    public String commonParam(String name,int age){
+        System.out.println("普通参数传递name --> " + name);
+        System.out.println("普通参数传递age --> " + age);
+        return "{'module':'commonParam'}";
+    }
+}
+```
+
+如果形参与地址参数名不一致该如何解决?例如地址参数名为`username`，而形参变量名为`name`，因为前端给的是`username`，后台接收使用的是`name`,两个名称对不上，会导致接收数据失败
+
+- 解决方案：使用@RequestParam注解
+  - 发送请求与参数：`localhost:8080/user/commonParam?username=Helsing&age=1024`
+  - 后台接收参数
+
+```java
+@Controller
+@RequestMapping("/user")
+public class UserController {
+
+    @RequestMapping("/commonParam")
+    @ResponseBody
+    public String commonParam(@RequestParam("username") String name, int age){
+        System.out.println("普通参数传递name --> " + name);
+        System.out.println("普通参数传递age --> " + age);
+        return "{'module':'commonParam'}";
+    }
+}
+```
+
+#### POJO数据类型
+
+简单数据类型一般处理的是参数个数比较少的请求，如果参数比较多，那么后台接收参数的时候就比较复杂，这个时候我们可以考虑使用POJO数据类型。
+
+- POJO参数：请求参数名与形参对象属性名相同，定义POJO类型形参即可接收参数
+
+- 发送请求和参数：`localhost:8080/user/pojoParam?name=Helsing&age=1024`
+- 后台接收参数
+
+```java
+//POJO参数：请求参数与形参对象中的属性对应即可完成参数传递
+@RequestMapping("/pojoParam")
+@ResponseBody
+public String pojoParam(User user){
+    System.out.println("POJO参数传递user --> " + user);
+    return "{'module':'pojo param'}";
+}
+```
+
+#### 嵌套POJO类型
+
+- 嵌套POJO参数：请求参数名与形参对象属性名相同，按照对象层次结构关系即可接收嵌套POJO属性参数
+- 发送请求和参数：`localhost:8080/user/pojoParam?name=Helsing&age=1024&address.province=Beijing&address.city=Beijing`
+- 后台接收参数
+
+```java
+@RequestMapping("/pojoParam")
+@ResponseBody
+public String pojoParam(User user){
+    System.out.println("POJO参数传递user --> " + user);
+    return "{'module':'pojo param'}";
+}
+```
+
+#### 数组类型
+
+举个简单的例子，如果前端需要获取用户的爱好，爱好绝大多数情况下都是多选，如何发送请求数据和接收数据呢?
+
+- 数组参数：请求参数名与形参对象属性名相同且请求参数为多个，定义数组类型即可接收参数
+
+- 发送请求和参数：`localhost:8080/user/arrayParam?hobbies=sing&hobbies=jump&hobbies=rap&hobbies=basketball`
+- 后台接收参数
+
+```java
+@RequestMapping("/arrayParam")
+@ResponseBody
+public String arrayParam(String[] hobbies){
+    System.out.println("数组参数传递user --> " + Arrays.toString(hobbies));
+    return "{'module':'array param'}";
+}
+```
+
+#### 集合类型
+
+数组能接收多个值，那么集合是否也可以实现这个功能呢?
+
+- 发送请求和参数：`localhost:8080/user/listParam?hobbies=sing&hobbies=jump&hobbies=rap&hobbies=basketball`
+
+- 后台接收参数
+
+  ```java
+  @RequestMapping("/listParam")
+  @ResponseBody
+  public String listParam(List hobbies) {
+      System.out.println("集合参数传递user --> " + hobbies);
+      return "{'module':'list param'}";
+  }
+  ```
+
+>运行程序，报错`java.lang.IllegalArgumentException: Cannot generate variable name for non-typed Collection parameter type`
+
+- 错误原因：SpringMVC将List看做是一个POJO对象来处理，将其创建一个对象并准备把前端的数据封装到对象中，但是List是一个接口无法创建对象，所以报错。
+
+解决方案是：使用`@RequestParam`注解
+
+```java
+@RequestMapping("/listParam")
+@ResponseBody
+public String listParam(@RequestParam List hobbies) {
+    System.out.println("集合参数传递user --> " + hobbies);
+    return "{'module':'list param'}";
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
