@@ -711,21 +711,14 @@ public class UserController {
     }
 }
 @Controller
-@RequestMapping("/user")
-public class UserController {
+@RequestMapping("/book")
+public class BookController {
 
     @RequestMapping("/save")
     @ResponseBody
     public String save(){
-        System.out.println("user save ..");
-        return "{'module':'user save'}";
-    }
-
-    @RequestMapping("/delete")
-    @ResponseBody
-    public String delete(){
-        System.out.println("user delete ..");
-        return "{'module':'user delete'}";
+        System.out.println("book save ..");
+        return "{'module':'book save'}";
     }
 }
 ```
