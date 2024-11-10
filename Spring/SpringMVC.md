@@ -1,8 +1,8 @@
 # SpringMVC
 
-SpringMVC是隶属于Spring框架的一部分，主要是用来进行Web开发，是对Servlet进行了封装。111
+SpringMVC是隶属于Spring框架的一部分，主要是用来进行Web开发，是对Servlet进行了封装。
 
-SpringMVC是处于Web层的框架，所以其主要作用就是用来接收前段发过来的请求和数据，然后经过处理之后将处理结果响应给前端，所以如何处理情趣和响应是SpringMVC中非常重要的一块内容。
+SpringMVC是处于Web层的框架，所以其主要作用就是用来接收前端发过来的请求和数据，然后经过处理之后将处理结果响应给前端，所以如何处理请求和响应是SpringMVC中非常重要的一块内容。
 
 REST是一种软件架构风格，可以降低开发的复杂性，提高系统的可伸缩性，后期的应用也是非常广泛。
 
@@ -970,6 +970,807 @@ public String listParam(@RequestParam List hobbies) {
     return "{'module':'list param'}";
 }
 ```
+
+知识点：`@RequestParam`
+
+|   名称   |                   @RequestParam                   |
+| :------: | :-----------------------------------------------: |
+|   类型   |                     形参注解                      |
+|   位置   |          SpringMVC控制器方法形参定义前面          |
+|   作用   |       绑定请求参数与处理器方法形参间的关系        |
+| 相关参数 | required：是否为必传参数 defaultValue：参数默认值 |
+
+### JSON数据传输参数
+
+现在比较流行的开发方式为异步调用。前后台以异步方式进行交换，传输的数据使用的是JSON，所以前端如果发送的是JSON数据，后端该如何接收?
+
+对于JSON数据类型，我们常见的有三种:
+
+- json普通数组（[“value1”,”value2”,”value3”,…]）
+- json对象（{key1:value1,key2:value2,…}）
+- json对象数组（[{key1:value1,…},{key2:value2,…}]）
+
+下面我们就来学习以上三种数据类型，前端如何发送，后端如何接收
+
+#### JSON普通数组
+
+`步骤一：`导入坐标
+
+```java
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.9.0</version>
+</dependency>
+```
+
+`步骤二:`**开启SpringMVC注解支持**
+使用`@EnableWebMvc`，在SpringMVC的配置类中开启SpringMVC的注解支持，这里面就包含了将JSON转换成对象的功能。
+
+```java
+@Configuration
+@ComponentScan("com.blog.controller")
+//开启json数据类型自动转换
+@EnableWebMvc
+public class SpringMvcConfig {
+}
+```
+
+`步骤三：`PostMan发送JSON数据
+
+![image-20241110224812260](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241110224812260.png)
+
+`步骤四：`后台接收参数，参数前添加`@RequestBody`
+使用`@RequestBody`注解将外部传递的json数组数据映射到形参的集合对象中作为数据
+
+```java
+@RequestMapping("/jsonArrayParam")
+@ResponseBody
+public String jsonArrayParam(@RequestBody List<String> hobbies) {
+    System.out.println("JSON数组参数传递hobbies --> " + hobbies);
+    return "{'module':'json array param'}";
+}
+```
+
+#### JSON对象
+
+```json
+{
+    "name":"菲茨罗伊",
+    "age":"27",
+    "address":{
+        "city":"萨尔沃",
+        "province":"外域"
+    }
+}
+```
+
+接收请求和参数
+
+```java
+@RequestMapping("/jsonPojoParam")
+@ResponseBody
+public String jsonPojoParam(@RequestBody User user) {
+    System.out.println("JSON对象参数传递user --> " + user);
+    return "{'module':'json pojo param'}";
+}
+```
+
+#### JSON对象数组
+
+```json
+[
+    {
+        "name":"菲茨罗伊",
+        "age":"27",
+        "address":{
+            "city":"萨尔沃",
+            "province":"外域"
+        }
+    },
+    {
+        "name":"地平线",
+        "age":"136",
+        "address":{
+            "city":"奥林匹斯",
+            "province":"外域"
+        }
+    }
+]
+```
+
+```java
+@RequestMapping("/jsonPojoListParam")
+@ResponseBody
+public String jsonPojoListParam(@RequestBody List<User> users) {
+    System.out.println("JSON对象数组参数传递user --> " + users);
+    return "{'module':'json pojo list param'}";
+}
+```
+
+#### 小结
+
+SpringMVC接收JSON数据的实现步骤为:
+
+1. 导入jackson包
+2. 开启SpringMVC注解驱动，在配置类上添加`@EnableWebMvc`注解
+3. 使用PostMan发送JSON数据
+4. Controller方法的参数前添加`@RequestBody`注解
+
+知识点1：`@EnableWebMvc`
+
+| 名称 |       @EnableWebMvc       |
+| :--: | :-----------------------: |
+| 类型 |        配置类注解         |
+| 位置 |  SpringMVC配置类定义上方  |
+| 作用 | 开启SpringMVC多项辅助功能 |
+
+知识点2：`@RequestBody`
+
+| 名称 |                         @RequestBody                         |
+| :--: | :----------------------------------------------------------: |
+| 类型 |                           形参注解                           |
+| 位置 |               SpringMVC控制器方法形参定义前面                |
+| 作用 | 将请求中请求体所包含的数据传递给请求参数，此注解一个处理器方法只能使用一次 |
+
+`@RequestBody`与`@RequestParam`区别
+
+- 区别
+  - `@RequestParam`用于接收url地址传参，表单传参【application/x-www-form-urlencoded】
+  - `@RequestBody`用于接收json数据【application/json】
+- 应用
+  - 后期开发中，发送json格式数据为主，`@RequestBody`应用较广
+  - 如果发送非json格式数据，选用`@RequestParam`接收请求参数
+
+### 响应
+
+SpringMVC接收到请求和数据后，进行一些了的处理，当然这个处理可以是转发给Service，Service层再调
+
+用Dao层完成的，不管怎样，处理完以后，都需要将结果告知给用户。
+
+比如：根据用户ID查询用户信息、查询用户列表、新增用户等。
+
+对于响应，主要就包含两部分内容：
+
+- 响应页面
+- 响应数据
+  - 文本数据
+  - json数据
+
+因为异步调用是目前常用的主流方式，所以我们需要更关注的就是如何返回JSON数据，对于其他只需要认识了解即可。
+
+#### 响应JSON数据
+
+响应POJO对象
+
+```java
+@RequestMapping("toJsonPojo")
+@ResponseBody
+public User toJsonPojo(){
+    System.out.println("返回json对象数据");
+    User user = new User();
+    user.setName("Helsing");
+    user.setAge(9527);
+    return user;
+}
+```
+
+返回值为实体类对象，设置返回值为实体类类型，即可实现返回对应对象的json数据，需要依赖`@ResponseBody`注解和`@EnableWebMvc`注解
+
+访问`http://localhost:8080/toJsonPojo`，页面上成功出现JSON类型数据
+
+`HttpMessageConverter`接口帮我们实现了对象与JSON之间的转换工作，我们只需要在`SpringMvcConfig`配置类上加上`@EnableWebMvc`注解即可
+
+响应POJO集合对象
+
+```java
+@RequestMapping("toJsonList")
+@ResponseBody
+public List<User> toJsonList(){
+    List<User> users = new ArrayList<User>();
+
+    User user1 = new User();
+    user1.setName("马文");
+    user1.setAge(27);
+    users.add(user1);
+
+    User user2 = new User();
+    user2.setName("马武");
+    user2.setAge(28);
+    users.add(user2);
+
+    return users;
+}
+```
+
+说明:
+
+- 该注解可以写在类上或者方法上
+- 写在类上就是该类下的所有方法都有`@ReponseBody`功能
+- 当方法上有@ReponseBody注解后
+  - 方法的返回值为字符串，会将其作为文本内容直接响应给前端
+  - 方法的返回值为对象，会将对象转换成JSON响应给前端
+
+此处又使用到了类型转换，内部还是通过`HttpMessageConverter`接口完成的，所以`Converter`除了前面所说的功能外，它还可以实现:
+
+- 对象转Json数据(POJO -> json)
+- 集合转Json数据(Collection -> json)
+
+## REST风格
+
+### REST简介
+
+REST，表现形式状态转换，它是一种软件架构`风格`
+
+当我们想表示一个网络资源时，可以使用两种方式：
+
+- 传统风格资源描述形式
+  - `http://localhost/user/getById?id=1` 查询id为1的用户信息
+  - `http://localhost/user/saveUser` 保存用户信息
+- REST风格描述形式
+  - `http://localhost/user/1`
+  - `http://localhost/user`
+
+传统方式一般是一个请求url对应一种操作，这样做不仅麻烦，而且也不安全，通过请求的`URL`地址，就大
+
+致能推测出该`URL`实现的是什么操作
+
+反观REST风格的描述，请求地址变简洁了，而且只看请求`URL`并不很容易能猜出来该url的具体功能
+
+
+
+所以`REST`的优点有：
+
+- 隐藏资源的访问行为，无法通过地址得知该资源是何种操作
+- 书写简化
+
+那么问题也随之而来，一个相同的`URL`地址既可以是增加操作，也可以是修改或者查询，那么我们该如何区分该请求到底是什么操作呢？
+
+- 按照REST风格访问资源时，使用行为动作区分对资源进行了各种操作
+  - `http://localhost/users` 查询全部用户信息 `GET`（查询）
+  - `http://localhost/users/1` 查询指定用户信息 `GET`（查询）
+  - `http://localhost/users` 添加用户信息 `POST`（新增/保存）
+  - `http://localhost/users` 修改用户信息 `PUT`（修改/更新）
+  - `http://localhost/users/1` 删除用户信息 `DELETE`（删除）
+
+>注意：
+>
+>- 上述行为是约定方式，约定不是规范，约定可以打破，所以成为REST风格，而不是REST
+>
+>  规范
+>
+>  - REST提供了对应的架构方式，按照这种架构方式设计项目可以降低开发的复杂性，提高系统的可伸缩性
+>  - REST中规定`GET`/`POST`/`PUT`/`DELETE`针对的是查询/新增/修改/删除，但如果我们非要使用`GET`请求做删除，这点在程序上运行是可以实现的
+>  - 但是如果大多数人都遵循这种风格，你不遵循，那你写的代码在别人看来就有点莫名其妙了，所以最好还是遵循REST风格
+>
+>- 描述模块的名称通常使用复数，也就是加s的格式描述，表示此类的资源，而非单个的资源，例如`users`、`books`、`accounts`..
+
+搞清楚了什么是REST风格后，后面会经常提到一个概念叫`RESTful`，那么什么是`RESTful`呢？
+
+- 根据REST风格对资源进行访问称为`RESTful`
+
+在我们后期的开发过程中，大多数都是遵循`REST`风格来访问我们的后台服务。
+
+### RESTful入门案例
+
+- 新建一个web的maven项目
+- 导入坐标
+
+```java
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <version>3.1.0</version>
+    <scope>provided</scope>
+</dependency>
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-webmvc</artifactId>
+    <version>5.2.10.RELEASE</version>
+</dependency>
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.9.0</version>
+</dependency>
+```
+
+创建对应的配置类
+
+ServletContainersInitConfig
+
+```java
+public class ServletContainersInitConfig extends AbstractAnnotationConfigDispatcherServletInitializer {
+    protected Class<?>[] getRootConfigClasses() {
+        return new Class[0];
+    }
+
+    protected Class<?>[] getServletConfigClasses() {
+        return new Class[]{SpringMvcConfig.class};
+    }
+
+    protected String[] getServletMappings() {
+        return new String[]{"/"};
+    }
+
+    //乱码处理
+    @Override
+    protected Filter[] getServletFilters() {
+        CharacterEncodingFilter filter = new CharacterEncodingFilter();
+        filter.setEncoding("utf-8");
+        return new Filter[]{filter};
+    }
+}
+```
+
+SpringMvcConfig
+
+```java
+@Configuration
+@ComponentScan("com.blog.controller")
+//开启JSON数据类型自动转换
+@EnableWebMvc
+public class SpringMvcConfig {
+}
+```
+
+编写模型类User
+
+```java
+public class User {
+    private String name;
+    private int age;
+
+    public User() {
+    }
+
+    public User(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                '}';
+    }
+}
+```
+
+编写`UserController`
+
+```java
+@Controller
+public class UserController {
+    @RequestMapping("/save")
+    @ResponseBody
+    public String save(@RequestBody User user){
+        System.out.println("user save ..." + user);
+        return "{'module':'user save'}";
+    }
+    @RequestMapping("/delete")
+    @ResponseBody
+    public String delete(Integer id){
+        System.out.println("user delete ..." + id);
+        return "{'module':'user delete'}";
+    }
+    @RequestMapping("/update")
+    @ResponseBody
+    public String update(@RequestBody User user){
+        System.out.println("user update ..." + user);
+        return "{'module':'user update'}";
+    }
+    @RequestMapping("/getById")
+    @ResponseBody
+    public String getById(Integer id){
+        System.out.println("user getById ..." + id);
+        return "{'module':'user getById'}";
+    }
+    @RequestMapping("/getAll")
+    @ResponseBody
+    public String getAll(){
+        System.out.println("user getAll ...");
+        return "{'module':'user getAll'}";
+    }
+}
+```
+
+#### 思路分析
+
+需求:将之前的增删改查替换成`RESTful`的开发方式。
+
+1. 之前不同的请求有不同的路径,现在要将其修改为统一的请求路径
+   - 修改前: 新增：`/save`，修改: `/update`，删除 `/delete`..
+   - 修改后: 增删改查：`/users`
+2. 根据`GET`查询、`POST`新增、`PUT`修改、`DELETE`删除对方法的请求方式进行限定
+3. 发送请求的过程中如何设置请求参数?
+
+#### 修改RESTful风格
+
+**新增**
+
+将请求路径更改为`/users`，并设置当前请求方法为`POST`
+
+```java
+@RequestMapping(value = "/users", method = RequestMethod.POST)
+@ResponseBody
+public String save(@RequestBody User user) {
+    System.out.println("user save ..." + user);
+    return "{'module':'user save'}";
+}
+```
+
+使用method属性限定该方法的访问方式为`POST`，如果使用`GET`请求将报错
+
+发送POST请求与参数：
+
+```json
+{
+    "name":"菲茨罗伊",
+    "age":"27"
+}
+```
+
+**删除**
+
+将请求路径更改为`/users`，并设置当前请求方法为`DELETE`
+
+```java
+@RequestMapping(value = "/delete",method = RequestMethod.DELETE)
+@ResponseBody
+public String delete(Integer id){
+    System.out.println("user delete ..." + id);
+    return "{'module':'user delete'}";
+}
+```
+
+- 但是现在的删除方法没有携带所要删除数据的id，所以针对RESTful的开发，如何携带数据参数?
+
+- 修改@RequestMapping的value属性，将其中修改为`/users/{id}`，目的是和路径匹配
+- 在方法的形参前添加`@PathVariable`注解
+
+```java
+@RequestMapping(value = "/users/{id}",method = RequestMethod.DELETE)
+@ResponseBody
+public String delete(@PathVariable Integer id){
+    System.out.println("user delete ..." + id);
+    return "{'module':'user delete'}";
+}
+```
+
+**修改**
+
+将请求路径更改为`/users`，并设置当前请求方法为`PUT`
+
+```java
+@RequestMapping(value = "/users",method = RequestMethod.PUT)
+@ResponseBody
+public String update(@RequestBody User user){
+    System.out.println("user update ..." + user);
+    return "{'module':'user update'}";
+}
+```
+
+发送`PUT`请求`localhost:8080/users`，访问并携带参数
+
+```json
+{
+    "name":"菲茨罗伊",
+    "age":"27"
+}
+```
+
+**根据ID查询**
+
+将请求路径更改为`/users/{id}`，并设置当前请求方法为`GET`
+
+```java
+@RequestMapping(value = "/users/{id}",method = RequestMethod.GET)
+@ResponseBody
+public String getById(@PathVariable Integer id){
+    System.out.println("user getById ..." + id);
+    return "{'module':'user getById'}";
+}
+```
+
+发送`GET`请求访问`localhost:8080/users/2077`
+
+**查询所有**
+
+将请求路径更改为`/users`，并设置当前请求方法为`GET`
+
+```java
+@RequestMapping(value = "/users",method = RequestMethod.GET)
+@ResponseBody
+public String getAll(){
+    System.out.println("user getAll ...");
+    return "{'module':'user getAll'}";
+}
+```
+
+发送`GET`请求访问`localhost:8080/users`
+
+**总结代码**
+
+```java
+@Controller
+public class UserController {
+    @RequestMapping(value = "/users", method = RequestMethod.POST)
+    @ResponseBody
+    public String save(@RequestBody User user) {
+        System.out.println("user save ..." + user);
+        return "{'module':'user save'}";
+    }
+
+
+    @RequestMapping(value = "/users/{id}/{name}",method = RequestMethod.DELETE)
+    @ResponseBody
+    public String delete(@PathVariable("id") Integer userId,@PathVariable String name){
+        System.out.println("user delete ..." + userId + ":" + name);
+        return "{'module':'user delete'}";
+    }
+
+    @RequestMapping(value = "/users",method = RequestMethod.PUT)
+    @ResponseBody
+    public String update(@RequestBody User user){
+        System.out.println("user update ..." + user);
+        return "{'module':'user update'}";
+    }
+
+    @RequestMapping(value = "/users/{id}",method = RequestMethod.GET)
+    @ResponseBody
+    public String getById(@PathVariable Integer id){
+        System.out.println("user getById ..." + id);
+        return "{'module':'user getById'}";
+    }
+
+    @RequestMapping(value = "/users",method = RequestMethod.GET)
+    @ResponseBody
+    public String getAll(){
+        System.out.println("user getAll ...");
+        return "{'module':'user getAll'}";
+    }
+}
+```
+
+从整体代码来看，有些臃肿，好多代码都是重复的，下一小节我们就会来解决这个问题
+
+#### 小结
+
+RESTful入门案例，我们需要记住的内容如下:
+
+1. 设定Http请求动作(动词)
+
+   ```java
+   
+   @RequestMapping(value="",method = RequestMethod.POST|GET|PUT|DELETE)
+   ```
+
+2. 设定请求参数(路径变量)
+
+   ```java
+   
+   @RequestMapping(value="/users/{id}",method = RequestMethod.DELETE)
+   @ReponseBody
+   public String delete(@PathVariable Integer id){
+   }
+   ```
+
+知识点：`@PathVariable`
+
+| 名称 |                        @PathVariable                         |
+| :--: | :----------------------------------------------------------: |
+| 类型 |                           形参注解                           |
+| 位置 |               SpringMVC控制器方法形参定义前面                |
+| 作用 | 绑定路径参数与处理器方法形参间的关系，要求路径参数名与形参名一一对应 |
+
+关于接收参数，我们学过三个注解`@RequestBody`、`@RequestParam`、`@PathVariable`，这三个注解之间的区别和应用分别是什么?
+
+- 区别
+  - `@RequestParam`用于接收url地址传参或表单传参
+  - `@RequestBody`用于接收JSON数据
+  - `@PathVariable`用于接收路径参数，使用{参数名称}描述路径参数
+- 应用
+  - 后期开发中，发送请求参数超过1个时，以JSON格式为主，`@RequestBody`应用较广
+  - 如果发送非JSON格式数据，选用`@RequestParam`接收请求参数
+  - 采用`RESTful`进行开发，当参数数量较少时，例如1个，可以采用`@PathVariable`接收请求路径变量，通常用于传递id值
+
+### RESTful快速开发
+
+做完了上面的`RESTful`的开发，就感觉好麻烦，主要体现在以下三部分
+
+- 每个方法的@RequestMapping注解中都定义了访问路径/users,重复性太高。
+  - 解决方案：将`@RequestMapping`提到类上面，用来定义所有方法共同的访问路径。
+- 每个方法的@RequestMapping注解中都要使用method属性定义请求方式，重复性太高。
+  - 解决方案：使用`@GetMapping`、`@PostMapping`、`@PutMapping`、`@DeleteMapping`代替
+- 每个方法响应json都需要加上@ResponseBody注解，重复性太高。
+  - 解决方案：
+    - 将`@ResponseBody`提到类上面，让所有的方法都有`@ResponseBody`的功能
+    - 使用`@RestController`注解替换`@Controller`与`@ResponseBody`注解，简化书写
+
+修改后的代码
+
+```java
+@RestController
+@RequestMapping("/users")
+public class UserController {
+    @PostMapping
+    public String save(@RequestBody User user) {
+        System.out.println("user save ..." + user);
+        return "{'module':'user save'}";
+    }
+
+    @DeleteMapping("/{id}/{name}")
+    public String delete(@PathVariable("id") Integer userId, @PathVariable String name) {
+        System.out.println("user delete ..." + userId + ":" + name);
+        return "{'module':'user delete'}";
+    }
+
+    @PutMapping()
+    public String update(@RequestBody User user) {
+        System.out.println("user update ..." + user);
+        return "{'module':'user update'}";
+    }
+
+    @GetMapping("/{id}")
+    public String getById(@PathVariable Integer id) {
+        System.out.println("user getById ..." + id);
+        return "{'module':'user getById'}";
+    }
+
+    @GetMapping
+    public String getAll() {
+        System.out.println("user getAll ...");
+        return "{'module':'user getAll'}";
+    }
+}
+```
+
+### RESTful案例
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
