@@ -726,6 +726,157 @@ public class TAdminUserServiceImpl extends ServiceImpl<TAdminUserMapper, TAdminU
 
 ![image-20241111195202750](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241111195202750.png)
 
+## 管理员登录功能
+
+### 编写通用的跳转控制器
+
+```java
+@Controller
+public class CommonController {
+    /**
+     * 跳转登录页面
+     * @return
+     */
+    @RequestMapping("/login")
+    public String toLoginPage(){
+        return "login.html";
+    }
+}
+```
+
+### 登录业务实现
+
+实体类
+
+```java
+package cn.lanqiao.pojo;
+
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@TableName("t_pz_admin_user")
+public class TAdminUser {
+
+  private String id;
+  private String addUserId;
+  private String addTime;
+  private long deleteStatus;
+  private String modifyUserId;
+  private String modifyTime;
+  private String userName;
+  private String password;
+  private String linkTel;
+  private String name;
+  private long state;
+
+}
+
+```
+
+2)Mapper
+
+```java
+@Mapper
+public interface TAdminUserMapper extends BaseMapper<TAdminUser> {
+}
+```
+
+3)service
+
+```java
+public interface TAdminUserService extends IService<TAdminUser> {
+}
+
+@Service
+public class TAdminUserServiceImpl extends ServiceImpl<TAdminUserMapper, TAdminUser> implements TAdminUserService {
+}
+```
+
+4)controller
+
+```java
+	@RequestMapping("/adminUser_login")
+    public String login(TAdminUser tAdminUser, HttpSession session){
+        System.out.println(111);
+        QueryWrapper<TAdminUser> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("USER_NAME",tAdminUser.getUserName());
+        queryWrapper.eq("PASSWORD",tAdminUser.getPassword());
+        TAdminUser loginTAdminUser = tAdminUserService.getOne(queryWrapper);
+        if (loginTAdminUser!=null){
+            //前端需要登录成功之后取session中的值
+            session.setAttribute("admin",loginTAdminUser);
+            //登录成功
+            return "index.html";
+        }else {
+            //登录失败
+            return "login.html";
+        }
+    }
+```
+
+### 管理员分页查询
+
+1)需要有一个分页工具类
+
+```java
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class PagerHelper<T> {
+
+    private Long pageNumber; //当前页码
+    private Long pageSize; //页面大小
+    private Long pageCount; //总页数
+    private Long totalCount; //总条数
+    private List<T> records;
+}
+```
+
+2)还得去配置MyBatis的分页插件config
+
+```java
+@Configuration
+public class MybatisPlusConfig {
+
+    /**
+     * 分页插件
+     */
+    @Bean
+    public PaginationInterceptor paginationInterceptor() {
+        return new PaginationInterceptor();
+    }
+}
+```
+
+因为前面的mapper和service层已经有了就不用了
+
+2)直接controller
+
+```java
+/**
+     * 01-分页查询列表
+     * @return
+     */
+    @RequestMapping("/admin_list")
+    public String list(@RequestParam(defaultValue = "1") Long pageNumber,
+                       @RequestParam(defaultValue = "7") Long pageSize,
+                       Model model){
+        QueryWrapper queryWrapper=new QueryWrapper();
+        queryWrapper.eq("DELETE_STATUS",0);
+        queryWrapper.orderByDesc("ADD_TIME");
+        IPage page = tPzAdminUserService.page(new Page<TPzAdminUser>(pageNumber, pageSize), queryWrapper);
+        //封装工具类
+        PageHelper<TPzAdminUser> pagerHelper=new PageHelper<TPzAdminUser>(pageNumber,pageSize,page.getPages(),page.getTotal(),page.getRecords());
+        model.addAttribute("pagerHelper",pagerHelper);
+        return "admin/adminList";
+    }
+```
+
 
 
 
