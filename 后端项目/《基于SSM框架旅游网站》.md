@@ -877,7 +877,119 @@ public class MybatisPlusConfig {
     }
 ```
 
+## 管理员新增
 
+### 新增跳转页面
+
+```java
+/**
+     * 02-跳转新增页面
+     */
+    @RequestMapping("/admin_toadd")
+    public String toadd(){
+        return "admin/adminAdd";
+    }
+```
+
+### 通用的响应类
+
+```java
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CommonResult {
+
+    private Integer code;
+    private String message;
+    private Object data;
+
+    public CommonResult(Integer code, String message) {
+        this.code = code;
+        this.message = message;
+    }
+}
+```
+
+### 新增功能
+
+```java
+/**
+     * 03-新增
+     * @return
+     */
+    @RequestMapping("/admin_add")
+    @ResponseBody
+    public CommonResult add(TAdminUser adminUser, HttpSession session){
+        //设置当前系统时间
+        // adminUser.setAddTime(DateUtils.getNowTime());
+        TAdminUser tAdminUser = (TAdminUser) session.getAttribute("admin");
+        String addUserId = tAdminUser.getAddUserId();
+        adminUser.setAddUserId(addUserId);
+        System.out.println("要新增的对象是:"+adminUser);
+        return new CommonResult(200,"请求成功",tAdminUserService.save(adminUser));
+    }
+```
+
+获取当前系统时间
+
+```java
+package com.travel.utils;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+/**
+ * @Description: 日期工具类
+ */
+public class DateUtils {
+
+    /**
+     * 获取当前系统时间
+     * @return
+     */
+    public static String getNowTime() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return simpleDateFormat.format(new Date());
+    }
+
+    /**
+     * 获取订单号
+     * @return
+     */
+    public static String getOrderId() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+        return simpleDateFormat.format(new Date());
+    }
+
+    /**
+     * 计算两个时间相差的天数 2021-9-12  2021-10-10
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    public static long diffDays(String startDate,String endDate){
+        try {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Date date1=simpleDateFormat.parse(startDate);
+            Date date2=simpleDateFormat.parse(endDate);
+            long seconds=date2.getTime()-date1.getTime();
+            return (seconds/(3600*24*1000));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        } finally {
+        }
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        long days = DateUtils.diffDays("2021-9-12", "2021-9-19");
+        System.out.println(days);
+    }
+
+}
+
+```
 
 
 
