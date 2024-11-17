@@ -414,16 +414,125 @@ email:
   auth: true
 ```
 
-
-
-
-
-
-
-
-
 ## 整合MyBatis
+
+首先第一个就是需要导入Mybatis的启动jar包
+
+```xml
+<dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+```
+
+然后再yml中配置数据库的相关信息
+
+```java
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/software_class3
+    username: root
+    password: 123456
+```
+
+### 案例:通过id查询相关的数据响应给前端
 
 ## Bean管理
 
+### Bean扫描
+
+xml标签
+
+```xml
+<context:compoent-scan base-package="cn.lanqiao">
+```
+
+注解
+
+```java
+@ComponentScan("cn.lanqiao")
+```
+
+Springboot
+
+```java
+@SpringBootApplication //关键在于这个注解
+public class SpringbootStudyApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(SpringbootStudyApplication.class, args);
+    }
+
+}
+```
+
+![image-20241117223636313](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241117223636313.png)
+
+![image-20241117223725784](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241117223725784.png)
+
+SpringBoot默认扫描启动类所在的包及其子包
+
 ## 自动配置原理
+
+为什么要学习原理
+
+第一个就是面试：请说一下Springboot自动配置的原理
+
+### 源码分析
+
+程序引入spring-boot-starter-web起步依赖，启动后，会自动往ioc容器中注入DispatcherServlet
+
+1)先不引入Springbootweb依赖
+
+```java
+<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+```
+
+2)获取dispatcherServlet bean对象
+
+```java
+ ApplicationContext context = SpringApplication.run(SpringbootStudyApplication.class, args);
+        System.out.println(context.getBean("dispatcherServlet"));
+```
+
+3)运行之后会报错
+
+```java
+Exception in thread "main" org.springframework.beans.factory.NoSuchBeanDefinitionException: No bean named 'dispatcherServlet' available
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.getBeanDefinition(DefaultListableBeanFactory.java:895)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getMergedLocalBeanDefinition(AbstractBeanFactory.java:1362)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:300)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.context.support.AbstractApplicationContext.getBean(AbstractApplicationContext.java:1243)
+	at cn.lanqiao.springboot_study.SpringbootStudyApplication.main(SpringbootStudyApplication.java:13)
+```
+
+4)这个时候再引入Springbootweb依赖
+
+```java
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+```
+
+5)启动代码
+
+```java
+org.springframework.web.servlet.DispatcherServlet@65d8dff8
+```
+
+![image-20241117233901593](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241117233901593.png)
+
+![image-20241117233929707](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241117233929707.png)
+
