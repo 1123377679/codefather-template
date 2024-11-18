@@ -1122,7 +1122,123 @@ spring:
       max-request-size: 1000000000
 ```
 
-## kindeditor富文本编辑器
+## kindEditor富文本编辑器
+
+### 导入kindEditor的依赖
+
+```java
+<!-- 富文本编辑器 -->
+	<link rel="stylesheet" href="/js/new/kindeditor/themes/default/default.css"/>
+	<script charset="utf-8" src="/js/new/kindeditor/kindeditor-all-min.js"></script>
+	<script charset="utf-8" src="/js/new/kindeditor/lang/zh-CN.js"></script>
+```
+
+### 替换简介内容
+
+```html
+<div class="layui-form-item">
+			<label class="layui-form-label">景点简介</label>
+			<div class="layui-input-block">
+				<textarea  style="width:1200px;height:400px;visibility:hidden;" id="spotIntro" lay-verify="content"></textarea>
+			</div>
+		</div>
+```
+
+### 初始化kindEditor编辑器
+
+```js
+//初始化kindEditor编辑器
+var editor;
+		KindEditor.ready(function (K) {
+			editor = K.create('textarea', {
+				//指定上传文件参数名称等同于<input name="file">属性
+				filePostName  : "file",
+				//指定上传文件请求的url
+				uploadJson : '/uploadimg_kindeditor/xxxx',  //上传后台地址,这个文件上传的地址需要自定义修改！！！
+				//上传类型，分别为image、flash、media、file
+				dir : "image",
+				//否允许浏览服务器已上传文件,默认是false
+				allowFileManager: true
+			});
+		});
+```
+
+### kindEditorResult响应类
+
+```java
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class KindEditorResult {
+
+    private int error;
+    private String url;
+    private String message;
+}
+```
+
+### 通用的后端KindEditor控制器
+
+```java
+import com.travel.utils.CommonResult;
+import com.travel.utils.KindEditorResult;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.ResourceUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpSession;
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+
+
+@Controller
+public class KindeditorController {
+
+    /**
+     * 通用的Kindeditor后台处理方法
+     * @param address
+     * @param multipartFile
+     * @return
+     * @throws Exception
+     */
+    @ResponseBody
+    @RequestMapping("/uploadimg_kindeditor/{address}")
+    public KindEditorResult upload(@PathVariable("address") String address, @RequestParam("file") MultipartFile multipartFile) throws Exception{
+
+        if (!StringUtils.isEmpty(multipartFile) && multipartFile.getSize()>0){
+            //获取原始的文件名
+            String filename = multipartFile.getOriginalFilename();
+            //获取文件的扩展名
+            String suffix = filename.substring(filename.lastIndexOf(".") + 1);
+            //文件上传的真实路径
+            String realPath = ResourceUtils.getURL("classpath:").getPath();
+            String filePath="/"+address+"/"+new Date().getTime()+"."+suffix;
+            realPath=realPath.substring(1,realPath.length())+"static"+filePath;
+            File newfile = new File(realPath);
+            try {
+                multipartFile.transferTo(newfile);
+                System.out.println("文件上传路径是:"+realPath);
+                return new KindEditorResult(0,filePath,null);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return new KindEditorResult(1,null,"文件上传异常");
+            }
+        }else {
+            return new KindEditorResult(1,null,"文件上传异常");
+        }
+    }
+}
+```
 
 
 
