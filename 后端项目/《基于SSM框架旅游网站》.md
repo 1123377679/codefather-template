@@ -991,6 +991,139 @@ public class DateUtils {
 
 ```
 
+## 文件上传
+
+Layui前端页面
+
+```html
+<div class="layui-form-item">
+			<label class="layui-form-label">选择图片</label>
+			<div class="layui-upload">
+				<div class="layui-upload-list">
+					<button type="button" class="layui-btn" id="upload_btn">上传图片</button>
+					<img class="layui-upload-img" id="demo1" style="width: 800px">
+					<input type="hidden" name="imgUrl" id="imgUrl"/>
+				</div>
+			</div>
+		</div>
+```
+
+```js
+layui.use('upload', function() {
+			var $ = layui.jquery,
+					upload = layui.upload;
+			//普通图片上传
+			var uploadInst = upload.render({
+				elem: '#upload_btn'  //上传的按钮
+				, url: '/uploadImg/hotel'  //上传的地址
+				, before: function (obj) {
+					//预读本地文件示例，不支持ie8
+					obj.preview(function (index, file, result) {
+						$('#demo1').attr('src', result); //图片链接（base64）
+					});
+				}
+				, done: function (res) {
+					//如果上传失败
+					if (res.code == 200){
+						$("#imgUrl").val(res.data);//隐藏上传成功的图片地址，新增的时候把地址新增到数据库
+						return layer.msg('文件上传成功!');
+					} else{
+						return layer.msg('文件上传异常',function () {
+							$('#demo1').attr('src', "");
+						});
+					}
+				}
+			});
+		});
+```
+
+后端
+
+```java
+package cn.lanqiao.controller;
+
+
+import cn.lanqiao.utils.CommonResult;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.ResourceUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+
+@Controller
+public class FileUploadController {
+
+
+    /**
+     * 通用的文件上传
+     * @param multipartFile
+     * @param session
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping("/uploadImg/{address}")
+    @ResponseBody
+    public CommonResult upload(@PathVariable("address") String address, @RequestParam("file") MultipartFile multipartFile, HttpSession session) throws Exception{
+        if (!StringUtils.isEmpty(multipartFile) && multipartFile.getSize()>0){
+            //获取原始的文件名
+            String filename = multipartFile.getOriginalFilename();
+            //获取文件的扩展名
+            String suffix = filename.substring(filename.lastIndexOf(".") + 1);
+            //文件上传的真实路径
+            String realPath = ResourceUtils.getURL("classpath:").getPath();
+            String filePath="/"+address+"/"+new Date().getTime()+"."+suffix;
+            realPath=realPath.substring(1,realPath.length())+"static"+filePath;
+            File newfile = new File(realPath);
+            try {
+                multipartFile.transferTo(newfile);
+                System.out.println("文件上传路径是:"+realPath);
+                return new CommonResult(200,"文件上传成功",filePath);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return new CommonResult(500,"文件上传失败");
+            }
+        }else {
+            return new CommonResult(250,"上传文件为空");
+        }
+    }
+}
+
+```
+
+>如果后端报错上传文件过大,需要修改配置文件的上传限制
+
+```yml
+spring:
+  datasource:
+    username: root
+    password: 123456
+    url: jdbc:mysql://localhost:3306/travel?useSSL=false&serverTimezone=UTC&characterEncoding=utf8&characterSetResults=utf8
+  thymeleaf:
+    cache: false
+    check-template-location: 'true'
+    mode: HTML5
+    prefix: 'classpath:/templates/'
+    suffix: '.html'
+    servlet:
+      content-type: 'text/html '
+    encoding: UTF-8
+  servlet:
+    multipart:
+      max-file-size: 1000000000
+      max-request-size: 1000000000
+```
+
+## kindeditor富文本编辑器
+
 
 
 
