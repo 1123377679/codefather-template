@@ -321,7 +321,7 @@ create table if not exists question_submit
 
 ### 后端接口开发
 
-**后端开发流程**
+#### **后端开发流程**
 
 1）根据功能设计库表
 
@@ -331,17 +331,179 @@ create table if not exists question_submit
 
 4）去根据业务定制开发新的功能 / 编写新的代码
 
+#### **代码生成方法**
+
+1)安装MyBatisX插件
+
+2)根据项目去调整生成设置，建议生成代码到独立的包，不要影响老的项目
+
+![image-20241120111153768](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241120111153768.png)
+
+3)把代码从生成包中移动到实际项目对应目录中
+
+4)找相似的代码去复制Controller
+
+- 单表去复制单表Controller(question => post)
+- 关联表去复制关联表(比如 question_submit => post_thumb)
+
+5)复制实体类相关的DTO、VO、枚举值字段（用于接收前端请求、或者业务间传递信息）
+
+复制之后，调整需要的字段
+
+6）为了更方便地处理 json 字段中的某个字段，需要给对应的 json 字段编写独立的类，比如
+
+ judgeConfig、judgeInfo、judgeCase。
+
+```java
+/**
+ * 题目用例
+ */
+@Data
+public class JudgeCase {
+
+    /**
+     * 输入用例
+     */
+    private String input;
+
+    /**
+     * 输出用例
+     */
+    private String output;
+}
+
+```
+
+小知识：什么情况下要加业务前缀？什么情况下不加？
+
+加业务前缀的好处，防止多个表都有类似的类，产生冲突；不加的前提，因为可能这个类是多个
+
+业务之间共享的，能够复用的。
+
+定义 VO 类：作用是专门给前端返回对象，可以节约网络传输大小、或者过滤字段（脱敏）、保证安全性。
+
+比如 judgeCase、answer 字段，一定要删，不能直接给用户答案。
+
+7）校验 Controller 层的代码，看看除了要调用的方法缺失外，还有无报错1820747973055389698_0.43835326589992096
+
+8）实现 Service 层的代码，从对应的已经编写好的实现类复制粘贴，全局替换（比如 question => post）
+
+9）编写 QuestionVO 的 json / 对象转换工具类
+
+10）用同样的方法，编写 questionSubmit 提交类，这次参考 postThumb 相关文件
+
+11）编写枚举类
+
+```java
+package com.yupi.yuoj.model.enums;
+
+import org.apache.commons.lang3.ObjectUtils;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * 题目提交编程语言枚举
+ *
+ * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
+ * @from <a href="https://yupi.icu">编程导航知识星球</a>
+ */
+public enum QuestionSubmitLanguageEnum {
+
+    JAVA("java", "java"),
+    CPLUSPLUS("c++", "c++"),
+    GOLANG("golang", "golang");
+
+    private final String text;
+
+    private final String value;
+
+    QuestionSubmitLanguageEnum(String text, String value) {
+        this.text = text;
+        this.value = value;
+    }
+
+    /**
+     * 获取值列表
+     *
+     * @return
+     */
+    public static List<String> getValues() {
+        return Arrays.stream(values()).map(item -> item.value).collect(Collectors.toList());
+    }
+
+    /**
+     * 根据 value 获取枚举
+     *
+     * @param value
+     * @return
+     */
+    public static QuestionSubmitLanguageEnum getEnumByValue(String value) {
+        if (ObjectUtils.isEmpty(value)) {
+            return null;
+        }
+        for (QuestionSubmitLanguageEnum anEnum : QuestionSubmitLanguageEnum.values()) {
+            if (anEnum.value.equals(value)) {
+                return anEnum;
+            }
+        }
+        return null;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public String getText() {
+        return text;
+    }
+}
 
 
+```
 
+   编写好基本代码后，记得通过 Swagger 或者编写单元测试去验证。
 
+#### **小知识**
 
+为了防止用户按照 id 顺序爬取题目，建议把 id 的生成规则改为 ASSIGN_ID 而不是从 1 开始自增，示例代码如下：
 
+```java
+/**
+* id
+*/
+@TableId(type = IdType.ASSIGN_ID)
+private Long id;
 
+```
 
+#### 查询提交信息接口
 
+功能：能够根据用户 id、或者题目 id、编程语言、题目状态，去查询提交记录
 
+注意事项：
 
+仅本人和管理员能看见自己（提交 userId 和登录用户 id 不同）提交的代码
+
+实现方案：先查询，再根据权限去脱敏
+
+核心代码：
+
+```java
+@Override
+public QuestionSubmitVO getQuestionSubmitVO(QuestionSubmit questionSubmit, User loginUser) {
+    QuestionSubmitVO questionSubmitVO = QuestionSubmitVO.objToVo(questionSubmit);
+    // 脱敏：仅本人和管理员能看见自己（提交 userId 和登录用户 id 不同）提交的代码
+    long userId = loginUser.getId();
+    // 处理脱敏
+    if (userId != questionSubmit.getUserId() && !userService.isAdmin(loginUser)) {
+        questionSubmitVO.setCode(null);
+    }
+    return questionSubmitVO;
+}
+
+```
 
 
 
