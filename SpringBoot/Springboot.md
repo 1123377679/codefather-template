@@ -146,12 +146,10 @@ server:
 #### 发送邮箱案例
 
 ```xml
- <!--java mail 依赖-->
-        <dependency>
-            <groupId>org.eclipse.angus</groupId>
-            <artifactId>jakarta.mail</artifactId>
-        </dependency>
+
 ```
+
+
 
 1)首先需要获取QQ邮箱授权码
 
