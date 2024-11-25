@@ -346,9 +346,524 @@ create table if not exists question_submit
 - 单表去复制单表Controller(question => post)
 - 关联表去复制关联表(比如 question_submit => post_thumb)
 
+```java
+@RestController
+@RequestMapping("/question")
+@Slf4j
+public class QuestionController {
+
+    @Resource
+    private QuestionService questionService;
+
+    @Resource
+    private UserService userService;
+
+    private final static Gson GSON = new Gson();
+
+    // region 增删改查
+
+    /**
+     * 创建
+     *
+     * @param questionAddRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/add")
+    public BaseResponse<Long> addQuestion(@RequestBody QuestionAddRequest questionAddRequest, HttpServletRequest request) {
+        if (questionAddRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Question question = new Question();
+        BeanUtils.copyProperties(questionAddRequest, question);
+        List<String> tags = questionAddRequest.getTags();
+        if (tags != null) {
+            question.setTags(GSON.toJson(tags));
+        }
+        List<JudgeCase> judgeCase = questionAddRequest.getJudgeCase();
+        if (judgeCase != null) {
+            question.setJudgeCase(GSON.toJson(judgeCase));
+        }
+        JudgeConfig judgeConfig = questionAddRequest.getJudgeConfig();
+        if (judgeConfig != null) {
+            question.setJudgeConfig(GSON.toJson(judgeConfig));
+        }
+        questionService.validQuestion(question, true);
+        User loginUser = userService.getLoginUser(request);
+        question.setUserId(loginUser.getId());
+        question.setFavourNum(0);
+        question.setThumbNum(0);
+        boolean result = questionService.save(question);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        long newQuestionId = question.getId();
+        return ResultUtils.success(newQuestionId);
+    }
+
+    /**
+     * 删除
+     *
+     * @param deleteRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/delete")
+    public BaseResponse<Boolean> deleteQuestion(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
+        if (deleteRequest == null || deleteRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = userService.getLoginUser(request);
+        long id = deleteRequest.getId();
+        // 判断是否存在
+        Question oldQuestion = questionService.getById(id);
+        ThrowUtils.throwIf(oldQuestion == null, ErrorCode.NOT_FOUND_ERROR);
+        // 仅本人或管理员可删除
+        if (!oldQuestion.getUserId().equals(user.getId()) && !userService.isAdmin(request)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        boolean b = questionService.removeById(id);
+        return ResultUtils.success(b);
+    }
+
+    /**
+     * 更新（仅管理员）
+     *
+     * @param questionUpdateRequest
+     * @return
+     */
+    @PostMapping("/update")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> updateQuestion(@RequestBody QuestionUpdateRequest questionUpdateRequest) {
+        if (questionUpdateRequest == null || questionUpdateRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Question question = new Question();
+        BeanUtils.copyProperties(questionUpdateRequest, question);
+        List<String> tags = questionUpdateRequest.getTags();
+        if (tags != null) {
+            question.setTags(GSON.toJson(tags));
+        }
+        List<JudgeCase> judgeCase = questionUpdateRequest.getJudgeCase();
+        if (judgeCase != null) {
+            question.setJudgeCase(GSON.toJson(judgeCase));
+        }
+        JudgeConfig judgeConfig = questionUpdateRequest.getJudgeConfig();
+        if (judgeConfig != null) {
+            question.setJudgeConfig(GSON.toJson(judgeConfig));
+        }
+        // 参数校验
+        questionService.validQuestion(question, false);
+        long id = questionUpdateRequest.getId();
+        // 判断是否存在
+        Question oldQuestion = questionService.getById(id);
+        ThrowUtils.throwIf(oldQuestion == null, ErrorCode.NOT_FOUND_ERROR);
+        boolean result = questionService.updateById(question);
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 根据 id 获取
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/get/vo")
+    public BaseResponse<QuestionVO> getQuestionVOById(long id, HttpServletRequest request) {
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Question question = questionService.getById(id);
+        if (question == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        return ResultUtils.success(questionService.getQuestionVO(question, request));
+    }
+
+    /**
+     * 分页获取列表（封装类）
+     *
+     * @param questionQueryRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/list/page/vo")
+    public BaseResponse<Page<QuestionVO>> listQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
+            HttpServletRequest request) {
+        long current = questionQueryRequest.getCurrent();
+        long size = questionQueryRequest.getPageSize();
+        // 限制爬虫
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        Page<Question> questionPage = questionService.page(new Page<>(current, size),
+                questionService.getQueryWrapper(questionQueryRequest));
+        return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
+    }
+
+    /**
+     * 分页获取当前用户创建的资源列表
+     *
+     * @param questionQueryRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/my/list/page/vo")
+    public BaseResponse<Page<QuestionVO>> listMyQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
+            HttpServletRequest request) {
+        if (questionQueryRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        questionQueryRequest.setUserId(loginUser.getId());
+        long current = questionQueryRequest.getCurrent();
+        long size = questionQueryRequest.getPageSize();
+        // 限制爬虫
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        Page<Question> questionPage = questionService.page(new Page<>(current, size),
+                questionService.getQueryWrapper(questionQueryRequest));
+        return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
+    }
+
+    /**
+     * 分页获取题目列表（仅管理员）
+     *
+     * @param questionQueryRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/list/page")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Page<Question>> listQuestionByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
+                                                   HttpServletRequest request) {
+        long current = questionQueryRequest.getCurrent();
+        long size = questionQueryRequest.getPageSize();
+        Page<Question> questionPage = questionService.page(new Page<>(current, size),
+                questionService.getQueryWrapper(questionQueryRequest));
+        return ResultUtils.success(questionPage);
+    }
+
+    // endregion
+
+    /**
+     * 编辑（用户）
+     *
+     * @param questionEditRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/edit")
+    public BaseResponse<Boolean> editQuestion(@RequestBody QuestionEditRequest questionEditRequest, HttpServletRequest request) {
+        if (questionEditRequest == null || questionEditRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Question question = new Question();
+        BeanUtils.copyProperties(questionEditRequest, question);
+        List<String> tags = questionEditRequest.getTags();
+        if (tags != null) {
+            question.setTags(GSON.toJson(tags));
+        }
+        List<JudgeCase> judgeCase = questionEditRequest.getJudgeCase();
+        if (judgeCase != null) {
+            question.setJudgeCase(GSON.toJson(judgeCase));
+        }
+        JudgeConfig judgeConfig = questionEditRequest.getJudgeConfig();
+        if (judgeConfig != null) {
+            question.setJudgeConfig(GSON.toJson(judgeConfig));
+        }
+        // 参数校验
+        questionService.validQuestion(question, false);
+        User loginUser = userService.getLoginUser(request);
+        long id = questionEditRequest.getId();
+        // 判断是否存在
+        Question oldQuestion = questionService.getById(id);
+        ThrowUtils.throwIf(oldQuestion == null, ErrorCode.NOT_FOUND_ERROR);
+        // 仅本人或管理员可编辑
+        if (!oldQuestion.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        boolean result = questionService.updateById(question);
+        return ResultUtils.success(result);
+    }
+
+}
+```
+
+```java
+@RestController
+@RequestMapping("/question_submit")
+@Slf4j
+public class QuestionSubmitController {
+
+    @Resource
+    private QuestionSubmitService questionSubmitService;
+
+    @Resource
+    private UserService userService;
+
+    /**
+     * 提交题目
+     *
+     * @param questionSubmitAddRequest
+     * @param request
+     * @return 提交记录的 id
+     */
+    @PostMapping("/")
+    public BaseResponse<Long> doQuestionSubmit(@RequestBody QuestionSubmitAddRequest questionSubmitAddRequest,
+            HttpServletRequest request) {
+        if (questionSubmitAddRequest == null || questionSubmitAddRequest.getQuestionId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 登录才能点赞
+        final User loginUser = userService.getLoginUser(request);
+        long questionSubmitId = questionSubmitService.doQuestionSubmit(questionSubmitAddRequest, loginUser);
+        return ResultUtils.success(questionSubmitId);
+    }
+
+    /**
+     * 分页获取题目提交列表（除了管理员外，普通用户只能看到非答案、提交代码等公开信息）
+     *
+     * @param questionSubmitQueryRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/list/page")
+    public BaseResponse<Page<QuestionSubmitVO>> listQuestionSubmitByPage(@RequestBody QuestionSubmitQueryRequest questionSubmitQueryRequest,
+                                                                         HttpServletRequest request) {
+        long current = questionSubmitQueryRequest.getCurrent();
+        long size = questionSubmitQueryRequest.getPageSize();
+        // 从数据库中查询原始的题目提交分页信息
+        Page<QuestionSubmit> questionSubmitPage = questionSubmitService.page(new Page<>(current, size),
+                questionSubmitService.getQueryWrapper(questionSubmitQueryRequest));
+        final User loginUser = userService.getLoginUser(request);
+        // 返回脱敏信息
+        return ResultUtils.success(questionSubmitService.getQuestionSubmitVOPage(questionSubmitPage, loginUser));
+    }
+
+
+}
+```
+
 5)复制实体类相关的DTO、VO、枚举值字段（用于接收前端请求、或者业务间传递信息）
 
 复制之后，调整需要的字段
+
+**question相关dto**
+
+```java
+@Data
+public class QuestionAddRequest implements Serializable {
+
+    /**
+     * 标题
+     */
+    private String title;
+
+    /**
+     * 内容
+     */
+    private String content;
+
+    /**
+     * 标签列表
+     */
+    private List<String> tags;
+
+    /**
+     * 题目答案
+     */
+    private String answer;
+
+    /**
+     * 判题用例
+     */
+    private List<JudgeCase> judgeCase;
+
+    /**
+     * 判题配置
+     */
+    private JudgeConfig judgeConfig;
+
+    private static final long serialVersionUID = 1L;
+}
+```
+
+```java
+@Data
+public class QuestionEditRequest implements Serializable {
+
+    /**
+     * id
+     */
+    private Long id;
+
+    /**
+     * 标题
+     */
+    private String title;
+
+    /**
+     * 内容
+     */
+    private String content;
+
+    /**
+     * 标签列表
+     */
+    private List<String> tags;
+
+    /**
+     * 题目答案
+     */
+    private String answer;
+
+    /**
+     * 判题用例
+     */
+    private List<JudgeCase> judgeCase;
+
+    /**
+     * 判题配置
+     */
+    private JudgeConfig judgeConfig;
+
+    private static final long serialVersionUID = 1L;
+}
+```
+
+```java
+@EqualsAndHashCode(callSuper = true)
+@Data
+public class QuestionQueryRequest extends PageRequest implements Serializable {
+
+    /**
+     * id
+     */
+    private Long id;
+
+    /**
+     * 标题
+     */
+    private String title;
+
+    /**
+     * 内容
+     */
+    private String content;
+
+    /**
+     * 标签列表
+     */
+    private List<String> tags;
+
+    /**
+     * 题目答案
+     */
+    private String answer;
+
+    /**
+     * 创建用户 id
+     */
+    private Long userId;
+
+    private static final long serialVersionUID = 1L;
+}
+```
+
+```java
+@Data
+public class QuestionUpdateRequest implements Serializable {
+
+
+    /**
+     * id
+     */
+    private Long id;
+
+    /**
+     * 标题
+     */
+    private String title;
+
+    /**
+     * 内容
+     */
+    private String content;
+
+    /**
+     * 标签列表
+     */
+    private List<String> tags;
+
+    /**
+     * 题目答案
+     */
+    private String answer;
+
+    /**
+     * 判题用例
+     */
+    private List<JudgeCase> judgeCase;
+
+    /**
+     * 判题配置
+     */
+    private JudgeConfig judgeConfig;
+
+    private static final long serialVersionUID = 1L;
+}
+```
+
+questionSubmit相关dto
+
+```java
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class QuestionSubmitQueryRequest extends PageRequest implements Serializable {
+
+    /**
+     * 编程语言
+     */
+    private String language;
+
+    /**
+     * 提交状态
+     */
+    private Integer status;
+
+    /**
+     * 题目 id
+     */
+    private Long questionId;
+
+
+    /**
+     * 用户 id
+     */
+    private Long userId;
+
+    private static final long serialVersionUID = 1L;
+}
+```
+
+```java
+@Data
+public class QuestionSubmitAddRequest implements Serializable {
+
+    /**
+     * 编程语言
+     */
+    private String language;
+
+    /**
+     * 用户代码
+     */
+    private String code;
+
+    /**
+     * 题目 id
+     */
+    private Long questionId;
+
+    private static final long serialVersionUID = 1L;
+}
+```
 
 6）为了更方便地处理 json 字段中的某个字段，需要给对应的 json 字段编写独立的类，比如
 
@@ -374,6 +889,54 @@ public class JudgeCase {
 
 ```
 
+```java
+/**
+ * 题目配置
+ */
+@Data
+public class JudgeConfig {
+
+    /**
+     * 时间限制（ms）
+     */
+    private Long timeLimit;
+
+    /**
+     * 内存限制（KB）
+     */
+    private Long memoryLimit;
+
+    /**
+     * 堆栈限制（KB）
+     */
+    private Long stackLimit;
+}
+```
+
+```java
+/**
+ * 判题信息
+ */
+@Data
+public class JudgeInfo {
+
+    /**
+     * 程序执行信息
+     */
+    private String message;
+
+    /**
+     * 消耗内存
+     */
+    private Long memory;
+
+    /**
+     * 消耗时间（KB）
+     */
+    private Long time;
+}
+```
+
 小知识：什么情况下要加业务前缀？什么情况下不加？
 
 加业务前缀的好处，防止多个表都有类似的类，产生冲突；不加的前提，因为可能这个类是多个
@@ -384,21 +947,696 @@ public class JudgeCase {
 
 比如 judgeCase、answer 字段，一定要删，不能直接给用户答案。
 
-7）校验 Controller 层的代码，看看除了要调用的方法缺失外，还有无报错1820747973055389698_0.43835326589992096
+```java
+/**
+ * 题目提交封装类
+ * @TableName question
+ */
+@Data
+public class QuestionSubmitVO implements Serializable {
+    /**
+     * id
+     */
+    private Long id;
+
+    /**
+     * 编程语言
+     */
+    private String language;
+
+    /**
+     * 用户代码
+     */
+    private String code;
+
+    /**
+     * 判题信息
+     */
+    private JudgeInfo judgeInfo;
+
+    /**
+     * 判题状态（0 - 待判题、1 - 判题中、2 - 成功、3 - 失败）
+     */
+    private Integer status;
+
+    /**
+     * 题目 id
+     */
+    private Long questionId;
+
+    /**
+     * 创建用户 id
+     */
+    private Long userId;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
+
+    /**
+     * 提交用户信息
+     */
+    private UserVO userVO;
+
+    /**
+     * 对应题目信息
+     */
+    private QuestionVO questionVO;
+
+    /**
+     * 包装类转对象
+     *
+     * @param questionSubmitVO
+     * @return
+     */
+    public static QuestionSubmit voToObj(QuestionSubmitVO questionSubmitVO) {
+        if (questionSubmitVO == null) {
+            return null;
+        }
+        QuestionSubmit questionSubmit = new QuestionSubmit();
+        BeanUtils.copyProperties(questionSubmitVO, questionSubmit);
+        JudgeInfo judgeInfoObj = questionSubmitVO.getJudgeInfo();
+        if (judgeInfoObj != null) {
+            questionSubmit.setJudgeInfo(JSONUtil.toJsonStr(judgeInfoObj));
+        }
+        return questionSubmit;
+    }
+
+    /**
+     * 对象转包装类
+     *
+     * @param questionSubmit
+     * @return
+     */
+    public static QuestionSubmitVO objToVo(QuestionSubmit questionSubmit) {
+        if (questionSubmit == null) {
+            return null;
+        }
+        QuestionSubmitVO questionSubmitVO = new QuestionSubmitVO();
+        BeanUtils.copyProperties(questionSubmit, questionSubmitVO);
+        String judgeInfoStr = questionSubmit.getJudgeInfo();
+        questionSubmitVO.setJudgeInfo(JSONUtil.toBean(judgeInfoStr, JudgeInfo.class));
+        return questionSubmitVO;
+    }
+
+    private static final long serialVersionUID = 1L;
+}
+```
+
+```java
+/**
+ * 题目封装类
+ * @TableName question
+ */
+@Data
+public class QuestionVO implements Serializable {
+    /**
+     * id
+     */
+    private Long id;
+
+    /**
+     * 标题
+     */
+    private String title;
+
+    /**
+     * 内容
+     */
+    private String content;
+
+    /**
+     * 标签列表
+     */
+    private List<String> tags;
+
+    /**
+     * 题目提交数
+     */
+    private Integer submitNum;
+
+    /**
+     * 题目通过数
+     */
+    private Integer acceptedNum;
+
+    /**
+     * 判题配置（json 对象）
+     */
+    private JudgeConfig judgeConfig;
+
+    /**
+     * 点赞数
+     */
+    private Integer thumbNum;
+
+    /**
+     * 收藏数
+     */
+    private Integer favourNum;
+
+    /**
+     * 创建用户 id
+     */
+    private Long userId;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
+
+    /**
+     * 创建题目人的信息
+     */
+    private UserVO userVO;
+
+    /**
+     * 包装类转对象
+     *
+     * @param questionVO
+     * @return
+     */
+    public static Question voToObj(QuestionVO questionVO) {
+        if (questionVO == null) {
+            return null;
+        }
+        Question question = new Question();
+        BeanUtils.copyProperties(questionVO, question);
+        List<String> tagList = questionVO.getTags();
+        if (tagList != null) {
+            question.setTags(JSONUtil.toJsonStr(tagList));
+        }
+        JudgeConfig voJudgeConfig = questionVO.getJudgeConfig();
+        if (voJudgeConfig != null) {
+            question.setJudgeConfig(JSONUtil.toJsonStr(voJudgeConfig));
+        }
+        return question;
+    }
+
+    /**
+     * 对象转包装类
+     *
+     * @param question
+     * @return
+     */
+    public static QuestionVO objToVo(Question question) {
+        if (question == null) {
+            return null;
+        }
+        QuestionVO questionVO = new QuestionVO();
+        BeanUtils.copyProperties(question, questionVO);
+        List<String> tagList = JSONUtil.toList(question.getTags(), String.class);
+        questionVO.setTags(tagList);
+        String judgeConfigStr = question.getJudgeConfig();
+        questionVO.setJudgeConfig(JSONUtil.toBean(judgeConfigStr, JudgeConfig.class));
+        return questionVO;
+    }
+
+    private static final long serialVersionUID = 1L;
+}
+```
+
+7）校验 Controller 层的代码，看看除了要调用的方法缺失外，还有无报错
 
 8）实现 Service 层的代码，从对应的已经编写好的实现类复制粘贴，全局替换（比如 question => post）
 
+```java
+public interface QuestionService extends IService<Question> {
+
+
+    /**
+     * 校验
+     *
+     * @param question
+     * @param add
+     */
+    void validQuestion(Question question, boolean add);
+
+    /**
+     * 获取查询条件
+     *
+     * @param questionQueryRequest
+     * @return
+     */
+    QueryWrapper<Question> getQueryWrapper(QuestionQueryRequest questionQueryRequest);
+    
+    /**
+     * 获取题目封装
+     *
+     * @param question
+     * @param request
+     * @return
+     */
+    QuestionVO getQuestionVO(Question question, HttpServletRequest request);
+
+    /**
+     * 分页获取题目封装
+     *
+     * @param questionPage
+     * @param request
+     * @return
+     */
+    Page<QuestionVO> getQuestionVOPage(Page<Question> questionPage, HttpServletRequest request);
+    
+}
+```
+
+```java
+public interface QuestionSubmitService extends IService<QuestionSubmit> {
+    
+    /**
+     * 题目提交
+     *
+     * @param questionSubmitAddRequest 题目提交信息
+     * @param loginUser
+     * @return
+     */
+    long doQuestionSubmit(QuestionSubmitAddRequest questionSubmitAddRequest, User loginUser);
+
+    /**
+     * 获取查询条件
+     *
+     * @param questionSubmitQueryRequest
+     * @return
+     */
+    QueryWrapper<QuestionSubmit> getQueryWrapper(QuestionSubmitQueryRequest questionSubmitQueryRequest);
+
+    /**
+     * 获取题目封装
+     *
+     * @param questionSubmit
+     * @param loginUser
+     * @return
+     */
+    QuestionSubmitVO getQuestionSubmitVO(QuestionSubmit questionSubmit, User loginUser);
+
+    /**
+     * 分页获取题目封装
+     *
+     * @param questionSubmitPage
+     * @param loginUser
+     * @return
+     */
+    Page<QuestionSubmitVO> getQuestionSubmitVOPage(Page<QuestionSubmit> questionSubmitPage, User loginUser);
+}
+```
+
+```java
+@Service
+public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
+    implements QuestionService{
+
+
+    @Resource
+    private UserService userService;
+
+    /**
+     * 校验题目是否合法
+     * @param question
+     * @param add
+     */
+    @Override
+    public void validQuestion(Question question, boolean add) {
+        if (question == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        String title = question.getTitle();
+        String content = question.getContent();
+        String tags = question.getTags();
+        String answer = question.getAnswer();
+        String judgeCase = question.getJudgeCase();
+        String judgeConfig = question.getJudgeConfig();
+        // 创建时，参数不能为空
+        if (add) {
+            ThrowUtils.throwIf(StringUtils.isAnyBlank(title, content, tags), ErrorCode.PARAMS_ERROR);
+        }
+        // 有参数则校验
+        if (StringUtils.isNotBlank(title) && title.length() > 80) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "标题过长");
+        }
+        if (StringUtils.isNotBlank(content) && content.length() > 8192) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "内容过长");
+        }
+        if (StringUtils.isNotBlank(answer) && answer.length() > 8192) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "答案过长");
+        }
+        if (StringUtils.isNotBlank(judgeCase) && judgeCase.length() > 8192) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "判题用例过长");
+        }
+        if (StringUtils.isNotBlank(judgeConfig) && judgeConfig.length() > 8192) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "判题配置过长");
+        }
+    }
+
+    /**
+     * 获取查询包装类（用户根据哪些字段查询，根据前端传来的请求对象，得到 mybatis 框架支持的查询 QueryWrapper 类）
+     *
+     * @param questionQueryRequest
+     * @return
+     */
+    @Override
+    public QueryWrapper<Question> getQueryWrapper(QuestionQueryRequest questionQueryRequest) {
+        QueryWrapper<Question> queryWrapper = new QueryWrapper<>();
+        if (questionQueryRequest == null) {
+            return queryWrapper;
+        }
+        Long id = questionQueryRequest.getId();
+        String title = questionQueryRequest.getTitle();
+        String content = questionQueryRequest.getContent();
+        List<String> tags = questionQueryRequest.getTags();
+        String answer = questionQueryRequest.getAnswer();
+        Long userId = questionQueryRequest.getUserId();
+        String sortField = questionQueryRequest.getSortField();
+        String sortOrder = questionQueryRequest.getSortOrder();
+        String codeTemplate = questionQueryRequest.getCodeTemplate();
+
+        // 拼接查询条件
+        queryWrapper.like(StringUtils.isNotBlank(title), "title", title);
+        queryWrapper.like(StringUtils.isNotBlank(content), "content", content);
+        queryWrapper.like(StringUtils.isNotBlank(answer), "answer", answer);
+        if (CollectionUtils.isNotEmpty(tags)) {
+            for (String tag : tags) {
+                queryWrapper.like("tags", "\"" + tag + "\"");
+            }
+        }
+        queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
+        queryWrapper.eq("isDelete", false);
+        queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
+                sortField);
+        return queryWrapper;
+    }
+
+    @Override
+    public QuestionVO getQuestionVO(Question question, HttpServletRequest request) {
+        QuestionVO questionVO = QuestionVO.objToVo(question);
+        // 1. 关联查询用户信息
+        Long userId = question.getUserId();
+        User user = null;
+        if (userId != null && userId > 0) {
+            user = userService.getById(userId);
+        }
+        UserVO userVO = userService.getUserVO(user);
+        questionVO.setUserVO(userVO);
+        return questionVO;
+    }
+
+    @Override
+    public Page<QuestionVO> getQuestionVOPage(Page<Question> questionPage, HttpServletRequest request) {
+        List<Question> questionList = questionPage.getRecords();
+        Page<QuestionVO> questionVOPage = new Page<>(questionPage.getCurrent(), questionPage.getSize(), questionPage.getTotal());
+        if (CollectionUtils.isEmpty(questionList)) {
+            return questionVOPage;
+        }
+        // 1. 关联查询用户信息
+        Set<Long> userIdSet = questionList.stream().map(Question::getUserId).collect(Collectors.toSet());
+        Map<Long, List<User>> userIdUserListMap = userService.listByIds(userIdSet).stream()
+                .collect(Collectors.groupingBy(User::getId));
+        // 填充信息
+        List<QuestionVO> questionVOList = questionList.stream().map(question -> {
+            QuestionVO questionVO = QuestionVO.objToVo(question);
+            Long userId = question.getUserId();
+            User user = null;
+            if (userIdUserListMap.containsKey(userId)) {
+                user = userIdUserListMap.get(userId).get(0);
+            }
+            questionVO.setUserVO(userService.getUserVO(user));
+            return questionVO;
+        }).collect(Collectors.toList());
+        questionVOPage.setRecords(questionVOList);
+        return questionVOPage;
+    }
+
+
+}
+```
+
+```java
+@Service
+public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper, QuestionSubmit>
+    implements QuestionSubmitService{
+    
+    @Resource
+    private QuestionService questionService;
+
+    @Resource
+    private UserService userService;
+
+    /**
+     * 提交题目
+     *
+     * @param questionSubmitAddRequest
+     * @param loginUser
+     * @return
+     */
+    @Override
+    public long doQuestionSubmit(QuestionSubmitAddRequest questionSubmitAddRequest, User loginUser) {
+        // 校验编程语言是否合法
+        String language = questionSubmitAddRequest.getLanguage();
+        QuestionSubmitLanguageEnum languageEnum = QuestionSubmitLanguageEnum.getEnumByValue(language);
+        if (languageEnum == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "编程语言错误");
+        }
+        long questionId = questionSubmitAddRequest.getQuestionId();
+        // 判断实体是否存在，根据类别获取实体
+        Question question = questionService.getById(questionId);
+        if (question == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        // 是否已提交题目
+        long userId = loginUser.getId();
+        // 每个用户串行提交题目
+        QuestionSubmit questionSubmit = new QuestionSubmit();
+        questionSubmit.setUserId(userId);
+        questionSubmit.setQuestionId(questionId);
+        questionSubmit.setCode(questionSubmitAddRequest.getCode());
+        questionSubmit.setLanguage(language);
+        // 设置初始状态
+        questionSubmit.setStatus(QuestionSubmitStatusEnum.WAITING.getValue());
+        questionSubmit.setJudgeInfo("{}");
+        boolean save = this.save(questionSubmit);
+        if (!save){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "数据插入失败");
+        }
+        return questionSubmit.getId();
+    }
+
+
+    /**
+     * 获取查询包装类（用户根据哪些字段查询，根据前端传来的请求对象，得到 mybatis 框架支持的查询 QueryWrapper 类）
+     *
+     * @param questionSubmitQueryRequest
+     * @return
+     */
+    @Override
+    public QueryWrapper<QuestionSubmit> getQueryWrapper(QuestionSubmitQueryRequest questionSubmitQueryRequest) {
+        QueryWrapper<QuestionSubmit> queryWrapper = new QueryWrapper<>();
+        if (questionSubmitQueryRequest == null) {
+            return queryWrapper;
+        }
+        String language = questionSubmitQueryRequest.getLanguage();
+        Integer status = questionSubmitQueryRequest.getStatus();
+        Long questionId = questionSubmitQueryRequest.getQuestionId();
+        Long userId = questionSubmitQueryRequest.getUserId();
+        String sortField = questionSubmitQueryRequest.getSortField();
+        String sortOrder = questionSubmitQueryRequest.getSortOrder();
+
+        // 拼接查询条件
+        queryWrapper.eq(StringUtils.isNotBlank(language), "language", language);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(questionId), "questionId", questionId);
+        queryWrapper.eq(QuestionSubmitStatusEnum.getEnumByValue(status) != null, "status", status);
+        queryWrapper.eq("isDelete", false);
+        queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
+                sortField);
+        return queryWrapper;
+    }
+
+    @Override
+    public QuestionSubmitVO getQuestionSubmitVO(QuestionSubmit questionSubmit, User loginUser) {
+        QuestionSubmitVO questionSubmitVO = QuestionSubmitVO.objToVo(questionSubmit);
+        // 脱敏：仅本人和管理员能看见自己（提交 userId 和登录用户 id 不同）提交的代码
+        long userId = loginUser.getId();
+        // 处理脱敏
+        if (userId != questionSubmit.getUserId() && !userService.isAdmin(loginUser)) {
+            questionSubmitVO.setCode(null);
+        }
+        return questionSubmitVO;
+    }
+
+    @Override
+    public Page<QuestionSubmitVO> getQuestionSubmitVOPage(Page<QuestionSubmit> questionSubmitPage, User loginUser) {
+        List<QuestionSubmit> questionSubmitList = questionSubmitPage.getRecords();
+        Page<QuestionSubmitVO> questionSubmitVOPage = new Page<>(questionSubmitPage.getCurrent(), questionSubmitPage.getSize(), questionSubmitPage.getTotal());
+        if (CollectionUtils.isEmpty(questionSubmitList)) {
+            return questionSubmitVOPage;
+        }
+        List<QuestionSubmitVO> questionSubmitVOList = questionSubmitList.stream()
+                .map(questionSubmit -> getQuestionSubmitVO(questionSubmit, loginUser))
+                .collect(Collectors.toList());
+        questionSubmitVOPage.setRecords(questionSubmitVOList);
+        return questionSubmitVOPage;
+    }
+}
+```
+
 9）编写 QuestionVO 的 json / 对象转换工具类
+
+```java
+/**
+     * 包装类转对象
+     *
+     * @param questionSubmitVO
+     * @return
+     */
+    public static QuestionSubmit voToObj(QuestionSubmitVO questionSubmitVO) {
+        if (questionSubmitVO == null) {
+            return null;
+        }
+        QuestionSubmit questionSubmit = new QuestionSubmit();
+        BeanUtils.copyProperties(questionSubmitVO, questionSubmit);
+        JudgeInfo judgeInfoObj = questionSubmitVO.getJudgeInfo();
+        if (judgeInfoObj != null) {
+            questionSubmit.setJudgeInfo(JSONUtil.toJsonStr(judgeInfoObj));
+        }
+        return questionSubmit;
+    }
+
+    /**
+     * 对象转包装类
+     *
+     * @param questionSubmit
+     * @return
+     */
+    public static QuestionSubmitVO objToVo(QuestionSubmit questionSubmit) {
+        if (questionSubmit == null) {
+            return null;
+        }
+        QuestionSubmitVO questionSubmitVO = new QuestionSubmitVO();
+        BeanUtils.copyProperties(questionSubmit, questionSubmitVO);
+        String judgeInfoStr = questionSubmit.getJudgeInfo();
+        questionSubmitVO.setJudgeInfo(JSONUtil.toBean(judgeInfoStr, JudgeInfo.class));
+        return questionSubmitVO;
+    }
+```
+
+```java
+/**
+     * 包装类转对象
+     *
+     * @param questionVO
+     * @return
+     */
+    public static Question voToObj(QuestionVO questionVO) {
+        if (questionVO == null) {
+            return null;
+        }
+        Question question = new Question();
+        BeanUtils.copyProperties(questionVO, question);
+        List<String> tagList = questionVO.getTags();
+        if (tagList != null) {
+            question.setTags(JSONUtil.toJsonStr(tagList));
+        }
+        JudgeConfig voJudgeConfig = questionVO.getJudgeConfig();
+        if (voJudgeConfig != null) {
+            question.setJudgeConfig(JSONUtil.toJsonStr(voJudgeConfig));
+        }
+        return question;
+    }
+
+    /**
+     * 对象转包装类
+     *
+     * @param question
+     * @return
+     */
+    public static QuestionVO objToVo(Question question) {
+        if (question == null) {
+            return null;
+        }
+        QuestionVO questionVO = new QuestionVO();
+        BeanUtils.copyProperties(question, questionVO);
+        List<String> tagList = JSONUtil.toList(question.getTags(), String.class);
+        questionVO.setTags(tagList);
+        String judgeConfigStr = question.getJudgeConfig();
+        questionVO.setJudgeConfig(JSONUtil.toBean(judgeConfigStr, JudgeConfig.class));
+        return questionVO;
+    }
+```
 
 10）用同样的方法，编写 questionSubmit 提交类，这次参考 postThumb 相关文件
 
 11）编写枚举类
 
 ```java
-package com.yupi.yuoj.model.enums;
+public enum QuestionSubmitStatusEnum {
 
-import org.apache.commons.lang3.ObjectUtils;
+    // 0 - 待判题、1 - 判题中、2 - 成功、3 - 失败
+    WAITING("等待中", 0),
+    RUNNING("判题中", 1),
+    SUCCEED("成功", 2),
+    FAILED("失败", 3);
 
+    private final String text;
+
+    private final Integer value;
+
+    QuestionSubmitStatusEnum(String text, Integer value) {
+        this.text = text;
+        this.value = value;
+    }
+
+    /**
+     * 获取值列表
+     *
+     * @return
+     */
+    public static List<Integer> getValues() {
+        return Arrays.stream(values()).map(item -> item.value).collect(Collectors.toList());
+    }
+
+    /**
+     * 根据 value 获取枚举
+     *
+     * @param value
+     * @return
+     */
+    public static QuestionSubmitStatusEnum getEnumByValue(Integer value) {
+        if (ObjectUtils.isEmpty(value)) {
+            return null;
+        }
+        for (QuestionSubmitStatusEnum anEnum : QuestionSubmitStatusEnum.values()) {
+            if (anEnum.value.equals(value)) {
+                return anEnum;
+            }
+        }
+        return null;
+    }
+
+    public Integer getValue() {
+        return value;
+    }
+
+    public String getText() {
+        return text;
+    }
+}
+```
+
+
+
+```java
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -406,8 +1644,6 @@ import java.util.stream.Collectors;
 /**
  * 题目提交编程语言枚举
  *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://yupi.icu">编程导航知识星球</a>
  */
 public enum QuestionSubmitLanguageEnum {
 
@@ -463,7 +1699,79 @@ public enum QuestionSubmitLanguageEnum {
 
 ```
 
-   编写好基本代码后，记得通过 Swagger 或者编写单元测试去验证。
+```java
+package com.yupi.yuoj.model.enums;
+
+import org.apache.commons.lang3.ObjectUtils;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public enum JudgeInfoMessageEnum {
+
+    ACCEPTED("成功", "Accepted"),
+    WRONG_ANSWER("答案错误", "Wrong Answer"),
+    COMPILE_ERROR("Compile Error", "编译错误"),
+    MEMORY_LIMIT_EXCEEDED("", "内存溢出"),
+    TIME_LIMIT_EXCEEDED("Time Limit Exceeded", "超时"),
+    PRESENTATION_ERROR("Presentation Error", "展示错误"),
+    WAITING("Waiting", "等待中"),
+    OUTPUT_LIMIT_EXCEEDED("Output Limit Exceeded", "输出溢出"),
+    DANGEROUS_OPERATION("Dangerous Operation", "危险操作"),
+    RUNTIME_ERROR("Runtime Error", "运行错误"),
+    SYSTEM_ERROR("System Error", "系统错误");
+
+    private final String text;
+
+    private final String value;
+
+    JudgeInfoMessageEnum(String text, String value) {
+        this.text = text;
+        this.value = value;
+    }
+
+    /**
+     * 获取值列表
+     *
+     * @return
+     */
+    public static List<String> getValues() {
+        return Arrays.stream(values()).map(item -> item.value).collect(Collectors.toList());
+    }
+
+    /**
+     * 根据 value 获取枚举
+     *
+     * @param value
+     * @return
+     */
+    public static JudgeInfoMessageEnum getEnumByValue(String value) {
+        if (ObjectUtils.isEmpty(value)) {
+            return null;
+        }
+        for (JudgeInfoMessageEnum anEnum : JudgeInfoMessageEnum.values()) {
+            if (anEnum.value.equals(value)) {
+                return anEnum;
+            }
+        }
+        return null;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public String getText() {
+        return text;
+    }
+}
+
+```
+
+   
+
+编写好基本代码后，记得通过 Swagger 或者编写单元测试去验证。
 
 #### **小知识**
 
