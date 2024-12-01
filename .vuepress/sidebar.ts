@@ -10,6 +10,7 @@ import BackEndProject from "./sidebars/BackEndProject";
 import SpringSideBar from "./sidebars/SpringSideBar";
 import Springboot from "./sidebars/Springboot";
 import redisSideBar from "./sidebars/redisSideBar";
+import algorithm from "./sidebars/algorithm";
 // @ts-ignore
 export default {
     "/Java基础/": JavaSideBar,
@@ -22,6 +23,7 @@ export default {
     "/Spring/": SpringSideBar,
     "/Springboot/": Springboot,
     "/Redis/": redisSideBar,
+    "/算法/": algorithm,
     // 降级，默认根据文章标题渲染侧边栏
     "/": "auto",
 } as SidebarConfig4Multiple;

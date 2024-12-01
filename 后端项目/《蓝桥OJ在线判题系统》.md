@@ -581,6 +581,29 @@ public class QuestionController {
         boolean result = questionService.updateById(question);
         return ResultUtils.success(result);
     }
+    
+     /**
+     * 根据 id 获取
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/get")
+    public BaseResponse<Question> getQuestionById(long id, HttpServletRequest request) {
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Question question = questionService.getById(id);
+        if (question == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        // 不是本人或管理员，不能直接获取所有信息
+        if (!question.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        return ResultUtils.success(question);
+    }
 
 }
 ```
@@ -1834,17 +1857,146 @@ public QuestionSubmitVO getQuestionSubmitVO(QuestionSubmit questionSubmit, User 
 
 ```
 
+## 后端判题机开发
 
+判题模块:调用代码沙箱，把代码和输入交给代码沙箱去执行
 
+代码沙箱:只负责接收代码和输入，返回编译运行的结果，不负责判题(可以作为独立的项目/服务，提供给
 
+其它的需要执行代码的项目去使用)
 
+这两个模块完全解耦
 
+![image-20241128211251591](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241128211251591.png)
 
+思考：为什么代码沙箱要接受和输出一组运行用例
 
+如果是每个用例单独调用一次代码沙箱，会调用多次接口，需要多次网络传输、程序要多次编译、记录程
 
+序的执行状态（重复的代码不用重复编译）
 
+这是一种很常见的性能优化的方法！（类似于批量处理）
 
+## 开发代码沙箱模块
 
+1)新建一个judge.codesandbox文件夹
+
+2)创建CodeSandbox接口
+
+3)创建executeCode方法接口(执行代码)
+
+```java
+	/**
+     * 响应对象 和 接收对象
+     */
+    ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest);
+```
+
+这里定义接口主要是为了以后要使用其他的代码沙箱我们就可以直接实现接口就好了，不需要去调用实现类，方便扩展
+
+```java
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class ExecuteCodeRequest {
+    /**
+     * 接收前端的代码
+     */
+    private String code;
+    /**
+     * 输入用例
+     */
+    private List<String> inputList;
+    /**
+     * 语言
+     */
+    private String language;
+}
+```
+
+```java
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class ExecuteCodeResponse {
+    /**
+     * 输出用例
+     */
+    private List<String> outputList;
+    /**
+     * 接口信息
+     */
+    private String message;
+    /**
+     * 执行状态
+     */
+    private String status;
+    /**
+     * 判题信息
+     */
+    private JudgeInfo judgeInfo;
+}
+```
+
+4)实现代码沙箱接口
+
+```java
+/**
+ * @ Author: 李某人
+ * @ Date: 2024/11/28/21:39
+ * @ Description: 实例代码沙箱(仅仅是用来跑通测试用例的)
+ */
+public class ExampleCodeSandbox implements CodeSandbox {
+    @Override
+    public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+         System.out.println("实例代码沙箱");
+        return null;
+    }
+}
+```
+
+```java
+/**
+ * @ Author: 李某人
+ * @ Date: 2024/11/28/21:46
+ * @ Description: 远程代码沙箱(实际要调用的沙箱)
+ */
+public class RemoteCodeSandbox implements CodeSandbox {
+
+    @Override
+    public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+        System.out.println("远程代码沙箱");
+        return null;
+    }
+}
+```
+
+5)测试跑通代码流程
+
+```java
+ @Test
+    void contextLoads() {
+        CodeSandbox codeSandbox = new ExampleCodeSandbox();
+        String code = "int main(){}";
+        String language = QuestionSubmitLanguageEnum.JAVA.getValue();
+        List<String> inputList = Arrays.asList("1 2", "3 4");
+        ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
+                .code(code)
+                .language(language)
+                .inputList(inputList)
+                .build();
+        ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+        Assertions.assertNotNull(executeCodeResponse);
+    }
+```
+
+现在的问题是，我们把new某个沙箱的代码写死了，如果后面项目要改用其他沙箱，可能要改很多地方的代码
+
+接下来我们可以使用工厂模式来优化一下
+
+使用工程模式根据用户传入的字符串参数，来生成对应的接口对象
 
 
 
