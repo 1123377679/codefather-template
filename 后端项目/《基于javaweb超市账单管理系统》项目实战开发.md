@@ -4859,6 +4859,38 @@ function downloadExcelModel(){
             inputStream.close();
 ```
 
+### springboot实现文件下载
+
+```java
+ /**
+     * 下载模版
+     */
+    @RequestMapping("/downloadTemplate")
+    public ResponseEntity<byte[]> downloadTemplate() throws IOException {
+        //1.获取到文件模版资源
+        //在resources目录放入模版资源，注意项目导出后resource中的文件被打包到/WEB-INF/classes下,服务器的真实路径
+        Resource resource = new ClassPathResource("学生列表数据模板.xls");
+        // 2. 读取文件内容
+        byte[] fileContent = resource.getInputStream().readAllBytes();
+
+        // 3. 设置文件名（使用UTF-8编码）
+        String fileName = URLEncoder.encode(resource.getFilename(), StandardCharsets.UTF_8.toString());
+
+        // 4. 设置响应头
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", fileName);
+
+        // 5. 返回响应实体
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .body(fileContent);
+    }
+```
+
+
+
 ## servlet实现文件上传到数据库中
 
 ### 前端发送请求

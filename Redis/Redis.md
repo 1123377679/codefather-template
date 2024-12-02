@@ -886,11 +886,76 @@ void tearDown() {
 }
 ```
 
-### 5.2 Jedis连接池
+### Jedis连接池
 
 Jedis本身是线程不安全的，并且频繁的创建和销毁连接会有性能损耗，因此我们推荐大家使用Jedis连接池代替Jedis的直连方式
 
 有关池化思想，并不仅仅是这里会使用，很多地方都有，比如说我们的数据库连接池，比如我们tomcat中的线程池，这些都是池化思想的体现。
+
+### 创建Jedis的连接池
+
+- 
+
+```java
+public class JedisConnectionFacotry {
+
+     private static final JedisPool jedisPool;
+
+     static {
+         //配置连接池
+         JedisPoolConfig poolConfig = new JedisPoolConfig();
+         poolConfig.setMaxTotal(8);
+         poolConfig.setMaxIdle(8);
+         poolConfig.setMinIdle(0);
+         poolConfig.setMaxWaitMillis(1000);
+         //创建连接池对象
+         jedisPool = new JedisPool(poolConfig,
+                 "192.168.150.101",6379,1000,"123321");
+     }
+
+     public static Jedis getJedis(){
+          return jedisPool.getResource();
+     }
+}
+```
+
+**代码说明：**
+
+- 1） JedisConnectionFacotry：工厂设计模式是实际开发中非常常用的一种设计模式，我们可以使用工厂，去降低代的耦合，比如Spring中的Bean的创建，就用到了工厂设计模式
+
+- 2）静态代码块：随着类的加载而加载，确保只能执行一次，我们在加载当前工厂类的时候，就可以执行static的操作完成对 连接池的初始化
+
+- 3）最后提供返回连接池中连接的方法.
+
+
+
+### 改造原始代码
+
+**代码说明:**
+
+1.在我们完成了使用工厂设计模式来完成代码的编写之后，我们在获得连接时，就可以通过工厂来获得。
+
+，而不用直接去new对象，降低耦合，并且使用的还是连接池对象。
+
+2.当我们使用了连接池后，当我们关闭连接其实并不是关闭，而是将Jedis还回连接池的。
+
+```java
+    @BeforeEach
+    void setUp(){
+        //建立连接
+        /*jedis = new Jedis("127.0.0.1",6379);*/
+        jedis = JedisConnectionFacotry.getJedis();
+         //选择库
+        jedis.select(0);
+    }
+
+   @AfterEach
+    void tearDown() {
+        if (jedis != null) {
+            jedis.close();
+        }
+    }
+```
 
 
 

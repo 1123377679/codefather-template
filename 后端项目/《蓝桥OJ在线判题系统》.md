@@ -1976,7 +1976,7 @@ public class RemoteCodeSandbox implements CodeSandbox {
 5)测试跑通代码流程
 
 ```java
- @Test
+ 	@Test
     void contextLoads() {
         CodeSandbox codeSandbox = new ExampleCodeSandbox();
         String code = "int main(){}";
@@ -1997,6 +1997,69 @@ public class RemoteCodeSandbox implements CodeSandbox {
 接下来我们可以使用工厂模式来优化一下
 
 使用工程模式根据用户传入的字符串参数，来生成对应的接口对象
+
+### 工厂模式优化
+
+```java
+/**
+ * @ Author: 李某人
+ * @ Date: 2024/12/01/22:37
+ * @ Description: 静态工厂(还有单例工厂 和 抽象工厂等等，大家可以自己去查)
+ * 扩展思路：如果确定代码沙箱示例不会出现线程问题，可复用，那么可以使用单例工厂模式
+ */
+public class CodeSandboxFactory {
+    /**
+     * 静态工厂：顾名思义就是一个静态方法
+     */
+    public static CodeSandbox newInstance(String type){
+        switch (type){
+            case "example":
+                return new ExampleCodeSandbox();
+            case "remote":
+                return new RemoteCodeSandbox();
+            default:
+                return new ExampleCodeSandbox();
+        }
+    }
+}
+```
+
+参数配置化，把项目中一些可以交给用户去自定义的选项或字符串，写到配置文件中，这样开发者只需要
+
+改配置文件，而不需要去看你的项目代码，就能够自定义使用你项目的更多功能
+
+application.yml配置文件中指定变量
+
+```java
+codesandbox:
+  value: example
+```
+
+```java
+ //创建代码沙箱
+        //设计模式：工厂模式
+        CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(codesandboxValue);
+        //接收前端的参数
+        //模拟一些数据
+        String code = "int main(){}";
+        List<String> inputList =  Arrays.asList("1 2", "3 4");
+        String language = QuestionSubmitLanguageEnum.JAVA.getValue();
+        ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
+                .code(code)
+                .language(language)
+                .inputList(inputList)
+                .build();
+        //执行代码沙箱
+        ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+        //判断是否为空
+        Assertions.assertNotNull(executeCodeResponse);
+```
+
+### 代理模式
+
+比如：我们需要再调用代码沙箱前，输出请求参数日志，在代码沙箱调用后，输出响应结果日志，便于管理去分析
+
+每个代码沙箱都写一遍log.info?难道每次调用代码沙箱前后 都执行log?
 
 
 
