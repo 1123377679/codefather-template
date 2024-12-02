@@ -8,7 +8,7 @@
   },
   "license": "MIT",
   "engines": {
-    "node": "16.20.2"
+    "node": "18.19.1"
   },
   "dev": {
     "port": 8002
