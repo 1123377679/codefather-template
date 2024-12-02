@@ -43,6 +43,6 @@ permalink: /
 
 ## [Springboot](/Springboot/)
 
-## [Redis](/Redis/)
+## [redis](/redis/)
 
 ## [algorithm](/算法/)
