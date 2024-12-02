@@ -13,7 +13,7 @@
 </dependency>
 ```
 
-### mybatis-plus工具类
+### mybatis-plus工具类1
 
 ```java
 package cn.lanqiao.utils;
