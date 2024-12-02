@@ -42,7 +42,3 @@ permalink: /
 ## [Spring](/Spring/)
 
 ## [Springboot](/Springboot/)
-
-## [redis](/redis/)
-
-## [algorithm](/算法/)
