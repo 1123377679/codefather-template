@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "docs:dev": "vuepress dev .",
-    "docs:build": "set NODE_OPTIONS=--openssl-legacy-provider --max_old_space_size=8192 && vuepress build .",
-    "start": "SET NODE_OPTIONS=--openssl-legacy-provider && cross-env UMI_ENV=dev umi dev"
+    "docs:build": "vuepress build .",
+    "start": "cross-env UMI_ENV=dev umi dev"
   },
   "license": "MIT",
   "engines": {
