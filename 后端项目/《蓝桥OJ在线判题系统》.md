@@ -2061,9 +2061,168 @@ codesandbox:
 
 每个代码沙箱都写一遍log.info?难道每次调用代码沙箱前后 都执行log?
 
+使用代理模式，使用Proxy，来增强代码沙箱的能力（代码模式的作用就是增强能力）
+
+原本：需要用户自己去调用多次
+![image-20241202193729027](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241202193729027.png)
+
+使用代理后，不仅不用改变原来的代码沙箱实现类，而且对调用者来说，调用方式几乎没有改变，也不需要在每个调用代码的地方去写日志代码
+
+![image-20241202193813744](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241202193813744.png)
+
+代理模式的实现原理：
+
+1、实现被代理的接口
+
+2、通过构造函数接受一个被代理的接口实现类
+
+3、调用被代理的接口实现类，在调用前后增加对应的操作
+
+```java
+@Slf4j
+public class CodeSandboxProxy implements CodeSandbox {
+
+    private final CodeSandbox codeSandbox;
 
 
+    public CodeSandboxProxy(CodeSandbox codeSandbox) {
+        this.codeSandbox = codeSandbox;
+    }
 
+    @Override
+    public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+        log.info("代码沙箱请求信息：" + executeCodeRequest.toString());
+        ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+        log.info("代码沙箱响应信息：" + executeCodeResponse.toString());
+        return executeCodeResponse;
+    }
+}
+
+```
+
+使用方式
+
+```java
+CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
+codeSandbox = new CodeSandboxProxy(codeSandbox);
+
+```
+
+```java
+/**
+ * 示例代码沙箱（仅为了跑通业务流程）
+ */
+@Slf4j
+public class ExampleCodeSandbox implements CodeSandbox {
+    @Override
+    public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+        List<String> inputList = executeCodeRequest.getInputList();
+        ExecuteCodeResponse executeCodeResponse = new ExecuteCodeResponse();
+        executeCodeResponse.setOutputList(inputList);
+        executeCodeResponse.setMessage("测试执行成功");
+        executeCodeResponse.setStatus(QuestionSubmitStatusEnum.SUCCEED.getValue());
+        JudgeInfo judgeInfo = new JudgeInfo();
+        judgeInfo.setMessage(JudgeInfoMessageEnum.ACCEPTED.getText());
+        judgeInfo.setMemory(100L);
+        judgeInfo.setTime(100L);
+        executeCodeResponse.setJudgeInfo(judgeInfo);
+        return executeCodeResponse;
+    }
+}
+
+```
+
+## 判题服务完整业务流程实现
+
+新建一个judgeservice
+
+```java
+public interface JudgeService{
+    QuestionSubmitVO doJudge(long questionSubmitId);
+}
+```
+
+然后实现类
+
+```java
+@Autowire
+private QuestionService questionService;
+
+@Autowire
+private QuestionSubmitService questionSubmitService;
+
+@Override
+private QuestionSubmitVO doJudge(long questionSubmitId){
+    //1.传入题目的提交id，获取到对应的题目，提交信息(代码，编程语言等)
+    QuestionSubmit questionSubmit = questionSubmitService.getById(questionSubmitId);
+    if(questionSubmit==null){
+        throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"提交信息不存在");
+    }
+    long questionId = questionSubmit.getQuestionId();
+    Question question = questionService.getById(questionId);
+    if(question==null){
+        throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"题目不存在");
+    }
+    //如果不为等待状态
+    if(!questionSubmit.getStatus().equals(QuestionSubmitStatusEnum.WAITING.getValue())){
+         throw new BusinessException(ErrorCode.OPERATION_ERROR,"题目正在判题中");
+    }
+    //更改判题的状态为判题中，防止重复提交
+    QuestionSubmit questionSubmitUpate = new QuestionSubmit();
+    questionSubmitUpate.setId(questionSubmitId);
+    questionSubmitUpate.setStatus(QuestionSubmitStatusEnum.RUNNING.getValue());
+    boolean update = questionSubmitService.updateById(questionSubmitUpadte);
+     if(!update){
+         throw new BusinessException(ErrorCode.SYSTEM_ERROR,"题目状态更新错误");
+    }
+    //调用代码沙箱
+    CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
+    codeSandbox = new CodeSanboxProxy(codeSandbox);
+    String language = questionSubmit.getLanguage();
+    String code = questionSubmit.getCode();
+    //获取输入用例
+    String judgeCaseStr = question.getJudgeCase();
+    List<JudgeCase> judgeCaseList = JSONUtils.toList(judgeCaseStr,JudgeCase.class);
+    List<String> inputList = judgeCaseList.steam().map(JudgeCase::getInput).collect(Collectors.toList());
+    ExectuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder().
+        code(code)
+        .language(language)
+        .inputList(inputList)
+        .build();
+    ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+    List<String> outputList = executeCodeResponse.getOutputList();
+    //根据沙箱的执行结果，设置题目的判题状态和信息
+    JudgeInfoMessageEnum judgeInfoMessageEnum = JudgeInfoMessageEnum.WAITING;
+    if(outputList.size()!=inputList.size()){
+        judgeInfoMessageEnum = JudgeInfoMessageEnum.WRONG_ANSWER;
+        return null;
+    }
+    for(int i = 0; i<judgeCaseList.size();i++){
+        JudgeCase judgeCase = judgeCaseList.get(i);
+        if(!judgeCase.getOutput().equals(outputList.get(i))){
+            judgeInfoMessageEnum = JudgeInfoMessageEnum.WRONG_ANSWER;
+            return null;
+        }
+    }
+    //判断题目限制
+    JudgeInfo judgeInfo = executeCodeResponse.getJudgeInfo();
+    Long memory = judgeInfo.getMemory();
+    Long time = judgeInfo.getTime();
+    String judgeConfigStr = question.getJudgeConfig();
+    JudgeConfig judgeConfig = JSONUtil.toBean(judgeConfigStr,JudgeConfig.class);
+    Long needMemoryLimit = judgeConfig.getMemoryLimit();
+    Long needTimeLimit = judgeConfig.getTimeLimit();
+    if(memory > needMemoryLimit){
+        judgeInfoMessageEnum = JudgeInfoMessageEnum.MEMORY_LIMIT_EXCEEDED;
+        return null;
+    }
+    if(time > needTimeLimit){
+        judgeInfoMessageEnum = JudgeInfoMessageEnum.TIME_LIMIT_EXCEEDED;
+        return null;
+    }
+    return null;
+}
+```
 
 
 
