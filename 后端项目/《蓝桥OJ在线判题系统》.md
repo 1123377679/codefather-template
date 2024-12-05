@@ -2224,7 +2224,42 @@ private QuestionSubmitVO doJudge(long questionSubmitId){
 }
 ```
 
+我们这里可以使用策略模式，针对不同的情况，定义独立的策略，而不是把所有的判题逻辑都写在一起
 
+### 策略模式
+
+1.先定义一个判题策略模式的接口
+
+JudgeStrategy
+
+```java
+public interface JudgeStrategy{
+    //这里可以用一个上下文的概念
+    JudgeInfo doJudge(JudgeContext judgeContext);
+}
+```
+
+JudgeContext
+
+```java
+@Data
+public class JudgeContext{
+    private JudgeInfo judgeInfo;
+    private List<String> inputList;
+    private List<String> outputList;
+    private Question question;
+}
+```
+
+上下文就是一个用于传递的参数
+
+现在来一个默认策略
+
+DefaultJudgeStrategy
+
+```java
+
+```
 
 
 
