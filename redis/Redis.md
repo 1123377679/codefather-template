@@ -132,7 +132,7 @@ logfile "redis.log"
 
 然后重启redis
 
-```sh
+```java
 # 进入redis安装目录
 cd /usr/local/src/redis-6.2.6
 # 启动 已经是后台运行了
