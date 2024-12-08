@@ -112,6 +112,8 @@ cp redis.conf redis.conf.bck
 
 ![image-20241124232547226](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241124232547226.png)
 
+redis一些其他常见的配置(可配可不配)
+
 ```properties
 bind 0.0.0.0
 daemonize yes
@@ -133,16 +135,26 @@ logfile "redis.log"
 ```sh
 # 进入redis安装目录
 cd /usr/local/src/redis-6.2.6
-# 启动
+# 启动 已经是后台运行了
 redis-server redis.conf
 ```
 
+怎么检查是否是后台运行
 
+```sh
+ps -ef | grep redis
+```
+
+删除进程
+
+```java
+kill -9 14821
+```
 
 停止服务
 
 ```sh
-redis-cli -u 123456 shutdown
+redis-cli -u 123456 shutdown	
 ```
 
 
