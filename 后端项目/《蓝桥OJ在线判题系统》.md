@@ -2230,11 +2230,12 @@ private QuestionSubmitVO doJudge(long questionSubmitId){
 
 1.先定义一个判题策略模式的接口
 
-JudgeStrategy
+strategy.JudgeStrategy
 
 ```java
 public interface JudgeStrategy{
     //这里可以用一个上下文的概念
+    //执行判题
     JudgeInfo doJudge(JudgeContext judgeContext);
 }
 ```
@@ -2247,6 +2248,7 @@ public class JudgeContext{
     private JudgeInfo judgeInfo;
     private List<String> inputList;
     private List<String> outputList;
+    private List<JudgeCase> judgeCaseList;
     private Question question;
 }
 ```
@@ -2258,10 +2260,188 @@ public class JudgeContext{
 DefaultJudgeStrategy
 
 ```java
+public class DefaultJudgeStrategy implements JudgeContext{
+    @Override
+    public JudgeInfo doJudge(JudgeContext judgeContext) {
+        JudgeInfo judgeInfo = judgeContext.getJudgeInfo();
+        List<String> inputList = judgeContext.getInputList();
+        List<String> outputList = judgeContext.getOutputList();
+        List<JudgeCase> judgeCaseList = judgeContext.getJudgeCaseList();
+        Question question = judgeContext.getQuestion();
+        Long memory = judgeInfo.getMemory();
+        Long time = judgeInfo.getTime();
+        JudgeInfoMessageEnum judgeInfoMessageEnum = JudgeInfoMessageEnum.ACCEPTED;
+        JudgeInfo judgeInfoResponse = new JudgeInfo();
+        judgeInfoResponse.setMemory(memory);
+        judgeInfoResponse.setTime(time);
 
+        if (outputList.size()!=inputList.size()){
+            judgeInfoMessageEnum = JudgeInfoMessageEnum.WRONG_ANSWER;
+            judgeInfoResponse.setMessage(judgeInfoMessageEnum.getValue());
+            return judgeInfoResponse;
+        }
+        for (int i = 0 ; i<judgeCaseList.size();i++){
+            JudgeCase judgeCase = judgeCaseList.get(i);
+            if (!judgeCase.getOutput().equals(outputList.get(i))){
+                judgeInfoMessageEnum = JudgeInfoMessageEnum.WRONG_ANSWER;
+                judgeInfoResponse.setMessage(judgeInfoMessageEnum.getValue());
+                return judgeInfoResponse;
+            }
+        }
+        //执行完之后的时间
+
+        String judgeConfigStr = question.getJudgeConfig();
+        JudgeConfig judgeConfig = JSONUtil.toBean(judgeConfigStr, JudgeConfig.class);
+        //题目要求的时间
+        Long timeLimit = judgeConfig.getTimeLimit();
+        Long memoryLimit = judgeConfig.getMemoryLimit();
+        if(memory > memoryLimit){
+            judgeInfoMessageEnum = JudgeInfoMessageEnum.MEMORY_LIMIT_EXCEEDED;
+            judgeInfoResponse.setMessage(judgeInfoMessageEnum.getValue());
+            return judgeInfoResponse;
+        }
+        if(time > timeLimit){
+            judgeInfoMessageEnum = JudgeInfoMessageEnum.TIME_LIMIT_EXCEEDED;
+            judgeInfoResponse.setMessage(judgeInfoMessageEnum.getValue());
+            return judgeInfoResponse;
+        }
+        judgeInfoResponse.setMessage(judgeInfoMessageEnum.getValue());
+        return judgeInfoResponse;
+    }
+}
 ```
 
+再回到判题service里面
 
+```java
+ @Override
+    public QuestionSubmit doJudge(long questionSubmitId) {
+        //1.传入题目的提交id，获取到对应的题目，提交信息(代码，编程语言等)
+        QuestionSubmit questionSubmit = questionSubmitService.getById(questionSubmitId);
+        if (questionSubmit == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"提交信息不存在");
+        }
+        Long questionId = questionSubmit.getQuestionId();
+        Question question = questionService.getById(questionId);
+        if(question==null){
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"题目不存在");
+        }
+        //判断题目是否在等待中，如果不是在等待就说明在判题
+        if (!questionSubmit.getStatus().equals(QuestionSubmitStatusEnum.WAITING.getValue())){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR,"题目正在判题中");
+        }
+        //将题目的状态设置成判题中 防止重复提交
+        QuestionSubmit questionSubmitUpdate = new QuestionSubmit();
+        questionSubmitUpdate.setId(questionId);
+        questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.RUNNING.getValue());
+        //通过数据库进行修改
+        boolean update = questionSubmitService.updateById(questionSubmitUpdate);
+        //判断当前代码是否修改成功
+        if (!update){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"题目状态更新错误");
+        }
+        //调用代码沙箱
+        CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
+        codeSandbox = new CodeSandboxProxy(codeSandbox);
+        //接收前端的参数
+        //模拟一些数据
+        String code = questionSubmit.getCode();
+        String language = questionSubmit.getLanguage();
+        String judgeCaseStr = question.getJudgeCase();
+        List<JudgeCase> judgeCaseList = JSONUtil.toList(judgeCaseStr, JudgeCase.class);
+        List<String> inputList = judgeCaseList.stream().map(JudgeCase::getInput).collect(Collectors.toList());
+        ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
+                .code(code)
+                .language(language)
+                .inputList(inputList)
+                .build();
+        //执行代码沙箱
+        ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+        //根据沙箱的执行结果，设置题目的判题状态和信息
+        //输出用例要跟输入用例
+        List<String> outputList = executeCodeResponse.getOutputList();
+        //设置一下上下文的值
+        JudgeContext judgeContext = new JudgeContext();
+        judgeContext.setJudgeInfo(executeCodeResponse.getJudgeInfo());
+        judgeContext.setInputList(inputList);
+        judgeContext.setOutputList(outputList);
+        judgeContext.setJudgeCaseList(judgeCaseList);
+        judgeContext.setQuestion(question);
+        JudgeStrategy judgeStrategy = new DefaultJudgeStrategy();
+        JudgeInfo judgeInfo = judgeStrategy.doJudge(judgeContext);
+        //修改数据库中的判题结果
+        questionSubmitUpdate = new QuestionSubmit();
+        questionSubmitUpdate.setId(questionSubmitId);
+        questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.RUNNING.getValue());
+        questionSubmitUpdate.setJudgeInfo(JSONUtil.toJsonStr(judgeInfo));
+        update = questionSubmitService.updateById(questionSubmitUpdate);
+        //判断当前代码是否修改成功
+        if (!update){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"题目状态更新错误");
+        }
+        //再从数据库中查询一下状态
+        QuestionSubmit questionSubmitServiceById = questionSubmitService.getById(questionSubmitId);
+        return questionSubmitServiceById;
+    }
+```
+
+如果选择某种判题策略的过程比较复杂，都写在调用判题服务的代码中，代码会越来越复杂，会有很多if...else ，所以呢，建议单独编写一个判断策略的类
+
+JudgeManager
+
+```java
+//判题管理简化调用
+@Service
+public class JudgeManager{
+    JudgeInfo doJudge(JudgeContext judgeContext){
+        QuestionSubmit questionSubmit = judgeContext.getQuestionSubmit();
+        String language = questionSubmit.getLanguage();
+        JudgeStrategy judgeStrategy = new DefaultJudgeStrategy();
+        if("java".equals(language)){
+            judgeStrategy = new JavaLanguageJudgeStrategy();
+        }
+        return judgeStrategy.doJudge(judgeContext);
+    }
+}
+```
+
+```java
+@Data
+public class JudgeContext{
+    private JudgeInfo judgeInfo;
+    private List<String> inputList;
+    private List<String> outputList;
+    private List<JudgeCase> judgeCaseList;
+    private Question question;
+    private QuestionSubmit questionSubmit;//新增questionSubmit对象
+}
+```
+
+```java
+//然后再设置上下文的地方去设置
+judgeContext.QuestionSubmit(questionSubmit);
+```
+
+```java
+//最后修改
+JudgeInfo judgeInfo = judgeManager.doJudge(judgeContext);
+```
+
+最后修改一下QuestionSubmitServiceImpl
+
+```java
+	@Resource
+    @Lazy
+    private JudgeService judgeService;
+
+
+		//判题服务
+        Long questionSubmitId = questionSubmit.getId();
+        CompletableFuture.runAsync(()->{
+            judgeService.doJudge(questionSubmitId);
+        });
+        return questionSubmitId;
+```
 
 
 
