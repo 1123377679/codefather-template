@@ -178,7 +178,7 @@ After=network.target
 
 [Service]
 Type=forking
-ExecStart=/usr/local/bin/redis-server /user/local/src/redis-6.2.6/redis.conf
+ExecStart=/usr/local/bin/redis-server /usr/local/src/redis-6.2.6/redis.conf
 PrivateTmp=true
 
 [Install]
