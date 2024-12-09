@@ -192,7 +192,7 @@ WantedBy=multi-user.target
 ```sh
 systemctl daemon-reload
 systemctl start redis
-systemctl statis redis
+systemctl status redis
 systemctl stop redis
 systemctl restart redis
 
