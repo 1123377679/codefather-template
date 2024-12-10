@@ -2443,6 +2443,339 @@ JudgeInfo judgeInfo = judgeManager.doJudge(judgeContext);
         return questionSubmitId;
 ```
 
+## Java语言实现代码沙箱
+
+首先需要新建一个项目
+
+这里建议选择jdk8 和 springboot 2.7.14版本的
+
+![image-20241210203142860](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241210203142860.png)
+
+编写启动配置
+
+```yml
+server:
+  port: 8090
+```
+
+首先把之前写好的CodeSandbox的接口拿到沙箱模块来
+
+![image-20241210203632341](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241210203632341.png)
+
+还有judgeInfo类
+
+代码沙箱需要：接收代码->编译代码(javac)->执行代码(java)
+
+我们先通过控制台的方式去执行代码
+
+```java
+public class SimpleCompute {
+    public static void main(String[] args) {
+        int a = Integer.parseInt(args[0]);
+        int b = Integer.parseInt(args[1]);
+        System.out.println("结果:" + (a + b));
+    }
+}
+```
+
+![image-20241210204329163](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241210204329163.png)
+
+进入到simpleComputeArgs目录下
+
+```java
+javac -encoding utf-8 .\SimpleCompute.java
+java -cp . SimpleCompute
+java -cp . SimpleCompute 1 2
+```
+
+实际OJ系统中，对用户输入的代码会有一定的要求，便于系统统一处理，我们把用户输入代码的类名限制为Main(参照蓝桥云课或者清华OJ)
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        int a = Integer.parseInt(args[0]);
+        int b = Integer.parseInt(args[1]);
+        System.out.println("结果:" + (a + b));
+    }
+}
+```
+
+实际执行
+
+```sh
+javac -encoding utf-8 .\Main.java
+java -cp . Main 1 2
+```
+
+### 核心流程实现
+
+```java
+/**
+ * Java 原生代码沙箱实现（直接复用模板方法）
+ */
+@Component
+public class JavaNativeCodeSandbox extends JavaCodeSandboxTemplate {
+
+    @Override
+    public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+        return null;
+    }
+}
+```
+
+Java进程管理类 Process
+
+1.把用户的代码保存为文件
+
+2.编译代码，得到class文件
+
+3.执行代码，得到输出结果
+
+4.收集整理输出结果
+
+5.文件清理
+
+6.错误处理，提高程序健壮性
+
+
+
+1)先在项目下创建一个tmpCode文件夹，用来存放用户写的代码文件,记得引入hutool工具类
+
+### 1.把用户的代码保存为文件
+
+```java
+    <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.8.8</version>
+        </dependency>
+```
+
+```java
+private static final String GLOBAL_CODE_DIR_NAME = "tmpCode";
+
+private static final String GLOBAL_JAVA_CLASS_NAME = "Main.java";
+
+ public static void main(String[] args) {
+        JavaNativeCodeSandboxOld javaNativeCodeSandbox = new JavaNativeCodeSandboxOld();
+        ExecuteCodeRequest executeCodeRequest = new ExecuteCodeRequest();
+        executeCodeRequest.setInputList(Arrays.asList("1 2", "1 3"));
+        String code = ResourceUtil.readStr("testCode/simpleComputeArgs/Main.java", StandardCharsets.UTF_8);
+//        String code = ResourceUtil.readStr("testCode/simpleCompute/Main.java", StandardCharsets.UTF_8);
+        executeCodeRequest.setCode(code);
+        executeCodeRequest.setLanguage("java");
+        ExecuteCodeResponse executeCodeResponse = javaNativeCodeSandbox.executeCode(executeCodeRequest);
+        System.out.println(executeCodeResponse);
+    }
+
+/**
+ * Java 原生代码沙箱实现（直接复用模板方法）
+ */
+@Component
+public class JavaNativeCodeSandbox extends JavaCodeSandboxTemplate {
+
+    @Override
+    public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+        //1. 把用户的代码保存为文件
+        //获取到当前用户的工作目录
+        String userDir = System.getProperty("user.dir");
+        //File.separator为了兼容不同系统的\
+        String globalCodePathName = userDir + File.separator + GLOBAL_CODE_DIR_NAME;
+        // 判断全局代码目录是否存在，没有则新建
+        if (!FileUtil.exist(globalCodePathName)) {
+            FileUtil.mkdir(globalCodePathName);
+        }
+        //把用户的代码隔离存放
+        String userCodeParentPath = globalCodePathName + File.separator + UUID.randomUUID();
+        //实际的存放路径
+        String userCodePath = userCodeParentPath + File.separator + GLOBAL_JAVA_CLASS_NAME;
+        //写入程序中
+         File userCodeFile = FileUtil.writeString(code, userCodePath, StandardCharsets.UTF_8);
+        return null;
+       
+        
+    }
+}
+```
+
+### 2.编译代码，得到class文件
+
+```java
+	@Override
+    public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+        //1. 把用户的代码保存为文件
+        //获取到当前用户的工作目录
+        String userDir = System.getProperty("user.dir");
+        //File.separator为了兼容不同系统的\
+        String globalCodePathName = userDir + File.separator + GLOBAL_CODE_DIR_NAME;
+        // 判断全局代码目录是否存在，没有则新建
+        if (!FileUtil.exist(globalCodePathName)) {
+            FileUtil.mkdir(globalCodePathName);
+        }
+        //把用户的代码隔离存放
+        String userCodeParentPath = globalCodePathName + File.separator + UUID.randomUUID();
+        //实际的存放路径
+        String userCodePath = userCodeParentPath + File.separator + GLOBAL_JAVA_CLASS_NAME;
+        //写入程序中
+         File userCodeFile = FileUtil.writeString(code, userCodePath, StandardCharsets.UTF_8);
+        
+        //2.编译代码，得到 class 文件
+        String compileCmd = String.format("javac -encoding utf-8 %s", userCodeFile.getAbsolutePath());
+          try {
+            Process compileProcess = Runtime.getRuntime().exec(compileCmd);
+            ExecuteMessage executeMessage = ProcessUtils.runProcessAndGetMessage(compileProcess, "编译");
+            System.out.println(executeMessage);
+        } catch (Exception e) {
+            return getErrorResponse(e);
+        }
+        return null;
+```
+
+获取异常信息输出
+
+ProcessUtils
+
+```java
+import cn.hutool.core.util.StrUtil;
+import com.lanqiao.lanqiaodemosandbox.model.ExecuteMessage;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.StopWatch;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 进程工具类
+ */
+public class ProcessUtils {
+
+    /**
+     * 执行进程并获取信息
+     *
+     * @param runProcess
+     * @param opName
+     * @return
+     */
+    public static ExecuteMessage runProcessAndGetMessage(Process runProcess, String opName) {
+        ExecuteMessage executeMessage = new ExecuteMessage();
+
+        try {
+            StopWatch stopWatch = new StopWatch();
+            stopWatch.start();
+            // 等待程序执行，获取错误码
+            int exitValue = runProcess.waitFor();
+            executeMessage.setExitValue(exitValue);
+            // 正常退出
+            if (exitValue == 0) {
+                System.out.println(opName + "成功");
+                // 分批获取进程的正常输出
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(runProcess.getInputStream()));
+                List<String> outputStrList = new ArrayList<>();
+                // 逐行读取
+                String compileOutputLine;
+                while ((compileOutputLine = bufferedReader.readLine()) != null) {
+                    outputStrList.add(compileOutputLine);
+                }
+                executeMessage.setMessage(StringUtils.join(outputStrList, "\n"));
+            } else {
+                // 异常退出
+                System.out.println(opName + "失败，错误码： " + exitValue);
+                // 分批获取进程的正常输出
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(runProcess.getInputStream()));
+                List<String> outputStrList = new ArrayList<>();
+                // 逐行读取
+                String compileOutputLine;
+                while ((compileOutputLine = bufferedReader.readLine()) != null) {
+                    outputStrList.add(compileOutputLine);
+                }
+                executeMessage.setMessage(StringUtils.join(outputStrList, "\n"));
+
+                // 分批获取进程的错误输出
+                BufferedReader errorBufferedReader = new BufferedReader(new InputStreamReader(runProcess.getErrorStream()));
+                // 逐行读取
+                List<String> errorOutputStrList = new ArrayList<>();
+                // 逐行读取
+                String errorCompileOutputLine;
+                while ((errorCompileOutputLine = errorBufferedReader.readLine()) != null) {
+                    errorOutputStrList.add(errorCompileOutputLine);
+                }
+                executeMessage.setErrorMessage(StringUtils.join(errorOutputStrList, "\n"));
+            }
+            stopWatch.stop();
+            executeMessage.setTime(stopWatch.getLastTaskTimeMillis());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return executeMessage;
+    }
+
+    /**
+     * 执行交互式进程并获取信息
+     *
+     * @param runProcess
+     * @param args
+     * @return
+     */
+    public static ExecuteMessage runInteractProcessAndGetMessage(Process runProcess, String args) {
+        ExecuteMessage executeMessage = new ExecuteMessage();
+
+        try {
+            // 向控制台输入程序
+            OutputStream outputStream = runProcess.getOutputStream();
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream);
+            String[] s = args.split(" ");
+            String join = StrUtil.join("\n", s) + "\n";
+            outputStreamWriter.write(join);
+            // 相当于按了回车，执行输入的发送
+            outputStreamWriter.flush();
+
+            // 分批获取进程的正常输出
+            InputStream inputStream = runProcess.getInputStream();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            StringBuilder compileOutputStringBuilder = new StringBuilder();
+            // 逐行读取
+            String compileOutputLine;
+            while ((compileOutputLine = bufferedReader.readLine()) != null) {
+                compileOutputStringBuilder.append(compileOutputLine);
+            }
+            executeMessage.setMessage(compileOutputStringBuilder.toString());
+            // 记得资源的释放，否则会卡死
+            outputStreamWriter.close();
+            outputStream.close();
+            inputStream.close();
+            runProcess.destroy();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return executeMessage;
+    }
+}
+```
+
+```java
+import lombok.Data;
+
+/**
+ * 进程执行信息
+ */
+@Data
+public class ExecuteMessage {
+
+    private Integer exitValue;
+
+    private String message;
+
+    private String errorMessage;
+
+    private Long time;
+
+    private Long memory;
+}
+```
+
+
+
 
 
 
