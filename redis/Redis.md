@@ -969,33 +969,566 @@ public class JedisConnectionFacotry {
     }
 ```
 
+## SpringDataRedis客户端
+
+SpringData是Spring中数据操作的模块，包含对各种数据库的集成，其中对Redis的集成模块就叫做SpringDataRedis，官网地址：https://spring.io/projects/spring-data-redis
+
+- 提供了对不同Redis客户端的整合（Lettuce和Jedis）
+- 提供了RedisTemplate统一API来操作Redis
+- 支持Redis的发布订阅模型
+- 支持Redis哨兵和Redis集群
+- 支持基于Lettuce的响应式编程
+- 支持基于JDK、JSON、字符串、Spring对象的数据序列化及反序列化
+- 支持基于Redis的JDKCollection实现
+
+SpringDataRedis中提供了RedisTemplate工具类，其中封装了各种对Redis的操作。并且将不同数据类型的操作API封装到了不同的类型中：
+
+![](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/UFlNIV0.png)
+
+### 快速入门
+
+SpringBoot已经提供了对SpringDataRedis的支持，使用非常简单。
+
+首先，新建一个maven项目，然后按照下面步骤执行：
+
+#### 引入依赖
+
+```java
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.5.7</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.heima</groupId>
+    <artifactId>redis-demo</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>redis-demo</name>
+    <description>Demo project for Spring Boot</description>
+    <properties>
+        <java.version>1.8</java.version>
+    </properties>
+    <dependencies>
+        <!--redis依赖-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <!--common-pool-->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+        <!--Jackson依赖-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+```
+
+### 配置Redis
+
+```java
+spring:
+  redis:
+    host: 192.168.150.101
+    port: 6379
+    password: 123321
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: 100ms
+```
+
+### 注入RedisTemplate
+
+因为有了SpringBoot的自动装配，我们可以拿来就用：
+
+```java
+@SpringBootTest
+class RedisStringTests {
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+}
+```
+
+### 编写测试
+
+```java
+@SpringBootTest
+class RedisStringTests {
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    @Test
+    void testString() {
+        // 写入一条String数据
+        redisTemplate.opsForValue().set("name", "虎哥");
+        // 获取string数据
+        Object name = stringRedisTemplate.opsForValue().get("name");
+        System.out.println("name = " + name);
+    }
+}
+```
+
+### 自定义序列化
+
+RedisTemplate可以接收任意Object作为值写入Redis：
+
+![](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/OEMcbuu.png)
+
+只不过写入前会把Object序列化为字节形式，默认是采用JDK序列化，得到的结果是这样的：
+
+![](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/5FjtWk5.png)
+
+缺点：
+
+- 可读性差
+- 内存占用较大
+
+我们可以自定义RedisTemplate的序列化方式，代码如下：
+
+```java
+@Configuration
+public class RedisConfig {
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory){
+        // 创建RedisTemplate对象
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        // 设置连接工厂
+        template.setConnectionFactory(connectionFactory);
+        // 创建JSON序列化工具
+        GenericJackson2JsonRedisSerializer jsonRedisSerializer = 
+            							new GenericJackson2JsonRedisSerializer();
+        // 设置Key的序列化
+        template.setKeySerializer(RedisSerializer.string());
+        template.setHashKeySerializer(RedisSerializer.string());
+        // 设置Value的序列化
+        template.setValueSerializer(jsonRedisSerializer);
+        template.setHashValueSerializer(jsonRedisSerializer);
+        // 返回
+        return template;
+    }
+}
+```
+
+这里采用了JSON序列化来代替默认的JDK序列化方式。最终结果如图：
+
+![](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/XOAq3cN.png)
+
+整体可读性有了很大提升，并且能将Java对象自动的序列化为JSON字符串，并且查询时能自动把JSON反序列化为Java对象。不过，其中记录了序列化时对应的class名称，目的是为了查询时实现自动反序列化。这会带来额外的内存开销。
+
+## StringRedisTemplate
+
+为了节省内存空间，我们可以不使用JSON序列化器来处理value，而是统一使用String序列化器，要求只能存储String类型的key和value。当需要存储Java对象时，手动完成对象的序列化和反序列化。
+
+![](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/Ip9TKSY.png)
+
+因为存入和读取时的序列化及反序列化都是我们自己实现的，SpringDataRedis就不会将class信
+
+息写入Redis了。
+
+这种用法比较普遍，因此SpringDataRedis就提供了RedisTemplate的子类：
+
+StringRedisTemplate，它的key和value的序列化方式默认就是String方式。
+
+![](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/zXH6Qn6.png)
+
+省去了我们自定义RedisTemplate的序列化方式的步骤，而是直接使用：
+
+```java
+@Autowired
+private StringRedisTemplate stringRedisTemplate;
+// JSON序列化工具
+private static final ObjectMapper mapper = new ObjectMapper();
+
+@Test
+void testSaveUser() throws JsonProcessingException {
+    // 创建对象
+    User user = new User("虎哥", 21);
+    // 手动序列化
+    String json = mapper.writeValueAsString(user);
+    // 写入数据
+    stringRedisTemplate.opsForValue().set("user:200", json);
+
+    // 获取数据
+    String jsonUser = stringRedisTemplate.opsForValue().get("user:200");
+    // 手动反序列化
+    User user1 = mapper.readValue(jsonUser, User.class);
+    System.out.println("user1 = " + user1);
+}
+
+```
+
+总结:
+
+RedisTemplate的两种序列化实践方案:
+方案一:
+
+1.自定义RedisTemplate
+
+2.修改RedisTemplate的序列化器为GenericJackson2JsonRedisSerializer
+
+方案二: 
+
+1.使用StringRedisTemplate
+
+2.写入redis时，手动把对象序列化为JSON
+
+3.读取Redis时，手动把读取到的JSON反序列化为对象
+
+## 应用案例
+
+### 基于Session实现短信登录
+
+![image-20241210171543612](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241210171543612.png)
+
+![image-20241210171550682](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241210171550682.png)
+
+![image-20241210171724537](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241210171724537.png)
+
+先修改登录页面的样式
+
+```html
+<!-- 添加手机号输入框和发送验证码按钮 -->
+      <div style="margin: 10px 0;">
+        <label for="phone">手机号:</label>
+        <input type="tel" id="phone" name="phone" pattern="[0-9]{11}" required>
+        <button type="button" id="sendCode" class="btn-code">发送验证码</button>
+      </div>
+      <!-- 添加验证码输入框 -->
+      <div style="margin: 10px 0;">
+        <label for="verifyCode">验证码:</label>
+        <input type="text" id="verifyCode" name="verifyCode" required>
+      </div>
+```
+
+在style1.css中修改样式
+
+```css
+/* 登录按钮的样式 */
+.register-container .btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #007BFF;
+    border: none;
+    border-radius: 3px;
+    color: white;
+    cursor: pointer;
+}
+
+/* 发送验证码按钮的样式 */
+.register-container .btn-code {
+    width: auto;
+    /* 覆盖100%宽度 */
+    margin-left: 10px;
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* 禁用状态的样式 */
+.register-container .btn-code:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+
+input[type="tel"],
+input[type="text"] {
+    padding: 5px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+label {
+    display: inline-block;
+    width: 80px;
+}
+```
+
+添加js代码(可能后续需要修改)
+
+```javascript
+<script>
+  let btn = document.querySelector(".btn");
+  btn.onclick = function () {
+    //获取username和password的值发送给服务器(后端)
+    let username = document.querySelector("#username").value;
+    let password = document.querySelector("#password").value;
+    let remember = document.querySelector("#remember").checked;
+    axios({
+      url: "http://localhost:8080/tAdmin/login",
+      method: "post",
+      data: {
+        username: username,
+        password: password,
+        remember: remember
+      }
+    }).then((result) => {
+      console.log(result)
+      if (result.data.code == 200) {
+        //跳转首页
+        location.href = "/index.html"
+      } else {
+        alert("用户名或密码错误,请重新输入");
+        location.href = "/login.html"
+      }
+    })
+  }
+
+  // 传入cookie名能够拿到cookie的值
+  function getCookieValue(name) {
+    let value = `; ${document.cookie}`;
+    let parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+  // console.log(getCookieValue("uname"))
+  // console.log(getCookieValue("pword"))
+  //cookie怎么在前端拿
+  //获取cookie值 渲染到input框中
+  function populateFields() {
+    let usernameValue = getCookieValue("uname");
+    let passwordValue = getCookieValue("pword");
+    if (usernameValue) {
+      document.getElementById('username').value = usernameValue;
+    }
+    if (passwordValue) {
+      document.getElementById('password').value = passwordValue;
+    }
+    // 如果需要记住我，勾选复选框
+    let rememberMeValue = getCookieValue("rememberMe");
+    if (rememberMeValue === "true") {
+      document.getElementById('rememberMe').checked = true;
+    }
+
+  }
+  //页面加载
+  window.onload = function () {
+    populateFields();
+  }
+</script>
+<!-- 添加发送验证码的逻辑 -->
+<script>
+  document.getElementById('sendCode').addEventListener('click', function () {
+    const phone = document.getElementById('phone').value;
+    const button = this;
+
+    // 验证手机号格式
+    if (!/^1[3-9]\d{9}$/.test(phone)) {
+      alert('请输入正确的手机号码');
+      return;
+    }
+
+    // 发送验证码
+    axios({
+      url: "http://localhost:8080/sendCode",
+      method: "post",
+      data: {
+        phone: phone
+      }
+    }).then((result) => {
+      if (result.data.code == 200) {
+        // 发送成功后禁用按钮并开始倒计时
+        let countdown = 60;
+        button.disabled = true;
+
+        const timer = setInterval(() => {
+          button.textContent = `${countdown}秒后重新发送`;
+          countdown--;
+
+          if (countdown < 0) {
+            clearInterval(timer);
+            button.disabled = false;
+            button.textContent = '发送验证码';
+          }
+        }, 1000);
+
+        alert('验证码已发送，请注意查收');
+      } else {
+        alert('验证码发送失败，请稍后重试');
+      }
+    }).catch((error) => {
+      alert('请求失败：' + error);
+    });
+  });
+</script>
+```
+
+发送验证码
+
+```java
+@Override
+    public Result sendCode(String phone, HttpSession session) {
+        // 1.校验手机号
+        if (RegexUtils.isPhoneInvalid(phone)) {
+            // 2.如果不符合，返回错误信息
+            return Result.fail("手机号格式错误！");
+        }
+        // 3.符合，生成验证码
+        String code = RandomUtil.randomNumbers(6);
+
+        // 4.保存验证码到 session
+        session.setAttribute("code",code);
+        // 5.发送验证码
+        log.debug("发送短信验证码成功，验证码：{}", code);
+        // 返回ok
+        return Result.ok();
+    }
+```
+
+登录
+
+```java
+    @Override
+    public Result login(LoginFormDTO loginForm, HttpSession session) {
+        // 1.校验手机号
+        String phone = loginForm.getPhone();
+        if (RegexUtils.isPhoneInvalid(phone)) {
+            // 2.如果不符合，返回错误信息
+            return Result.fail("手机号格式错误！");
+        }
+        // 3.校验验证码
+        Object cacheCode = session.getAttribute("code");
+        String code = loginForm.getCode();
+        if(cacheCode == null || !cacheCode.toString().equals(code)){
+             //3.不一致，报错
+            return Result.fail("验证码错误");
+        }
+        //一致，根据手机号查询用户
+        User user = query().eq("phone", phone).one();
+
+        //5.判断用户是否存在
+        if(user == null){
+            //不存在，则创建
+            user =  createUserWithPhone(phone);
+        }
+        //7.保存用户信息到session中
+        session.setAttribute("user",user);
+
+        return Result.ok();
+    }
+```
+
+**温馨小贴士：tomcat的运行原理**
+
+![1653068196656](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1653068196656.png)
+
+当用户发起请求时，会访问我们像tomcat注册的端口，任何程序想要运行，都需要有一个线程对当前端口号进行监听，tomcat也不例外，当监听线程知道用户想要和tomcat连接连接时，那会由监听线程创建socket连接，socket都是成对出现的，用户通过socket像互相传递数据，当tomcat端的socket接受到数据后，此时监听线程会从tomcat的线程池中取出一个线程执行用户请求，在我们的服务部署到tomcat后，线程会找到用户想要访问的工程，然后用这个线程转发到工程中的controller，service，dao中，并且访问对应的DB，在用户执行完请求后，再统一返回，再找到tomcat端的socket，再将数据写回到用户端的socket，完成请求和响应
+
+通过以上讲解，我们可以得知 每个用户其实对应都是去找tomcat线程池中的一个线程来完成工作的， 使用完成后再进行回收，既然每个请求都是独立的，所以在每个用户去访问我们的工程时，我们可以使用threadlocal来做到线程隔离，每个线程操作自己的一份数据
 
 
 
+**温馨小贴士：关于threadlocal**
 
+如果小伙伴们看过threadLocal的源码，你会发现在threadLocal中，无论是他的put方法和他的get方法， 都是先从获得当前用户的线程，然后从线程中取出线程的成员变量map，只要线程不一样，map就不一样，所以可以通过这种方式来做到线程隔离
 
+登录验证功能
 
+![image-20241210194541249](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241210194541249.png)
 
+```java
+public class LoginInterceptor implements HandlerInterceptor {
 
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+       //1.获取session
+        HttpSession session = request.getSession();
+        //2.获取session中的用户
+        Object user = session.getAttribute("user");
+        //3.判断用户是否存在
+        if(user == null){
+              //4.不存在，拦截，返回401状态码
+              response.setStatus(401);
+              return false;
+        }
+        //5.存在，保存用户信息到Threadlocal
+        UserHolder.saveUser((User)user);
+        //6.放行
+        return true;
+    }
+    public void afterCompletion(){
+        UserHolder.removeUser();
+    }
+}
+```
 
+![image-20241210195039231](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241210195039231.png)
 
+让拦截器生效
 
+```java
+@Configuration
+public class MvcConfig implements WebMvcConfigurer {
 
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        // 登录拦截器
+        registry.addInterceptor(new LoginInterceptor())
+                .excludePathPatterns(
+                        "/shop/**",
+                        "/voucher/**",
+                        "/shop-type/**",
+                        "/upload/**",
+                        "/blog/hot",
+                        "/user/code",
+                        "/user/login"
+                ).order(1);
+        // token刷新的拦截器
+        registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).addPathPatterns("/**").order(0);
+    }
+}
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+隐藏用户敏感信息
 
 
 
