@@ -1064,16 +1064,18 @@ SpringBoot已经提供了对SpringDataRedis的支持，使用非常简单。
 
 ```java
 spring:
-  redis:
-    host: 192.168.150.101
-    port: 6379
-    password: 123321
-    lettuce:
-      pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 0
-        max-wait: 100ms
+  data:
+    redis:
+      host: 192.168.88.128
+      port: 6379
+      password: 123456
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: 1000ms
+      database: 0
 ```
 
 ### 注入RedisTemplate
