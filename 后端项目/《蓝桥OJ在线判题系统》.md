@@ -3117,33 +3117,300 @@ public class RunFileError {
 }
 ```
 
+### 解决问题
+
+#### 超时控制
+
+控制运行时间
+
+我们可以使用一个新的线程来判断运行的程序线程是否超时（类似于守护线程）
+
+```java
+private static final long TIME_OUT = 5000L;//定义一个超时时间
+//新建一个线程
+// 超时控制
+Process runProcess = Runtime.getRuntime().exec(runCmd);
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(TIME_OUT);
+                        System.out.println("超时了，中断");
+                        runProcess.destroy();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).start();
+```
+
+#### 限制资源分配
+
+我们不能让每个Java进程的执行占用的JVM最大堆内存空间都和系统一致，实际上应该小一点，比如:256M
+
+在启动Java时，可以指定JVM的参数:-Xmx256m (最大堆空间大小) -Xms(初始堆空间大小)
+
+```java
+"java -Xmx256m"
+```
+
+如果需要更严格的内存限制，要在系统层面去限制，而不是JVM层面的限制
+
+如果是Linux系统，可以使用cgruop来实现对某个进程的cpu、内存等资源的分配
+
+```java
+String runCmd = String.format("java -Xmx256m -Dfile.encoding=UTF-8 -cp %s;%s -Djava.security.manager=%s Main %s", userCodeParentPath, SECURITY_MANAGER_PATH, SECURITY_MANAGER_CLASS_NAME, inputArgs);
+```
+
+#### 限制代码-黑白名单
+
+先定义一个黑白名单，比如哪些操作是禁止的，可以就是一个列表:
+
+```java
+private static final List<String> blackList = Arrays.asList("Files", "exec");
+private static final WordTree WORD_TREE;
+
+ static {
+        // 初始化字典树
+        WORD_TREE = new WordTree();
+        WORD_TREE.addWords(blackList);
+    }
+
+//检验代码中是否包含黑名单的命令
+FoundWord foundWord = WORD_TREE.matchWord(code);
+if(foundWord != null){
+    System.out.println("包含禁止词:"+foundWord.getFoundWord());
+    return null;
+}
+```
+
+字典树的优势：
+
+- 快速查找匹配
+- 空间效率高
+- 支持前缀匹配
+
+典型应用：
+
+- 敏感词过滤
+- 输入提示
+- 字符串匹配
+
+这种实现的好处：
+
+- 只需初始化一次字典树
+- 所有实例共享同一个字典树
+- 线程安全（因为是不可变的）
+- 性能高效（使用字典树结构）
+
+字典树的原理:
+
+![image-20241212191327835](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241212191327835.png)
+
+#### 限制用户的操作权限
+
+上面的黑白名单解决不了所有的情况
+
+Java安全管理器(Security Manager)是Java提供的保护JVM、Java安全的机制，可以实现更严格的资源和操作限制
+
+创建security文件夹
+
+```java
+/**
+ * 默认安全管理器
+ */
+public class DefaultSecurityManager extends SecurityManager {
+
+    // 检查所有的权限
+    @Override
+    public void checkPermission(Permission perm) {
+        System.out.println("默认不做任何限制");
+        System.out.println(perm);
+//        super.checkPermission(perm);
+    }
+}
+```
+
+怎么使用
+
+```java
+System.setSecurityManager(new DenySecurityManager());
+```
+
+```java
+/**
+ * 禁用所有权限安全管理器
+ */
+public class DenySecurityManager extends SecurityManager {
+
+    // 检查所有的权限
+    @Override
+    public void checkPermission(Permission perm) {
+        throw new SecurityException("权限异常：" + perm.toString());
+    }
+}
+```
+
+```java
+package com.lanqiao.lanqiaodemosandbox.security;
+
+import java.security.Permission;
+
+public class MySecurityManager extends SecurityManager {
 
 
+    // 检查所有的权限
+    @Override
+    public void checkPermission(Permission perm) {
+//        super.checkPermission(perm);
+    }
 
+    // 检测程序是否可执行文件
+    @Override
+    public void checkExec(String cmd) {
+        throw new SecurityException("checkExec 权限异常：" + cmd);
+    }
 
+    // 检测程序是否允许读文件
 
+     @Override
+    public void checkRead(String file) {
+        System.out.println(file);
+        if (file.contains("D:\\IT\\Idea2021\\JavaSystem\\OJStudy\\lanqiao-code-sandbox")) {
+            return;
+        }
+//        throw new SecurityException("checkRead 权限异常：" + file);
+    }
 
+    // 检测程序是否允许写文件
+    @Override
+    public void checkWrite(String file) {
+//        throw new SecurityException("checkWrite 权限异常：" + file);
+    }
 
+    // 检测程序是否允许删除文件
+    @Override
+    public void checkDelete(String file) {
+//        throw new SecurityException("checkDelete 权限异常：" + file);
+    }
 
+    // 检测程序是否允许连接网络
+    @Override
+    public void checkConnect(String host, int port) {
+//        throw new SecurityException("checkConnect 权限异常：" + host + ":" + port);
+    }
+}
 
+```
 
+写个测试类
 
+```java
+/**
+ * 测试安全管理器
+ */
+public class TestSecurityManager {
 
+    public static void main(String[] args) {
+        System.setSecurityManager(new MySecurityManager());
+        FileUtil.writeString("aa", "aaa", Charset.defaultCharset());
+    }
+}
+```
 
+```java
+private static final String SECURITY_MANAGER_CLASS_NAME = "MySecurityManager";
+private static final String SECURITY_MANAGER_PATH = "C:\\code\\yuoj-code-sandbox\\src\\main\\resources\\security";
 
+ String runCmd = String.format("java -Xmx256m -Dfile.encoding=UTF-8 -cp %s;%s -Djava.security.manager=%s Main %s", userCodeParentPath, SECURITY_MANAGER_PATH, SECURITY_MANAGER_CLASS_NAME, inputArgs);
+```
 
+![](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241212193314781.png)
 
+#### 结合项目运用
 
+实际情况下，不应该在主类（开发者自己写的程序）中做限制，只需要限制子程序的权限即可。
 
+启动子进程执行命令时，设置安全管理器，而不是在外层设置（会限制住测试用例的读写和子命令的执行）。
 
+具体操作如下：
 
+1）根据需要开发自定义的安全管理器（比如 MySecurityManager）
 
+2）复制 MySecurityManager 类到 `resources/security` 目录下， **移除类的包名**
 
+3）手动输入命令编译 MySecurityManager 类，得到 class 文件
 
+4）在运行 java 程序时，指定安全管理器 class 文件的路径、安全管理器的名称。
 
+命令如下：
 
+> 注意，windows 下要用分号间隔多个类路径！
 
+```java
+java -Dfile.encoding=UTF-8 -cp %s;%s -Djava.security.manager=MySecurityManager Main
+```
 
+依次执行之前的所有测试用例，发现资源成功被限制。
+
+#### 安全管理器优点
+
+1. 权限控制很灵活
+2. 实现简单
+
+#### 安全管理器缺点
+
+1. 如果要做比较严格的权限限制，需要自己去判断哪些文件、包名需要允许读写。粒度太细了，难以精细化控制。
+2. 安全管理器本身也是 Java 代码，也有可能存在漏洞。本质上还是程序层面的限制，没深入系统的层面。
+
+#### 5、运行环境隔离
+
+原理：操作系统层面上，把用户程序封装到沙箱里，和宿主机（我们的电脑 / 服务器）隔离开，使得用户的程序无法影响宿主机。
+
+实现方式：Docker 容器技术（底层是用 cgroup、namespace 等方式实现的），也可以直接使用 cgroup 实现。
+
+## 安装Ubuntu虚拟机
+
+https://ubuntu.com/download/desktop
+进入官网直接下载
+
+![image-20241212205640424](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241212205640424.png)
+
+在vm中选择新建虚拟机
+选择自己的ubuntu版本镜像就行
+
+![image-20241212205707515](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241212205707515.png)
+
+最好是根据你们自己的名字来改
+密码我设置的123456
+
+![image-20241212205740237](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241212205740237.png)
+
+然后一直往下一步走就可以了
+注意修改存放的位置
+
+然后进来之后是全英文的，所以需要修改成中文
+
+进去之后打开左下角
+
+![image-20241212205956862](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241212205956862.png)
+
+点击语言支持图标
+
+![image-20241212210040031](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241212210040031.png)
+
+找到中文简体
+
+![image-20241212210106517](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241212210106517.png)
+
+然后点击应用
+应该会让你输入密码或者重新启动虚拟机
+
+这个直接重新启动或者输入密码就行，等待下载
+
+最后把下载好的中文拖到第一行
+![image-20241212210157928](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241212210157928.png)
+
+然后就OK了
+
+然后下一步就是设置输入法为中文
 
 
 
