@@ -3412,7 +3412,15 @@ https://ubuntu.com/download/desktop
 
 然后下一步就是设置输入法为中文
 
+![image-20241213105549706](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241213105549706.png)
 
+把英文删掉就行
+
+然后改一下日期
+
+![image-20241213105637935](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241213105637935.png)
+
+就OK了
 
 
 
