@@ -1475,27 +1475,36 @@ label {
 ![image-20241210194541249](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241210194541249.png)
 
 ```java
-public class LoginInterceptor implements HandlerInterceptor {
+import cn.lanqiao.dataclassspringboot.model.pojo.TAdmin;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.web.servlet.HandlerInterceptor;
 
+/**
+ * @ Author: 李某人
+ * @ Date: 2024/12/16/09:09
+ * @ Description:登录拦截器
+ */
+public class LoginInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-       //1.获取session
+        //1.我们先session中拿到刚才登录成功存储的session值
         HttpSession session = request.getSession();
-        //2.获取session中的用户
-        Object user = session.getAttribute("user");
-        //3.判断用户是否存在
-        if(user == null){
-              //4.不存在，拦截，返回401状态码
-              response.setStatus(401);
-              return false;
+        TAdmin userLogin = (TAdmin) session.getAttribute("userLogin");
+        System.out.println(userLogin);
+        if (userLogin == null){
+            //用户没有登录成功或者session过期了(session默认是30分钟过期)
+            // 用户未登录，设置响应类型
+            response.setContentType("text/html;charset=UTF-8");
+            // 方式1：直接重定向到登录页面
+            response.sendRedirect("/needLogin.html");  // 替换成你的登录页面路径
+            //拦截,跳转一个提示页面
+            return false;
+        }else {
+            //放行
+            return true;
         }
-        //5.存在，保存用户信息到Threadlocal
-        UserHolder.saveUser((User)user);
-        //6.放行
-        return true;
-    }
-    public void afterCompletion(){
-        UserHolder.removeUser();
     }
 }
 ```
@@ -1505,32 +1514,42 @@ public class LoginInterceptor implements HandlerInterceptor {
 让拦截器生效
 
 ```java
+import cn.lanqiao.dataclassspringboot.interceptor.LoginInterceptor;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+
+/**
+ * @ Author: 李某人
+ * @ Date: 2024/12/16/09:13
+ * @ Description:
+ */
 @Configuration
 public class MvcConfig implements WebMvcConfigurer {
-
-    @Resource
-    private StringRedisTemplate stringRedisTemplate;
-
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 登录拦截器
         registry.addInterceptor(new LoginInterceptor())
+                //放行
                 .excludePathPatterns(
-                        "/shop/**",
-                        "/voucher/**",
-                        "/shop-type/**",
-                        "/upload/**",
-                        "/blog/hot",
-                        "/user/code",
-                        "/user/login"
+                        "/login.html",
+                        "/register.html",
+                        "/codeImage",
+                        "/needLogin.html",
+                        "/tAdmin/register",
+                        "/tAdmin/login",
+                        "/tAdmin/sendCode",
+                        "/css/*",
+                        "/images/*",
+                        "/js/*",
+                        "/user2/images/*"
                 ).order(1);
-        // token刷新的拦截器
-        registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).addPathPatterns("/**").order(0);
     }
 }
 ```
 
-隐藏用户敏感信息
+### 使用redis替换session的方案
 
 
 

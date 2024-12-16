@@ -3422,21 +3422,177 @@ https://ubuntu.com/download/desktop
 
 就OK了
 
+## Docker容器技术
 
+为什么要使用Docker容器技术？
 
+为了提高系统的安全性，把不同的程序和宿主机进行隔离，使得某个程序(应用)的执行不会影响到本身的系统
 
+在虚拟机中安装docker 
 
+```java
+sudo apt install docker.io
+```
 
+查看docker的版本号
 
+```sh
+docker -v
+```
 
+![image-20241216203135636](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216203135636.png)
 
+拉取远程的镜像测试一下
 
+```sh
+sudo docker run hello-world
+```
 
+拉取镜像报这个错误:说明没有用国内的镜像，拉取不下来
 
+![image-20241216210413804](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216210413804.png)
 
+执行这个命令创建配置文件
 
+```sh
+sudo vim /etc/docker/daemon.json
+```
 
+如果报这个错误
 
+![image-20241216210720649](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216210720649.png)
+
+安装一下
+
+```sh
+sudo apt install vim
+```
+
+然后再执行vim命令
+
+https://blog.csdn.net/llc580231/article/details/139979603
+
+```sh
+{
+  "registry-mirrors": [
+    "https://docker.registry.cyou",
+    "https://docker-cf.registry.cyou",
+    "https://dockercf.jsdelivr.fyi",
+    "https://docker.jsdelivr.fyi",
+    "https://dockertest.jsdelivr.fyi",
+    "https://mirror.aliyuncs.com",
+    "https://dockerproxy.com",
+    "https://mirror.baidubce.com",
+    "https://docker.m.daocloud.io",
+    "https://docker.nju.edu.cn",
+    "https://docker.mirrors.sjtug.sjtu.edu.cn",
+    "https://docker.mirrors.ustc.edu.cn",
+    "https://mirror.iscas.ac.cn",
+    "https://docker.rainbond.cc"
+  ]
+}
+```
+
+然后执行
+
+```sh
+sudo systemctl daemon-reload
+```
+
+```sh
+sudo service docker restart
+```
+
+然后再拉取镜像，可能要等很久，但基本就OK了
+
+![image-20241216211635062](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216211635062.png)
+
+### Java操作docker
+
+```java
+  <!-- https://mvnrepository.com/artifact/com.github.docker-java/docker-java -->
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java</artifactId>
+            <version>3.3.0</version>
+        </dependency>		
+        <!-- https://mvnrepository.com/artifact/com.github.docker-java/docker-java-transport-httpclient5 -->
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java-transport-httpclient5</artifactId>
+            <version>3.3.0</version>
+        </dependency>
+```
+
+我们会使用DockerClient进行操作：这个才是真正和Docker守护进程交互的，最方便的SDK，高层封装，对DockerHttpClient进行了一个封装(类似于Mybatis)
+
+### 使用idea远程开发vm中的项目
+
+打开虚拟机中的网络进行查看ipv4地址
+
+![image-20241216213225732](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216213225732.png)
+
+回到windos系统ping这个ip地址看是否能够ping通
+![image-20241216213319486](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216213319486.png)
+
+先关闭项目，然后点击ssh链接
+
+![image-20241216212743084](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216212743084.png)
+
+然后点击新建项目
+
+指定一个新的ssh配置
+
+![image-20241216212833025](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216212833025.png)
+
+![image-20241216212844988](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216212844988.png)
+
+通过 ip addr也可以
+
+![image-20241216213026598](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216213026598.png)
+
+如果连接失败
+
+![image-20241216213542121](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216213542121.png)
+
+```sh
+# 查看SSH服务状态
+sudo systemctl status ssh
+
+# 如果没有安装SSH，先安装
+sudo apt-get update
+sudo apt-get install openssh-server
+
+# 启动SSH服务
+sudo systemctl start ssh
+
+# 设置开机自启
+sudo systemctl enable ssh
+```
+
+如果还有问题看一下是不是防火墙没有关闭
+
+![image-20241216215434043](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216215434043.png)
+
+![image-20241216215500227](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216215500227.png)
+
+接下来会说你的虚拟机内存不够
+![image-20241216215638323](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216215638323.png)
+
+我们去设置一下
+
+![image-20241216215748483](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216215748483.png)
+
+接下来就OK了 ，选择下安装的idea版本
+![image-20241216215927079](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216215927079.png)
+
+我们把我们window本地的放在Linux服务器上
+
+![image-20241216220236650](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216220236650.png)
+
+![image-20241216220246854](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241216220246854.png)
+
+选择我们的目录就OK了，这样的话我们这个docker项目就完全在linux上面进行开发了
 
 
 
