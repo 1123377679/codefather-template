@@ -1735,11 +1735,6 @@ import java.util.concurrent.TimeUnit;
 import static cn.lanqiao.dataclassspringboot.model.common.FinalClass.USER_LOGIN_INFO;
 import static cn.lanqiao.dataclassspringboot.model.common.FinalClass.USER_TOKEN;
 
-/**
- * @ Author: 李某人
- * @ Date: 2024/12/16/09:09
- * @ Description:登录拦截器
- */
 @Component
 @Slf4j
 public class LoginInterceptor implements HandlerInterceptor {
