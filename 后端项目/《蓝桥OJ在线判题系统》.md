@@ -3594,9 +3594,131 @@ sudo systemctl enable ssh
 
 选择我们的目录就OK了，这样的话我们这个docker项目就完全在linux上面进行开发了
 
+然后我们会发现项目没有办法正常运行因为虚拟机上面并没有jdk8
+
+所以我们需要安装一下jdk8
+
+```java
+sudo apt install openjdk-8-jdk
+```
+
+然后检查一下
+
+```java
+java -version
+javac -version
+```
+
+如果安装了还是发现没有办法运行的话
+
+记得配置一下这个
+
+![image-20241217214550336](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241217214550336.png)
+
+```java
+-Djdk.lang.Process.launchMechanism=vfork
+```
+
+然后设置远程开发更新本地开发
+
+![image-20241217215308561](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241217215308561.png)
+
+![image-20241217215323889](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241217215323889.png)
+
+运行接下来的代码看能不能拉取镜像下来或者能不能跑通
+
+```java
+public class DockerDemo {
+    public static void main(String[] args) throws InterruptedException {
+        // 获取默认的 Docker Client
+        DockerClient dockerClient = DockerClientBuilder.getInstance().build();
+        // 拉取镜像
+        String image = "nginx:latest";
+        PullImageCmd pullImageCmd = dockerClient.pullImageCmd(image);
+        PullImageResultCallback pullImageResultCallback = new PullImageResultCallback() {
+            @Override
+            public void onNext(PullResponseItem item) {
+                System.out.println("下载镜像：" + item.getStatus());
+                super.onNext(item);
+            }
+        };
+        pullImageCmd
+                .exec(pullImageResultCallback)
+                .awaitCompletion();
+        System.out.println("下载完成");
+    }
+}
+```
+
+如果报了这个错误
+
+![image-20241217221823744](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241217221823744.png)
+
+设置一个docker组
+
+```sh
+cat /etc/group | grep 'docker'
+```
+
+![image-20241217222045942](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241217222045942.png)
+
+这个时候我们会发现用户组中并没有我们当前的用户
+
+添加用户就好了
+
+```sh
+sudo gpasswd -a ${USER} docker
+```
+
+![image-20241217222225456](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241217222225456.png)
+
+如果接下来报这个错误:
+![image-20241217222929622](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241217222929622.png)
+
+把虚拟机这些全部重启
+
+然后再来拉取
+
+如果还是下载不了也无所谓了，后面应该不需要拉取镜像
+
+或者换一个镜像源就能拉取下来了
+
+```sh
+{
+  "registry-mirrors": [
+    "https://docker.hpcloud.cloud",
+    "https://docker.m.daocloud.io",
+    "https://docker.unsee.tech",
+    "https://docker.1panel.live",
+    "http://mirrors.ustc.edu.cn",
+    "https://docker.chenby.cn",
+    "http://mirror.azure.cn",
+    "https://dockerpull.org",
+    "https://dockerhub.icu",
+    "https://hub.rat.dev"
+  ]
+}
+```
 
 
 
+### docker实现代码沙箱
+
+实现流程；docker负责运行Java程序，并且得到结果
+
+1.把用户的代码保存为文件
+
+2.编译代码，得到class文件
+
+3.把编译好的文件上传到容器环境内
+
+4.在docker容器中执行代码，得到输出结果
+
+5.收集整理输出结果
+
+6.文件清理
+
+7.错误处理，提高程序健壮性
 
 
 
