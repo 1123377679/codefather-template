@@ -1551,6 +1551,251 @@ public class MvcConfig implements WebMvcConfigurer {
 
 ### 使用redis替换session的方案
 
+```java
+/**
+     * 10 - 手机验证码功能
+     * 1.前端发送请求到后端
+     * 2.生成验证码，将验证码存储到session中
+     * 3.在登录的时候校验
+     */
+    @RequestMapping("/sendCode")
+    public ResponseUtils sendCode(@RequestBody TAdminQuery tAdminQuery,HttpServletRequest request){
+        //手机号应该与账号是有绑定
+        TAdmin tAdmin = tAdminService.selectByPhone(tAdminQuery, request);
+        if (tAdmin == null){
+            return new ResponseUtils(500,"手机号不存在或者手机号与该用户不匹配");
+        }
+        return new ResponseUtils(200,"验证码已发送");
+    }
+```
+
+```java
+ @Override
+    public TAdmin selectByPhone(TAdminQuery tAdminQuery, HttpServletRequest request) {
+        //1.需要再数据库中查询手机号是否存在
+        TAdmin tAdmin = tAdminMapper.selectByPhone(tAdminQuery);
+        if (tAdmin != null){
+            //存在
+            //2.如果就可以向该手机号发送验证码
+            //2.1验证码如何生成(正常来说应该使用第三方接口，去实现验证码的发送)
+            //获取UUID的hashCode
+            int uuid = UUID.randomUUID().hashCode();
+            //取绝对值(Math是java自带的数学类)
+            uuid = Math.abs(uuid);
+            String strUUID = String.format("%06d", uuid % 1000000);
+            //保留6位
+            log.info("手机验证码:"+strUUID);
+            //3.将生成好的验证码存储到Session中
+            // HttpSession session = request.getSession();
+            // 设置session最大非活动间隔时间为60秒
+            // session.setMaxInactiveInterval(60);
+            // session.setAttribute("UUIDcode",strUUID);
+
+            //这里使用redis来实现 key() value(strUUID)
+            //细节:redis key 如果相同 会覆盖之前的 value key值我们就使用用户的手机号来存储(保证验证码的唯一性)
+            //存储验证码相关的信息可以使用String类型来存储
+            //设置当前redis存储的验证码生存时间
+            stringRedisTemplate.opsForValue().set(MOBILE_PHONE_CAPTCHA_PREFIX+tAdmin.getPhone(),strUUID,60L, TimeUnit.SECONDS);
+        }else {
+            //4.如果手机号不存在需要返回值给到Controller
+            return null;
+        }
+        return tAdmin;
+    }
+```
+
+```java
+ String phoneCode = stringRedisTemplate.opsForValue().get(MOBILE_PHONE_CAPTCHA_PREFIX + tAdminLogin.getPhone());
+            if (tAdminLogin.getVerifyCode().equals(phoneCode)){
+                //实现登录逻辑
+            }
+```
+
+### 使用redis实现token验证
+
+```java
+ //1.怎么生成一个token? -> hutool
+                    String token = IdUtil.fastSimpleUUID();
+                    tAdminVO.setToken(token);
+                    // 使用token构建唯一的Redis key
+                    String redisKey = USER_TOKEN + token;
+                    //2.怎么将用户的信息存入到redis中?
+                    //序列化将用户对象存储的信息 转换成 JSON数据存入到redis中
+                    String userLoginJson = mapper.writeValueAsString(userLogin);
+                    stringRedisTemplate.opsForValue().set(redisKey,userLoginJson,30L, TimeUnit.MINUTES);
+                    return new ResponseUtils(200,"登录成功",tAdminVO);
+```
+
+#### 前端接收参数并且存储参数
+
+```js
+if (result.data.code == 200) {
+        sessionStorage.setItem('token', result.data.data.token);
+        //跳转首页
+        location.href = "/index.html"
+      }else if (result.data.code == 500){
+        alert("手机验证码错误");
+      }
+```
+
+#### 全局请求拦截器
+
+使用全局请求拦截器携带token请求头到服务器
+
+```js
+// 请求拦截器
+axios.interceptors.request.use(
+    config => {
+        // 从sessionStorage获取token（因为你使用的是sessionStorage）
+        const token = sessionStorage.getItem('token');
+
+        // 如果token存在，添加到请求头
+        if (token) {
+            config.headers['token'] = token;
+        }
+        return config;
+    },
+    error => {
+        console.error('请求错误:', error);
+        return Promise.reject(error);
+    }
+);
+```
+
+使用方法:
+
+细节:注意需要先引用axios再引用全局请求拦截器，不然请求拦截器会报错
+
+```js
+<script src="js/axios.min.js"></script>
+<script src="js/axiosConfig.js"></script>
+```
+
+后端拦截器代码
+
+```java
+package cn.lanqiao.dataclassspringboot.config;
+
+import cn.lanqiao.dataclassspringboot.interceptor.LoginInterceptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+
+/**
+ * @ Author: 李某人
+ * @ Date: 2024/12/16/09:13
+ * @ Description:
+ */
+@Configuration
+public class WebMvcConfig implements WebMvcConfigurer {
+
+    @Autowired
+    private LoginInterceptor loginInterceptor;
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(loginInterceptor)
+                .addPathPatterns("/**")  // 拦截所有请求
+                .excludePathPatterns(    // 明确指定不需要拦截的路径
+                        "/login.html",
+                        "/register.html",
+                        "/needLogin.html",
+                        "/css/**",
+                        "/js/**",
+                        "/images/**",
+                        "/fonts/**",
+                        "/*.ico"
+                )
+                .order(1);
+    }
+}
+
+```
+
+```java
+package cn.lanqiao.dataclassspringboot.interceptor;
+
+import cn.lanqiao.dataclassspringboot.model.pojo.TAdmin;
+import io.netty.util.internal.StringUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.web.servlet.HandlerInterceptor;
+
+import java.io.PrintWriter;
+import java.util.concurrent.TimeUnit;
+
+import static cn.lanqiao.dataclassspringboot.model.common.FinalClass.USER_LOGIN_INFO;
+import static cn.lanqiao.dataclassspringboot.model.common.FinalClass.USER_TOKEN;
+
+/**
+ * @ Author: 李某人
+ * @ Date: 2024/12/16/09:09
+ * @ Description:登录拦截器
+ */
+@Component
+@Slf4j
+public class LoginInterceptor implements HandlerInterceptor {
+    //如果不是被SpringIOC管理的类，需要将该类变成Spring管理的类，然后再去依赖注入，不然就会报错
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        //1.我们需要从请求头中获取到token
+        //todo:页面html也算是一个请求，到后端来肯定会进行判断,所以就会有很多null
+        //登录之后没有token
+        //解决方法就是：就只留axios请求到这里来，除开axios请求咱们都放行
+
+        // 获取请求路径
+        String requestURI = request.getRequestURI();
+        log.info("拦截到请求: {}", requestURI);
+        // 如果是静态资源请求，直接放行
+        if (isStaticResource(requestURI)) {
+            return true;
+        }
+        //获取到前端发送的token
+        String token = request.getHeader("token");
+        if (StringUtils.isEmpty(token)){
+            return false;
+        }
+        //获取到后端存到redis中的token
+        // 构建Redis key
+        String redisKey = USER_TOKEN + token;
+        // 获取用户信息
+        String userInfo = stringRedisTemplate.opsForValue().get(redisKey);
+        if (StringUtils.isEmpty(userInfo)) {
+            return false;
+        }
+        // 刷新token有效期
+        stringRedisTemplate.expire(redisKey, 30L, TimeUnit.MINUTES);
+        return true;
+    }
+    /**
+     * 判断是否是静态资源
+     */
+    private boolean isStaticResource(String uri) {
+        return uri.startsWith("/css/") ||
+                uri.startsWith("/js/") ||
+                uri.startsWith("/images/") ||
+                uri.startsWith("/fonts/") ||
+                uri.startsWith("/files/") ||
+                uri.startsWith("/error") ||
+                uri.startsWith("/tAdmin/sendCode") ||
+                uri.startsWith("/tAdmin/login") ||
+                uri.startsWith("/tAdmin/register") ||
+                uri.endsWith(".html") ||
+                uri.endsWith(".ico");
+    }
+}
+```
+
 
 
 
