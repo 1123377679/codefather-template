@@ -1791,6 +1791,264 @@ public class LoginInterceptor implements HandlerInterceptor {
 }
 ```
 
+## redis实现抢课功能
+
+需要修改数据库，因为每个课程需要设置该课程最多多少人能抢课，并且还需要显示已经选择该课程的人数,还需要有个选课记录表来记录用户抢到的课程
+
+### 数据库设计
+
+```sql
+-- 课程表
+CREATE TABLE course (
+    id BIGINT PRIMARY KEY,
+    course_code VARCHAR(50),
+    course_name VARCHAR(100),
+    credits INT,
+    start_time DATETIME,
+    end_time DATETIME,
+    teacher_name VARCHAR(50),
+    teacher_phone VARCHAR(20),
+    max_students INT,    -- 课程最大人数
+    current_students INT -- 当前已选人数
+);
+
+-- 选课记录表
+CREATE TABLE course_selection (
+    id BIGINT PRIMARY KEY,
+    course_id BIGINT,
+    student_id BIGINT,
+    select_time DATETIME,
+    status INT  -- 0:待处理 1:成功 2:失败
+);
+```
+
+### redis设计
+
+```
+// 课程库存key
+course:stock:{courseId} -> 剩余库存数量
+
+// 用户抢课标记防重复key
+course:selected:{courseId}:{userId} -> 是否已抢课
+
+// 抢课排队队列key  
+course:queue:{courseId} -> List类型,存储待处理的用户ID
+```
+
+### 实现课程表基本的CRUD
+
+这个后面补充记录
+
+### 修改前端页面
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>课程选择</title>
+    <style>
+        /* 保留原有样式 */
+    </style>
+</head>
+<body>
+    <form id="courseForm">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <!-- 表头部分保持不变 -->
+            
+            <tbody id="courseList">
+                <!-- 课程列表将通过AJAX动态加载 -->
+            </tbody>
+        </table>
+        
+        <tr>
+            <td align="center" height="40px">
+                <input type="button" value="提交选课" class="button" onclick="submitSelection()"/>
+            </td>
+        </tr>
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // 页面加载时获取课程列表
+        window.onload = function() {
+            loadCourses();
+        }
+
+        // 加载课程列表
+        function loadCourses() {
+            axios.get('/api/course/list')
+                .then(function(response) {
+                    if(response.data.code === 200) {
+                        renderCourseList(response.data.data);
+                    } else {
+                        alert(response.data.message);
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                });
+        }
+
+        // 渲染课程列表
+        function renderCourseList(courses) {
+            const tbody = document.getElementById('courseList');
+            tbody.innerHTML = courses.map(course => `
+                <tr>
+                    <td bgcolor="#FFFFFF">
+                        <input type="checkbox" name="courseId" value="${course.id}"/>
+                    </td>
+                    <td bgcolor="#FFFFFF">${course.courseCode}</td>
+                    <td bgcolor="#FFFFFF">${course.courseName}</td>
+                    <td bgcolor="#FFFFFF">${course.credits}</td>
+                    <td bgcolor="#FFFFFF">${course.startTime}</td>
+                    <td bgcolor="#FFFFFF">${course.endTime}</td>
+                    <td bgcolor="#FFFFFF">${course.teacherName}</td>
+                    <td bgcolor="#FFFFFF">${course.teacherPhone}</td>
+                </tr>
+            `).join('');
+        }
+
+        // 提交选课
+        function submitSelection() {
+            const selectedCourses = document.querySelectorAll('input[name="courseId"]:checked');
+            if(selectedCourses.length === 0) {
+                alert('请选择课程');
+                return;
+            }
+
+            // 获取当前登录学生ID(假设存储在sessionStorage中)
+            const studentId = sessionStorage.getItem('studentId');
+            
+            // 遍历选中的课程进行抢课
+            selectedCourses.forEach(course => {
+                axios.post(`/api/course/select/${course.value}?studentId=${studentId}`)
+                    .then(function(response) {
+                        if(response.data.code === 200) {
+                            alert(`课程选择成功`);
+                            loadCourses(); // 刷新课程列表
+                        } else {
+                            alert(response.data.message);
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error('Error:', error);
+                        alert('系统繁忙，请稍后重试');
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
+```
+
+### 实现课程抢课功能
+
+```java
+@RestController
+@RequestMapping("/api/course")
+public class CourseController {
+    
+    @Autowired
+    private CourseService courseService;
+    
+    // 获取可选课程列表
+    @GetMapping("/list")
+    public Result getAvailableCourses() {
+        return courseService.getAvailableCourses();
+    }
+    
+    // 抢课接口
+    @PostMapping("/select/{courseId}")
+    public Result selectCourse(@PathVariable Long courseId, @RequestParam Long studentId) {
+        return courseService.selectCourse(courseId, studentId);
+    }
+}
+```
+
+```java
+@Service
+public class CourseService {
+    
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+    
+    @Autowired
+    private CourseMapper courseMapper;
+    
+    // 初始化课程库存到Redis
+    @PostConstruct
+    public void initCourseStock() {
+        List<Course> courses = courseMapper.selectAll();
+        for(Course course : courses) {
+            String stockKey = "course:stock:" + course.getId();
+            redisTemplate.opsForValue().set(stockKey, 
+                String.valueOf(course.getMaxStudents() - course.getCurrentStudents()));
+        }
+    }
+    
+    // 抢课主要逻辑
+    @Transactional
+    public Result selectCourse(Long courseId, Long studentId) {
+        String stockKey = "course:stock:" + courseId;
+        String selectedKey = "course:selected:" + courseId + ":" + studentId;
+        
+        // 1. 判断是否在可选时间内
+        Course course = courseMapper.selectById(courseId);
+        if(!isInSelectTime(course)) {
+            return Result.error("不在选课时间内");
+        }
+        
+        // 2. 判断是否重复抢课
+        if(Boolean.TRUE.equals(redisTemplate.hasKey(selectedKey))) {
+            return Result.error("您已经选过该课程");
+        }
+        
+        // 3. 库存判断和扣减
+        Long stock = redisTemplate.opsForValue().decrement(stockKey);
+        if(stock < 0) {
+            // 恢复库存
+            redisTemplate.opsForValue().increment(stockKey);
+            return Result.error("课程已满");
+        }
+        
+        try {
+            // 4. 入队
+            redisTemplate.opsForList().leftPush("course:queue:" + courseId, 
+                String.valueOf(studentId));
+            
+            // 5. 设置抢课标记
+            redisTemplate.opsForValue().set(selectedKey, "1", 24, TimeUnit.HOURS);
+            
+            // 6. 异步处理数据库
+            asyncSelectCourse(courseId, studentId);
+            
+            return Result.success("抢课成功");
+            
+        } catch (Exception e) {
+            // 发生异常恢复库存
+            redisTemplate.opsForValue().increment(stockKey);
+            return Result.error("系统繁忙");
+        }
+    }
+    
+    // 异步处理数据库
+    @Async
+    public void asyncSelectCourse(Long courseId, Long studentId) {
+        CourseSelection selection = new CourseSelection();
+        selection.setCourseId(courseId);
+        selection.setStudentId(studentId);
+        selection.setSelectTime(new Date());
+        selection.setStatus(1);
+        
+        courseSelectionMapper.insert(selection);
+        
+        // 更新课程已选人数
+        courseMapper.incrementCurrentStudents(courseId);
+    }
+}
+```
+
 
 
 
