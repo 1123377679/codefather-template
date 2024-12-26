@@ -4916,6 +4916,117 @@ public class RemoteCodeSandbox implements CodeSandbox {
 }
 ```
 
+#### 调用安全性
+
+如果服务不做任何的权限校验，直接发到公网，是不安全的
+
+1）调用方与服务提供方之间约定一个字符串(最好加密)
+
+```java
+@RestController("/")
+public class MainController {
+
+    // 定义鉴权请求头和密钥
+    private static final String AUTH_REQUEST_HEADER = "auth";
+
+    private static final String AUTH_REQUEST_SECRET = "secretKey";
+
+    @Resource
+    private JavaNativeCodeSandbox javaNativeCodeSandbox;
+
+    @GetMapping("/health")
+    public String healthCheck() {
+        return "ok";
+    }
+
+    /**
+     * 执行代码
+     *
+     * @param executeCodeRequest
+     * @return
+     */
+    @PostMapping("/executeCode")
+    ExecuteCodeResponse executeCode(@RequestBody ExecuteCodeRequest executeCodeRequest, HttpServletRequest request,
+                                    HttpServletResponse response) {
+        // 基本的认证
+        String authHeader = request.getHeader(AUTH_REQUEST_HEADER);
+        if (!AUTH_REQUEST_SECRET.equals(authHeader)) {
+            response.setStatus(403);
+            return null;
+        }
+        if (executeCodeRequest == null) {
+            throw new RuntimeException("请求参数为空");
+        }
+        return javaNativeCodeSandbox.executeCode(executeCodeRequest);
+    }
+}
+```
+
+```java
+/**
+ * 远程代码沙箱（实际调用接口的沙箱）
+ */
+public class RemoteCodeSandbox implements CodeSandbox {
+    //定义鉴权请求头和密钥
+    private static final String AUTH_REQUST_HEADER = "auth";
+    private static final String AUTH_REQUEST_SECRET = "secretKey";
+    @Override
+    public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+        System.out.println("远程代码沙箱");
+        String url = "http://localhost:8090/executeCode";
+        String json = JSONUtil.toJsonStr(executeCodeRequest);
+        String responseStr = HttpUtil.createPost(url)
+                .header(AUTH_REQUST_HEADER,AUTH_REQUEST_SECRET)
+                .body(json)
+                .execute()
+                .body();
+        if (StringUtils.isBlank(responseStr)) {
+            throw new BusinessException(ErrorCode.API_REQUEST_ERROR, "executeCode remoteSandbox error, message = " + responseStr);
+        }
+        return JSONUtil.toBean(responseStr, ExecuteCodeResponse.class);
+    }
+}
+```
+
+#### 跑通项目流程
+
+```java
+/**
+     * 提交题目
+     *
+     * @param questionSubmitAddRequest
+     * @param request
+     * @return resultNum 本次点赞变化数
+     */
+    @PostMapping("/question_submit/do")
+    public BaseResponse<Long> doQuestionSubmit(@RequestBody QuestionSubmitAddRequest questionSubmitAddRequest,
+                                               HttpServletRequest request) {
+        if (questionSubmitAddRequest == null || questionSubmitAddRequest.getQuestionId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        final User loginUser = userService.getLoginUser(request);
+        long questionSubmitId = questionSubmitService.doQuestionSubmit(questionSubmitAddRequest, loginUser);
+        return ResultUtils.success(questionSubmitId);
+    }
+    /**
+     * 分页获取列表（仅管理员）
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/question_submit/list/page")
+    public BaseResponse<Page<QuestionSubmitVO>> listQuestionSubmitByPage(@RequestBody QuestionSubmitQueryRequest questionSubmitQueryRequest,
+                                                                         HttpServletRequest request) {
+        long current = questionSubmitQueryRequest.getCurrent();
+        long size = questionSubmitQueryRequest.getPageSize();
+        //从数据库中查询原始的题目提交分页信息
+        Page<QuestionSubmit> questionSubmitPage = questionSubmitService.page(new Page<>(current, size),
+                questionSubmitService.getQueryWrapper(questionSubmitQueryRequest));
+        final User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(questionSubmitService.getQuestionSubmitVOPage(questionSubmitPage,loginUser));
+    }
+```
+
 
 
 
