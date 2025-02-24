@@ -546,3 +546,80 @@ org.springframework.web.servlet.DispatcherServlet@65d8dff8
 
 ![image-20241117233929707](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20241117233929707.png)
 
+## Springboot拦截器
+
+第一步：需要实现HandleInterceptor接口
+
+![image-20250223213533726](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250223213533726.png)
+
+```java
+@Component
+public class LoginInterceptor implements HandlerInterceptor {
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        //令牌验证
+        String token = request.getHeader("Authorization");
+        //验证token
+        try {
+            Map<String, Object> claims = JwtUtil.parseToken(token);
+            //放行
+            return true;
+        } catch (Exception e) {
+            //http响应状态码为401
+            response.setStatus(401);
+            //不放行
+            return false;
+        }
+    }
+}
+```
+
+```java
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Autowired
+    private LoginInterceptor loginInterceptor;
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        //登录接口和注册接口不拦截
+        registry.addInterceptor(loginInterceptor).excludePathPatterns("/user/login","/user/register");
+    }
+}
+```
+
+## ThreadLocal
+
+用来存储数据:set()/get()
+
+使用ThreadLocal存储的数据，线程安全
+
+用完记得释放，以免内存占用过多
+
+```java
+public class ThreadLocalTest {
+
+    @Test
+    public void testThreadLocalSetAndGet(){
+        //提供一个ThreadLocal对象
+        ThreadLocal tl = new ThreadLocal();
+
+        //开启两个线程
+        new Thread(()->{
+            tl.set("xxx");
+            System.out.println(Thread.currentThread().getName()+": "+tl.get());
+            System.out.println(Thread.currentThread().getName()+": "+tl.get());
+            System.out.println(Thread.currentThread().getName()+": "+tl.get());
+        },"蓝色").start();
+
+        new Thread(()->{
+            tl.set("sss");
+            System.out.println(Thread.currentThread().getName()+": "+tl.get());
+            System.out.println(Thread.currentThread().getName()+": "+tl.get());
+            System.out.println(Thread.currentThread().getName()+": "+tl.get());
+        },"绿色").start();
+    }
+}
+```
+
