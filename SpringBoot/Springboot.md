@@ -623,18 +623,11 @@ public class ThreadLocalTest {
 }
 ```
 
-## 全局异常处理器
+全局异常处理器
 
-```java
-@RestControllerAdvice
-public class GlobalExceptionHandler {
-    @ExceptionHandler(Exception.class)
-    public Result handleException(Exception e){
-        e.printStackTrace();//打印异常信息
-        return Result.error(StringUtils.hasLength(e.getMessage())?e.getMessage():"操作失败");
-    }
-}
-```
+![image-20250226093719613](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250226093719613.png)
+
+
 
 
 
