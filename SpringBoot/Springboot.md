@@ -623,7 +623,7 @@ public class ThreadLocalTest {
 }
 ```
 
-全局异常处理器
+### 全局异常处理器
 
 ![image-20250226093719613](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250226093719613.png)
 
