@@ -5,6 +5,7 @@ export default [
         collapsable: false,
         children: [
             "马克思主义基本原理.md",
+            "操作系统.md",
         ],
     },
 ];
