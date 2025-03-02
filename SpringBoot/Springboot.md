@@ -627,7 +627,96 @@ public class ThreadLocalTest {
 
 ![image-20250226093719613](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250226093719613.png)
 
+## PageHelper分页插件
 
+```xml
+ <!--pageHelper坐标-->
+    <dependency>
+      <groupId>com.github.pagehelper</groupId>
+      <artifactId>pagehelper-spring-boot-starter</artifactId>
+      <version>1.4.6</version>
+    </dependency>
+```
 
+`PageHelper` 是 MyBatis 中的一个分页插件，用于简化分页查询的实现。其核心方法是 `PageHelper.startPage(pageNum, pageSize)`。
 
+### `PageHelper.startPage(pageNum, pageSize)` 方法
 
+#### **作用**
+
+- 用于开启分页功能。
+- 它会自动拦截接下来执行的 SQL 查询，并在查询语句中添加分页逻辑（如 `LIMIT` 或 `ROWNUM`），从而实现分页查询。
+
+#### **参数**
+
+1. **`pageNum`**
+   - 表示当前页码（从 1 开始）。
+   - 例如，`pageNum = 1` 表示查询第一页的数据。
+2. **`pageSize`**
+   - 表示每页显示的记录条数。
+   - 例如，`pageSize = 10` 表示每页显示 10 条数据。
+
+### **工作原理**
+
+1. **拦截 SQL 查询**
+
+   - 当调用 `PageHelper.startPage(pageNum, pageSize);` 后，PageHelper 会通过 MyBatis 的拦截器机制，拦截接下来执行的 SQL 查询。
+
+2. **自动添加分页逻辑**
+
+   - PageHelper 会根据数据库类型（如 MySQL、Oracle 等），自动在 SQL 查询语句中添加分页逻辑。
+
+     - 对于 MySQL，会自动添加 `LIMIT` 子句。例如：
+
+       ```sql
+       SELECT * FROM article LIMIT 10 OFFSET 0; -- 查询第1页，每页10条
+       ```
+
+     - 对于 Oracle，会自动添加 `ROWNUM` 子句。
+
+3. **返回分页结果**
+
+   - 查询结果会被封装到 `Page` 对象中，该对象包含了分页信息（如总记录数、当前页数据等）。
+
+### **示例代码**
+
+```java
+@Override
+public PageBean<Article> list(Integer pageNum, Integer pageSize, Integer categoryId, String state) {
+    // 1. 创建PageBean对象
+    PageBean<Article> pb = new PageBean<>();
+
+    // 2. 开启分页查询
+    PageHelper.startPage(pageNum, pageSize);
+
+    // 3. 调用mapper查询数据
+    Map<String, Object> map = ThreadLocalUtil.get();
+    Integer userId = (Integer) map.get("id");
+    List<Article> as = articleMapper.list(userId, categoryId, state);
+
+    // 4. 将查询结果强制转换为Page对象
+    Page<Article> p = (Page<Article>) as;
+
+    // 5. 将分页数据填充到PageBean对象中
+    pb.setTotal(p.getTotal());       // 设置总记录数
+    pb.setItems(p.getResult());     // 设置当前页数据
+
+    return pb;
+}
+```
+
+### **注意事项**
+
+1. **`PageHelper.startPage` 的调用位置**
+   - 必须在执行 SQL 查询之前调用，否则分页功能不会生效。
+2. **线程安全问题**
+   - `PageHelper.startPage` 是基于 `ThreadLocal` 实现的，因此它是线程安全的。
+   - 确保每次查询后调用 `PageHelper.clearPage()` 清理分页参数，避免影响后续查询。
+3. **数据库兼容性**
+   - PageHelper 支持多种数据库（如 MySQL、Oracle、PostgreSQL 等），会自动根据数据库类型生成合适的分页 SQL。
+
+### **总结**
+
+- `PageHelper.startPage(pageNum, pageSize);` 是 PageHelper 分页插件的核心方法，用于开启分页功能。
+- 它会自动拦截 SQL 查询并添加分页逻辑，返回分页结果。
+- 通过 `Page` 对象可以获取总记录数和当前页数据，方便封装到自定义的分页结果类（如 `PageBean`）中。
