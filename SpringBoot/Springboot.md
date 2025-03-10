@@ -1017,7 +1017,63 @@ public class OssJavaSdkQuickStart {
 }
 ```
 
+```java
+package cn.lanqiao.dataspringboot;
 
+
+import com.aliyun.oss.ClientException;
+import com.aliyun.oss.OSS;
+import com.aliyun.oss.OSSClientBuilder;
+import com.aliyun.oss.OSSException;
+
+
+import java.util.Random;
+import java.io.*;
+/**
+ * @ Author: 李某人
+ * @ Date: 2025/03/10/16:52
+ * @ Description:
+ */
+public class OssJavaSdkQuickStart {
+    public static void main(String[] args){
+        // 基础参数配置（需替换为实际值）
+        String endpoint = "https://oss-cn-chengdu.aliyuncs.com";  // 根据Bucket地域调整
+        String accessKeyId = "xxxxx";
+        String accessKeySecret = "xxxxx";
+        String bucketName = "dataspringboot";  // 目标Bucket名称
+        String objectName = "upload/"+getStringRandom(8)+".jpg";  // OSS中的文件路径+名称
+        String localFilePath = "E:\\bd3eb13533fa828b0850db71d292213b960a5a49.jpg";  // 本地文件路径
+
+        // 创建OSSClient实例
+        OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
+
+        try {
+            // 上传文件流
+            InputStream inputStream = new FileInputStream(localFilePath);
+            ossClient.putObject(bucketName, objectName, inputStream);
+            System.out.println("文件上传完成");
+        } catch (OSSException | ClientException | FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            ossClient.shutdown();
+        }
+    }
+    public static String getStringRandom(int length) {
+        StringBuilder val = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            if (random.nextBoolean()) {  // 生成字母（大小写随机）
+                int choice = random.nextBoolean() ? 65 : 97;  // 65为大写A，97为小写a
+                val.append((char) (choice + random.nextInt(26)));
+            } else {  // 生成数字
+                val.append(random.nextInt(10));
+            }
+        }
+        return val.toString();
+    }
+}
+
+```
 
 
 
