@@ -720,3 +720,340 @@ public PageBean<Article> list(Integer pageNum, Integer pageSize, Integer categor
 - `PageHelper.startPage(pageNum, pageSize);` 是 PageHelper 分页插件的核心方法，用于开启分页功能。
 - 它会自动拦截 SQL 查询并添加分页逻辑，返回分页结果。
 - 通过 `Page` 对象可以获取总记录数和当前页数据，方便封装到自定义的分页结果类（如 `PageBean`）中。
+
+## Springboot项目热部署
+
+1.Intellij IDEA左上角——>文件——>**settings——>搜索debug**
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/38d58d1acce34a44af8b44aaa158a7d6.png)
+
+2.修改[springboot配置](https://so.csdn.net/so/search?q=springboot配置&spm=1001.2101.3001.7020)，实时更新类和资源
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/a1cf52c7516c4279a550df65ba9f1b44.png)
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/d1d80ce9a0c84403b5ac64ce36fb821a.png)
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/a5396cb4f34c4bbc805e0ba59d809774.png)
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/554a16257aab44299b01ce112bec157e.png)
+
+3.IDEA开启项目自动编译
+
+Intellij IDEA左上角——>文件——>**settings——>搜索compiler**
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/3e80c82d4abc4bb09817b6fe940cd023.png)
+
+4.IDEA开启项目运行时可以看到下面图标则配置成功
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/5f6d45f5d8f541e8bb54fefd20de6b54.png)
+
+## 阿里云OSS对象存储
+
+**前言**
+JavaEE项目中需要对图片视频等静态资源进行上传下载，这里用到阿里云对象存储服务（Object Storage Service，简称OSS），OSS可以通过网络随时存取包括但不限于文本、图片、音视频等各种非结构化数据文件，还有Excel表，CSV、数据库表等结构化数据文件。将文件以对象的形式上传到存储空间（bucket）中。
+
+**阿里云OSS基本操作**
+
+您可以进行以下操作：
+
+1.创建一个或者多个存储空间，向每个存储空间中添加文件
+
+2.存储空间中的每个文件都有对应的网络链接，可以进行文件的下载和共享
+
+3.修改存储空间或者文件的属性、元信息来设置响应的访问权限
+
+4.在阿里云管理控制台执行基本的高级OSS任务
+
+5.使用阿里云开发工具包或者直接在应用程序中进行RESTful API调用执行基本和高级 OSS任务
+
+**开通阿里云OSS服务（免费）**
+
+需要阿里云账号和实名验证
+
+开通还是免费的，0元，后续按量计费，当然也有免费的，有各种限制
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/076f6b1c89454eaa9091649f902977bc.png)
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/43880a70aed3491a9d31511e6647637b.png)
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/857e965d9bab4a21adb1635332c1cf87.png)
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/cc9e8790d05a44e9a747e25f3b38b0d6.png)
+
+**创建Bucket存储空间**
+开通后，有时需要多等一段时间，系统处理也许有延迟，会显示未开通，我这次就是等了20分钟
+
+长这样：
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/136b3e3c7fde492cb0a11147d02f8f09.png)
+
+开始创建...
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/d3f416b562314c1fb3705f227d1adc7a.png)
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/7504d1a5091140e3b7466a703fe0c318.png)
+
+是否开启“阻止公共访问”
+
+```java
+开启
+
+安全性需求高：如果存储的文件包含敏感数据或私人信息，为了保障数据安全，建议开启“阻止公共访问”，确保只有授权的用户可以访问和下载文件。
+
+避免意外泄露：阻止公共访问可以减少意外将文件暴露在公共网络上，并降低数据泄露的风险。
+
+符合合规要求：某些行业或组织可能有特定的安全合规要求，需要严格控制数据的访问权限，此时开启“阻止公共访问”是必要的。
+
+关闭
+
+共享文件需要：如果您需要公开分享存储在 OSS 中的文件给其他用户或公众访问，可以不开启“阻止公共访问”。
+
+静态网站托管：如果您使用 OSS 托管静态网站并希望公开访问网站内容，可以选择不开启“阻止公共访问”。
+
+临时文件需求：对于一些临时或公开数据，如公告、新闻稿等，也可以选择不开启“阻止公共访问”。
+```
+
+下面这个默认是已开通，只能等创建完再修改了，然后下面选择公共读
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1c8564434f7e4f7d925b5739037ffff2.png)
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/a69e517c26234caf8f1aed19b1222258.png)
+
+长这样，（进入Bucket）
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/207520e3939d4bcfa6810533fbef8fdf.png)
+
+进入后跳转到这里，关闭"阻止公共访问"
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/8525d99ce3b24eb4acb1861d7ccbbd57.png)
+
+再开启"公共读"
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/20c5b1853d134c1e8aa3d811e9c836a7.gif)
+
+在这里看上传的文件
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/5fd529b8c31f4356b16e54fce0b412f6.png)
+
+**获取AccessKey ID和AccessKey Secret**
+在阿里云 OSS（对象存储服务）中，AccessKey ID 和 AccessKey Secret 是用于进行身份验证和访问控制的秘钥凭据（成对出现）。可以在阿里云控制台创建，用于标识和验证身份以便进行 API 调用和访问阿里云资源。
+
+**AccessKey ID**
+
+作用：AccessKey ID 是一个由字母和数字组成的唯一标识符，用于标识阿里云平台上的账户。
+
+使用场景：使用阿里云 SDK、API 或其他工具与 OSS 进行交互时，需要提供 AccessKey ID 来标识自己的身份。
+
+**AccessKey Secret**
+
+作用：AccessKey Secret 是与 AccessKey ID 相关联的机密字符串，用于对 API 请求进行签名和验证。
+
+安全性：AccessKey Secret 应当被妥善保管，并不应该公开或分享给他人，以免造成安全风险。
+
+为了保证账户和数据的安全，建议定期更换 AccessKey ID 和 AccessKey Secret，如果遗失了 AccessKey ID 或 AccessKey Secret，可以在阿里云控制台重新生成新的凭据。
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/a065defe47264fd98621f387016c755a.png)
+
+开始获取...
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/e7370a07d09e498abe06274c16b13432.png)
+
+点击【继续使用AccessKey】
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/62d30e851edc457d9faef023dd402223.png)
+
+还要安全验证，自己选择
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/bfbe2b58d98e4b4ba5a0738ab0a0449c.png)
+
+**不要泄漏，定期更换，丢失无法找回只能重新生成！！！**
+
+**不要泄漏，定期更换，丢失无法找回只能重新生成！！！**
+
+**不要泄漏，定期更换，丢失无法找回只能重新生成！！！**
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/8fe03ebd8957475cbeba816ac836609e.png)
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/fe48989c07bb4d9ca40176b3da266a1b.png)
+
+**获取地域节点与存储空间名**
+这两个东西下面会用到
+
+我选择的是华东1（杭州），如果你选择的不是这个，那么节点名是不一样的
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/fe63f82e1e74464796ee9b88537c185f.png)
+
+JavaEE项目使用OSS
+
+导入依赖
+
+JDK版本不同，对应的依赖也不同，需要查看文档
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/7f3b6513240b453187cf38e3f26ee566.png)
+
+这里查看文档
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/a9c3d2dc159d42caba86553951381def.png)
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/71fd3dda34cb426ea755d645de343ccc.png)
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/c0ba2f7170cb469e9fdbf2505cbc6ccf.png)
+
+![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/5e888e540a584e3a9698962615e42b33.png)
+
+我当前项目使用的是JDK17，所以我需要导入以下依赖（不过，曾经有一个项目，并没有导入第三个依赖也同样能成功使用功能OSS，这一点有待研究）
+
+```java
+<dependency>
+    <groupId>javax.xml.bind</groupId>
+    <artifactId>jaxb-api</artifactId>
+    <version>2.3.1</version>
+</dependency>
+<dependency>
+    <groupId>javax.activation</groupId>
+    <artifactId>activation</artifactId>
+    <version>1.1.1</version>
+</dependency>
+<!-- no more than 2.3.3-->
+<dependency>
+    <groupId>org.glassfish.jaxb</groupId>
+    <artifactId>jaxb-runtime</artifactId>
+    <version>2.3.3</version>
+</dependency>
+```
+
+**文件上传**
+
+下面是官网给出的快速入门的测试demo，可以自己试试
+
+```java
+import java.io.*;
+import java.util.Random;
+import com.aliyun.oss.ClientException;
+import com.aliyun.oss.OSS;
+import com.aliyun.oss.OSSClientBuilder;
+import com.aliyun.oss.OSSException;
+import com.aliyun.oss.common.auth.CredentialsProviderFactory;
+import com.aliyun.oss.common.auth.EnvironmentVariableCredentialsProvider;
+import com.aliyun.oss.model.OSSObject;
+import com.aliyun.oss.model.ObjectListing;
+import com.aliyun.oss.model.OSSObjectSummary;
+ 
+public class OssJavaSdkQuickStart {
+    /** 生成一个唯一的 Bucket 名称 */
+    public static String generateUniqueBucketName(String prefix) {
+        // 获取当前时间戳
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        // 生成一个 0 到 9999 之间的随机数
+        Random random = new Random();
+        int randomNum = random.nextInt(10000); // 生成一个 0 到 9999 之间的随机数
+        // 连接以形成一个唯一的 Bucket 名称
+        return prefix + "-" + timestamp + "-" + randomNum;
+    }
+ 
+    public static void main(String[] args) throws com.aliyuncs.exceptions.ClientException {
+        // 设置 OSS Endpoint 和 Bucket 名称
+        String endpoint = "https://oss-cn-hangzhou.aliyuncs.com";
+        String bucketName = generateUniqueBucketName("demo");
+        // 替换为您的 Bucket 区域
+        String region = "cn-hangzhou";
+        // 创建 OSSClient 实例
+        EnvironmentVariableCredentialsProvider credentialsProvider =
+                CredentialsProviderFactory.newEnvironmentVariableCredentialsProvider();
+        OSS ossClient = OSSClientBuilder.create()
+                .endpoint(endpoint)
+                .credentialsProvider(credentialsProvider)
+                .region(region)
+                .build();
+        try {
+            // 1. 创建存储空间（Bucket）
+            ossClient.createBucket(bucketName);
+            System.out.println("1. Bucket " + bucketName + " 创建成功。");
+            // 2. 上传文件
+            String objectName = "exampledir/exampleobject.txt";
+            String content = "Hello OSS";
+            ossClient.putObject(bucketName, objectName, new ByteArrayInputStream(content.getBytes()));
+            System.out.println("2. 文件 " + objectName + " 上传成功。");
+            // 3. 下载文件
+            OSSObject ossObject = ossClient.getObject(bucketName, objectName);
+            InputStream contentStream = ossObject.getObjectContent();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(contentStream));
+            String line;
+            System.out.println("3. 下载的文件内容：");
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+            contentStream.close();
+            // 4. 列出文件
+            System.out.println("4. 列出 Bucket 中的文件：");
+            ObjectListing objectListing = ossClient.listObjects(bucketName);
+            for (OSSObjectSummary objectSummary : objectListing.getObjectSummaries()) {
+                System.out.println(" - " + objectSummary.getKey() + " (大小 = " + objectSummary.getSize() + ")");
+            }
+            // 5. 删除文件
+            ossClient.deleteObject(bucketName, objectName);
+            System.out.println("5. 文件 " + objectName + " 删除成功。");
+            // 6. 删除存储空间（Bucket）
+            ossClient.deleteBucket(bucketName);
+            System.out.println("6. Bucket " + bucketName + " 删除成功。");
+        } catch (OSSException oe) {
+            System.out.println("Caught an OSSException, which means your request made it to OSS, "
+                    + "but was rejected with an error response for some reason.");
+            System.out.println("Error Message:" + oe.getErrorMessage());
+            System.out.println("Error Code:" + oe.getErrorCode());
+            System.out.println("Request ID:" + oe.getRequestId());
+            System.out.println("Host ID:" + oe.getHostId());
+        } catch (ClientException | IOException ce) {
+            System.out.println("Caught an ClientException, which means the client encountered "
+                    + "a serious internal problem while trying to communicate with OSS, "
+                    + "such as not being able to access the network.");
+            System.out.println("Error Message:" + ce.getMessage());
+        } finally {
+            if (ossClient != null) {
+                ossClient.shutdown();
+            }
+        }
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1122,6 +1122,65 @@ spring:
       max-request-size: 1000000000
 ```
 
+```java
+package cn.lanqiao.dataspringboot.controller;
+
+import cn.lanqiao.dataspringboot.utils.Result;
+import org.springframework.util.ResourceUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+
+/**
+ * @ Author: 李某人
+ * @ Date: 2025/03/10/14:59
+ * @ Description:
+ */
+@RestController
+public class FileUploadController {
+    /**
+     * 通用的文件上传
+     * @param multipartFile
+     * @param
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping("/upload")
+    public Result upload(@RequestParam("file") MultipartFile multipartFile) throws Exception{
+        if (!StringUtils.isEmpty(multipartFile) && multipartFile.getSize()>0){
+            //获取原始的文件名
+            String filename = multipartFile.getOriginalFilename();
+            //获取文件的扩展名
+            String suffix = filename.substring(filename.lastIndexOf(".") + 1);
+            //文件上传的真实路径
+            String realPath = ResourceUtils.getURL("classpath:").getPath();
+            String filePath=new Date().getTime()+"."+suffix;
+            realPath=realPath.substring(1,realPath.length())+"static"+filePath;
+            File newfile = new File(realPath);
+            try {
+                multipartFile.transferTo(newfile);
+                System.out.println("文件上传路径是:"+realPath);
+                return null;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }else {
+            return null;
+        }
+    }
+}
+
+```
+
+
+
 ## kindEditor富文本编辑器
 
 ### 导入kindEditor的依赖
