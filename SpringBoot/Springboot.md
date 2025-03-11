@@ -833,7 +833,7 @@ JavaEE项目中需要对图片视频等静态资源进行上传下载，这里�
 
 在这里看上传的文件
 
-![img](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/5fd529b8c31f4356b16e54fce0b412f6.png)
+![img](D:\5fd529b8c31f4356b16e54fce0b412f6.png)
 
 **获取AccessKey ID和AccessKey Secret**
 在阿里云 OSS（对象存储服务）中，AccessKey ID 和 AccessKey Secret 是用于进行身份验证和访问控制的秘钥凭据（成对出现）。可以在阿里云控制台创建，用于标识和验证身份以便进行 API 调用和访问阿里云资源。
@@ -1017,6 +1017,8 @@ public class OssJavaSdkQuickStart {
 }
 ```
 
+测试类代码:
+
 ```java
 package cn.lanqiao.dataspringboot;
 
@@ -1025,6 +1027,7 @@ import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.OSSException;
+import com.aliyun.oss.model.PutObjectResult;
 
 
 import java.util.Random;
@@ -1038,10 +1041,9 @@ public class OssJavaSdkQuickStart {
     public static void main(String[] args){
         // 基础参数配置（需替换为实际值）
         String endpoint = "https://oss-cn-chengdu.aliyuncs.com";  // 根据Bucket地域调整
-        String accessKeyId = "xxxxx";
-        String accessKeySecret = "xxxxx";
+        //这里记得补充key
         String bucketName = "dataspringboot";  // 目标Bucket名称
-        String objectName = "upload/"+getStringRandom(8)+".jpg";  // OSS中的文件路径+名称
+        String objectName = getStringRandom(8)+".jpg";  // OSS中的文件路径+名称
         String localFilePath = "E:\\bd3eb13533fa828b0850db71d292213b960a5a49.jpg";  // 本地文件路径
 
         // 创建OSSClient实例
@@ -1051,7 +1053,7 @@ public class OssJavaSdkQuickStart {
             // 上传文件流
             InputStream inputStream = new FileInputStream(localFilePath);
             ossClient.putObject(bucketName, objectName, inputStream);
-            System.out.println("文件上传完成");
+            System.out.println("文件上传完成:"+objectName);
         } catch (OSSException | ClientException | FileNotFoundException e) {
             e.printStackTrace();
         } finally {
@@ -1075,9 +1077,84 @@ public class OssJavaSdkQuickStart {
 
 ```
 
+完整版代码:
 
+```java
+package cn.lanqiao.dataspringboot.controller;
 
+import cn.lanqiao.dataspringboot.utils.AliOssUtil;
+import cn.lanqiao.dataspringboot.utils.Result;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.*;
+import java.util.Random;
+
+/**
+ * @ Author: 李某人
+ * @ Date: 2025/03/10/14:59
+ * @ Description:
+ */
+@RestController
+public class FileUploadController {
+    /**
+     * 通用的文件上传
+     * @param multipartFile
+     * @param
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping("/upload")
+    public Result upload(@RequestParam("file") MultipartFile multipartFile){
+        File tempFile = null; // 声明临时文件变量
+        try {
+            if (!StringUtils.isEmpty(multipartFile) && multipartFile.getSize()>0){
+                // 基础参数配置（需替换为实际值）
+                String objectName = getStringRandom(8)+".jpg";  // OSS中的文件路径+名称
+                // 将文件保存到本地临时目录
+                tempFile = File.createTempFile("upload-", ".tmp");
+                multipartFile.transferTo(tempFile);
+                String localFilePath = tempFile.getAbsolutePath();  // 获取文件的本地路径
+                InputStream inputStream = new FileInputStream(localFilePath);
+                //上传文件到OSS对象存储中
+                String url = AliOssUtil.uploadFile(objectName, inputStream);
+                return Result.success(url);
+            }else {
+                return Result.error("上传文件失败");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalStateException e) {
+            throw new RuntimeException(e);
+        }finally {
+            //始终都会执行这里面的代码
+            //删除临时目录中的文件
+            // 确保临时文件被删除
+            if (tempFile != null && tempFile.exists()) {
+                tempFile.delete();
+                System.out.println("临时文件已删除: " + tempFile.getAbsolutePath());
+            }
+        }
+    }
+    public static String getStringRandom(int length) {
+        StringBuilder val = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            if (random.nextBoolean()) {  // 生成字母（大小写随机）
+                int choice = random.nextBoolean() ? 65 : 97;  // 65为大写A，97为小写a
+                val.append((char) (choice + random.nextInt(26)));
+            } else {  // 生成数字
+                val.append(random.nextInt(10));
+            }
+        }
+        return val.toString();
+    }
+}
+
+```
 
 
 
