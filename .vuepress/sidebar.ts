@@ -9,8 +9,8 @@ import mybatisSideBar from "./sidebars/mybatisSideBar";
 import BackEndProject from "./sidebars/BackEndProject";
 import SpringSideBar from "./sidebars/SpringSideBar";
 import Springboot from "./sidebars/Springboot";
-import 马克思主义基本原理 from "./sidebars/selfStudy";
 import selfStudy from "./sidebars/selfStudy";
+import MybatisPlusSideBar from "./sidebars/mybatisPlusSideBar";
 // @ts-ignore
 export default {
     "/Java基础/": JavaSideBar,
@@ -23,6 +23,7 @@ export default {
     "/Spring/": SpringSideBar,
     "/Springboot/": Springboot,
     "/自考/": selfStudy,
+    "/MybatisPlus/": MybatisPlusSideBar,
     // 降级，默认根据文章标题渲染侧边栏
     "/": "auto",
 } as SidebarConfig4Multiple;

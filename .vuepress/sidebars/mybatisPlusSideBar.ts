@@ -4,7 +4,7 @@ export default [
         title: "学习路线",
         collapsable: false,
         children: [
-            "Mybatis.md",
+            "Mybatis-Plus.md",
         ],
     },
 ];

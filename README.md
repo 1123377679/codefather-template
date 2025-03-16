@@ -51,3 +51,5 @@ permalink: /
 
 ## [自考](/自考/)
 
+## [MybatisPlus](/MybatisPlus/)
+
