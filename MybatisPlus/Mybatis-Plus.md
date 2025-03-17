@@ -125,11 +125,7 @@ INSERT INTO `user` (`id`, `username`, `password`, `phone`, `info`, `status`, `ba
 
 ```
 
-然后用你的IDEA工具打开，项目结构如下：
-
-![image-20250316180705612](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250316180705612.png)
-
-最后，在`application.yaml`中修改jdbc参数为你自己的数据库参数：
+在`application.yaml`中修改jdbc参数为你自己的数据库参数：
 
 ```xml
 spring:
@@ -140,7 +136,7 @@ spring:
     password: MySQL123
 logging:
   level:
-    com.itheima: debug
+    cn.lanqiao: debug
   pattern:
     dateformat: HH:mm:ss
 ```
@@ -428,7 +424,7 @@ https://baomidou.com/reference/
 
 ```YAML
 mybatis-plus:
-  type-aliases-package: com.itheima.mp.domain.po
+  type-aliases-package: cn.lanqiao.mp.domain.po
   global-config:
     db-config:
       id-type: auto # 全局id类型为自增长
