@@ -1,4 +1,4 @@
-# MybatisPlus
+# 	MybatisPlus
 
 ```txt
 本文讨论了在日常开发中，单表CRUD功能代码重复度高、开发费时，企业常使用组件简化该工作，MybatisPlus不仅能简化单表操作，还增强了Mybatis功能。通过学习，读者能利用MybatisPlus实现基本CRUD、使用条件构建器、常用注解，处理枚举、JSON类型字段及实现分页等功能。关键要点包括：​
@@ -496,6 +496,588 @@ void testQuery() {
 
 ### **QueryWrapper**
 
+`QueryWrapper` 是 MyBatis-Plus 中用于构建查询条件的核心类之一。它提供了丰富的方法来构建 SQL 查询条件，支持链式调用，使用起来非常方便。以下是一些常用的 `QueryWrapper` 方法及其说明。
+
+------
+
+#### 1. 基本方法
+
+`eq`：等于
+
+```
+eq(String column, Object val)
+```
+
+**示例**：
+
+```
+queryWrapper.eq("name", "John");
+```
+
+**生成的 SQL**：
+
+```
+WHERE name = 'John'
+```
+
+------
+
+`ne`：不等于
+
+```
+ne(String column, Object val)
+```
+
+**示例**：
+
+```
+queryWrapper.ne("age", 30);
+```
+
+**生成的 SQL**：
+
+```
+WHERE age <> 30
+```
+
+------
+
+`gt`：大于
+
+```
+gt(String column, Object val)
+```
+
+**示例**：
+
+```
+queryWrapper.gt("age", 18);
+```
+
+**生成的 SQL**：
+
+```
+WHERE age > 18
+```
+
+------
+
+`ge`：大于等于
+
+```
+ge(String column, Object val)
+```
+
+**示例**：
+
+```
+queryWrapper.ge("age", 18);
+```
+
+**生成的 SQL**：
+
+```
+WHERE age >= 18
+```
+
+------
+
+`lt`：小于
+
+```
+lt(String column, Object val)
+```
+
+**示例**：
+
+```
+queryWrapper.lt("age", 30);
+```
+
+**生成的 SQL**：
+
+```
+WHERE age < 30
+```
+
+------
+
+`le`：小于等于
+
+```
+le(String column, Object val)
+```
+
+**示例**：
+
+```
+queryWrapper.le("age", 30);
+```
+
+**生成的 SQL**：
+
+```
+WHERE age <= 30
+```
+
+------
+
+#### 2. 范围查询
+
+`between`：在某个范围内
+
+```
+between(String column, Object val1, Object val2)
+```
+
+**示例**：
+
+```
+queryWrapper.between("age", 18, 30);
+```
+
+**生成的 SQL**：
+
+```
+WHERE age BETWEEN 18 AND 30
+```
+
+------
+
+`notBetween`：不在某个范围内
+
+```
+notBetween(String column, Object val1, Object val2)
+```
+
+**示例**：
+
+```
+queryWrapper.notBetween("age", 18, 30);
+```
+
+**生成的 SQL**：
+
+```
+WHERE age NOT BETWEEN 18 AND 30
+```
+
+------
+
+#### 3. 模糊查询
+
+`like`：模糊匹配
+
+```
+like(String column, Object val)
+```
+
+**示例**：
+
+```
+queryWrapper.like("name", "John");
+```
+
+**生成的 SQL**：
+
+```
+WHERE name LIKE '%John%'
+```
+
+------
+
+`notLike`：模糊不匹配
+
+```
+notLike(String column, Object val)
+```
+
+**示例**：
+
+```
+queryWrapper.notLike("name", "John");
+```
+
+**生成的 SQL**：
+
+```
+WHERE name NOT LIKE '%John%'
+```
+
+------
+
+`likeLeft`：左模糊匹配
+
+```
+likeLeft(String column, Object val)
+```
+
+**示例**：
+
+```
+queryWrapper.likeLeft("name", "John");
+```
+
+**生成的 SQL**：
+
+```
+WHERE name LIKE '%John'
+```
+
+------
+
+`likeRight`：右模糊匹配
+
+```
+likeRight(String column, Object val)
+```
+
+**示例**：
+
+```
+queryWrapper.likeRight("name", "John");
+```
+
+**生成的 SQL**：
+
+```
+WHERE name LIKE 'John%'
+```
+
+------
+
+#### 4. 空值查询
+
+`isNull`：字段为空
+
+```
+isNull(String column)
+```
+
+**示例**：
+
+```
+queryWrapper.isNull("email");
+```
+
+**生成的 SQL**：
+
+```
+WHERE email IS NULL
+```
+
+------
+
+`isNotNull`：字段不为空
+
+```
+isNotNull(String column)
+```
+
+**示例**：
+
+```
+queryWrapper.isNotNull("email");
+```
+
+**生成的 SQL**：
+
+```
+WHERE email IS NOT NULL
+```
+
+------
+
+#### 5. 集合查询
+
+`in`：在某个集合中
+
+```
+in(String column, Collection<?> value)
+```
+
+**示例**：
+
+```
+queryWrapper.in("age", Arrays.asList(18, 20, 22));
+```
+
+**生成的 SQL**：
+
+```
+WHERE age IN (18, 20, 22)
+```
+
+------
+
+`notIn`：不在某个集合中
+
+```
+notIn(String column, Collection<?> value)
+```
+
+**示例**：
+
+```
+queryWrapper.notIn("age", Arrays.asList(18, 20, 22));
+```
+
+**生成的 SQL**：
+
+```
+WHERE age NOT IN (18, 20, 22)
+```
+
+------
+
+#### 6. 排序
+
+`orderByAsc`：升序排序
+
+```
+orderByAsc(String... columns)
+```
+
+**示例**：
+
+```
+queryWrapper.orderByAsc("age");
+```
+
+**生成的 SQL**：
+
+```
+ORDER BY age ASC
+```
+
+------
+
+`orderByDesc`：降序排序
+
+```
+orderByDesc(String... columns)
+```
+
+**示例**：
+
+```
+queryWrapper.orderByDesc("age");
+```
+
+**生成的 SQL**：
+
+```
+ORDER BY age DESC
+```
+
+------
+
+#### 7. 分组
+
+`groupBy`：分组
+
+```
+groupBy(String... columns)
+```
+
+**示例**：
+
+```
+queryWrapper.groupBy("department");
+```
+
+**生成的 SQL**：
+
+```
+GROUP BY department
+```
+
+------
+
+#### 8. 其他
+
+`select`：指定查询字段
+
+```
+select(String... columns)
+```
+
+**示例**：
+
+```
+queryWrapper.select("id", "name", "age");
+```
+
+**生成的 SQL**：
+
+```
+SELECT id, name, age FROM table
+```
+
+------
+
+`or`：或条件
+
+```
+or()
+```
+
+**示例**：
+
+```
+queryWrapper.eq("name", "John").or().eq("name", "Jane");
+```
+
+**生成的 SQL**：
+
+```
+WHERE name = 'John' OR name = 'Jane'
+```
+
+------
+
+`and`：与条件
+
+```
+and(Consumer<QueryWrapper<T>> consumer)
+```
+
+**示例**：
+
+```
+queryWrapper.and(wrapper -> wrapper.eq("name", "John").eq("age", 20));
+```
+
+**生成的 SQL**：
+
+```
+WHERE (name = 'John' AND age = 20)
+```
+
+------
+
+#### 9. 复杂条件
+
+`nested`：嵌套条件
+
+```
+nested(Consumer<QueryWrapper<T>> consumer)
+```
+
+**示例**：
+
+```
+queryWrapper.nested(wrapper -> wrapper.eq("name", "John").or().eq("name", "Jane"));
+```
+
+**生成的 SQL**：
+
+```
+WHERE (name = 'John' OR name = 'Jane')
+```
+
+------
+
+#### 10. 自定义 SQL
+
+`apply`：自定义 SQL 片段
+
+```
+apply(String applySql, Object... params)
+```
+
+**示例**：
+
+```
+queryWrapper.apply("date_format(create_time, '%Y-%m-%d') = {0}", "2023-10-01");
+```
+
+**生成的 SQL**：
+
+```
+WHERE date_format(create_time, '%Y-%m-%d') = '2023-10-01'
+```
+
+------
+
+#### 11. 删除条件
+
+`clear`：清除所有条件
+
+```
+clear()
+```
+
+**示例**：
+
+```
+queryWrapper.clear();
+```
+
+------
+
+#### 12. 获取 SQL
+
+`getSqlSegment`：获取生成的 SQL 片段
+
+```
+getSqlSegment()
+```
+
+**示例**：
+
+```
+String sqlSegment = queryWrapper.getSqlSegment();
+```
+
+------
+
+#### 13. 其他实用方法
+
+`exists`：判断是否存在
+
+```
+exists(String existsSql)
+```
+
+**示例**：
+
+```
+queryWrapper.exists("SELECT 1 FROM table2 WHERE table2.id = table1.id");
+```
+
+**生成的 SQL**：
+
+```
+WHERE EXISTS (SELECT 1 FROM table2 WHERE table2.id = table1.id)
+```
+
+------
+
+`notExists`：判断是否不存在
+
+```
+notExists(String existsSql)
+```
+
+**示例**：
+
+```
+queryWrapper.notExists("SELECT 1 FROM table2 WHERE table2.id = table1.id");
+```
+
+**生成的 SQL**：
+
+```
+WHERE NOT EXISTS (SELECT 1 FROM table2 WHERE table2.id = table1.id)
+```
+
+------
+
+#### 总结
+
+`QueryWrapper` 提供了丰富的方法来构建复杂的查询条件，支持链式调用，使用起来非常灵活。通过组合这些方法，可以轻松构建出各种复杂的 SQL 查询条件。
+
 无论是修改、删除、查询，都可以使用QueryWrapper来构建查询条件。接下来看一些例子： **查询**：查询出名字中带`o`的，存款大于等于1000元的人。代码如下：
 
 ```java
@@ -713,8 +1295,6 @@ MybatisPlus不仅提供了BaseMapper，还提供了通用的Service接口及默�
 - `updateBatchById`：根据id批量修改
 
 **Get：**
-
-![img](https://b11et3un53m.feishu.cn/space/api/box/stream/download/asynccode/?code=OWZjZDg4NTRmYTFlYWM1OWI3ZTMyNzU3YjBjN2FiMzNfMjRNdEhjWldjbVlmTXlJVWRhbG9ZR0RsRWszcWtlRjhfVG9rZW46UXN6ZGJjNTB6b0xwdUl4NEI4dWNHbnp0bjdmXzE3NDIxMjUxMTE6MTc0MjEyODcxMV9WNA)
 
 - `getById`：根据id查询1条数据
 - `getOne(Wrapper<T>)`：根据`Wrapper`查询1条数据
