@@ -1353,17 +1353,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 首先，我们在项目中引入几个依赖：
 
 ```XML
-<!--swagger-->
-<dependency>
-    <groupId>com.github.xiaoymin</groupId>
-    <artifactId>knife4j-openapi2-spring-boot-starter</artifactId>
-    <version>4.1.0</version>
-</dependency>
-<!--web-->
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-web</artifactId>
-</dependency>
+ <!--swagger-->
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-openapi2-spring-boot-starter</artifactId>
+            <version>4.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+        </dependency>
 ```
 
 然后需要配置swagger信息：
@@ -1845,6 +1845,107 @@ spring:
 最终，SQL被重写了：
 
 ![image-20250316204320416](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250316204320416.png)
+
+## Springboot3+Swagger+knife4j
+
+第一步引入依赖：
+
+```java
+<dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+            <version>4.4.0</version>
+        </dependency>
+    <!--hutool工具包-->
+    <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-core</artifactId>
+            <version>5.8.26</version> <!-- 可以使用最新版本 -->
+        </dependency>
+```
+
+第二步：yml配置
+
+```java
+# 接口文档配置
+knife4j:
+  enable: true
+  openapi:
+    title: "接口文档"
+    version: 1.0
+    group:
+      default:
+        api-rule: package
+        api-rule-resources:
+          - com.lanqiao.lanqiaooj.controller
+```
+
+第三步配置实体类
+
+```java
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserFormDTO {
+
+    private Long id;
+    private String username;
+    private String password;
+    private String phone;
+    private String info;
+    private Integer balance;
+}
+```
+
+响应类
+
+```java
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class Result<T> {
+    private Integer code; //响应码, 0-成功,1-失败
+    private String msg;//提示信息
+    private T data;//返回的数据
+
+    //快速响应
+    //操作成功，不携带数据
+    public static Result success(){
+        return new Result(0,"操作成功",null);
+    }
+    //操作成功，携带数据
+    public static<T> Result<T> success(T data){
+        return new Result(0,"操作成功",data);
+    }
+    //操作失败，不携带数据
+    public static Result error(String msg){
+        return new Result(1,msg,null);
+    }
+}
+```
+
+控制层
+
+```java
+@RestController
+@RequestMapping("/users")
+@Slf4j
+public class UserController {
+    @Autowired
+    private UserService userService;
+
+    @PostMapping
+    public Result insert(@RequestBody UserFormDTO userFormDTO) {
+        User user = BeanUtil.copyProperties(userFormDTO, User.class);
+        boolean save = userService.save(user);
+        if (save){
+            return Result.success();
+        }else {
+            return Result.error("新增失败");
+        }
+    }
+}
+```
 
 
 
