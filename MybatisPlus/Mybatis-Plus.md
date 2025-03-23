@@ -1947,27 +1947,43 @@ public class UserController {
 }
 ```
 
+访问localhost:项目端口号/doc.html
+
+![image-20250323141254339](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323141254339.png)
+
+## 扩展功能
+
+### 代码生成器
+
+（1）需要去下载一个插件MybatisPlus
+
+![image-20250323211139707](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323211139707.png)
+
+(2)安装完之后重启idea 然后连接数据库
+
+![image-20250323211214534](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323211214534.png)
+
+（3）然后点击Code Generator按钮
+
+![image-20250323211302109](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323211302109.png)
 
 
 
+### 分页插件
 
+首先，要在配置类中注册MybatisPlus的核心插件，同时添加分页插件
 
+![image-20250323212718911](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323212718911.png)
 
+接着就可以使用分页的API了
 
+![image-20250323212901352](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323212901352.png)
 
+### 通用分页实体
 
+需求：遵循下面的接口规范，编写一个UserController接口，实现User的分页查询
 
-
-
-
-
-
-
-
-
-
-
-
+![image-20250323213214645](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323213214645.png)
 
 
 

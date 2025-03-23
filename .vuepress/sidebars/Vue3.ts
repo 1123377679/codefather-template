@@ -5,6 +5,7 @@ export default [
         collapsable: false,
         children: [
             "Vue3.md",
+            "Vue2.md",
         ],
     },
 ];
