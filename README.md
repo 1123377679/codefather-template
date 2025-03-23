@@ -47,7 +47,7 @@ permalink: /
 
 ## [redis](/redis/)
 
-## [Vue3](/Vue3/)
+## [Vue](/Vue/)
 
 ## [自考](/自考/)
 

@@ -10,17 +10,19 @@
 
 4.高薪必备技能（Vue2+Vue3）
 
-## 什么是Vue
+
+
+## 二、什么是Vue
 
 概念：Vue (读音 /vjuː/，类似于 view) 是一套 **构建用户界面 ** 的 **渐进式** **框架**
 
 Vue2官网：<https://v2.cn.vuejs.org/>
 
-### 什么是构建用户界面
+### 1.什么是构建用户界面
 
 **基于数据**渲染出用户可以看到的**界面**
 
-![68187588702](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1681875887026.png)
+![image-20250323225121796](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323225121796.png)
 
 ### 2.什么是渐进式
 
@@ -55,11 +57,11 @@ Vue2官网：<https://v2.cn.vuejs.org/>
 
 下图是 库 和 框架的对比。
 
-![68187662027](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1681876620277.png)
+![image-20250323225130365](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323225130365.png)
 
 框架的特点：有一套必须让开发者遵守的**规则**或者**约束**
 
-咱们学框架就是学习的这些规则 [官网]
+咱们学框架就是学习的这些规则 [官网](https://v2.cn.vuejs.org/)
 
 ### 总结：什么是Vue？
 
@@ -71,7 +73,9 @@ Vue是什么：
 
 什么是框架：
 
-## 创建Vue实例
+
+
+## 三、创建Vue实例
 
 我们已经知道了Vue框架可以 基于数据帮助我们渲染出用户界面，那应该怎么做呢？
 
@@ -101,15 +105,19 @@ Vue是什么：
 </script>
 ```
 
+
+
 **总结：创建Vue实例需要执行哪4步**
 
-## 插值表达式 {{}}
+
+
+## 四、插值表达式 {{}}
 
 插值表达式是一种Vue的模板语法
 
 我们可以用插值表达式渲染出Vue提供的数据
 
-### 作用：利用表达式进行插值，渲染到页面中
+### 1.作用：利用表达式进行插值，渲染到页面中
 
 表达式：是可以被求值的代码，JS引擎会讲其计算出一个结果
 
@@ -127,7 +135,9 @@ fn()
 obj.fn()
 ```
 
-### 语法
+
+
+### 2.语法
 
 插值表达式语法：{{ 表达式 }}
 
@@ -143,6 +153,8 @@ obj.fn()
 <p>{{fn()}}</p>
 ```
 
+
+
 ### 3.错误用法
 
 ```js
@@ -156,6 +168,8 @@ obj.fn()
 <p title="{{username}}">我是P标签</p>
 ```
 
+
+
 ### 4.总结
 
 1.插值表达式的作用是什么
@@ -164,11 +178,15 @@ obj.fn()
 
 3.插值表达式的注意事项
 
-## 响应式特性
+
+
+## 五、响应式特性
 
 ### 1.什么是响应式？
 
 ​	简单理解就是数据变，视图对应变。 
+
+
 
 ### 2.如何访问 和 修改 data中的数据（响应式演示）
 
@@ -178,7 +196,7 @@ data中的数据, 最终会被添加到实例上
 
 ② 修改数据： "实例.属性名"= "值"
 
-![68188853934](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1681888539340.png)
+![image-20250323225210620](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323225210620.png)
 
 
 
@@ -187,20 +205,24 @@ data中的数据, 最终会被添加到实例上
 1.  什么是响应式
 2.  如何访问和修改data中的数据呢
 
-## Vue开发者工具安装
+
+
+## 六、Vue开发者工具安装
 
 1. 通过谷歌应用商店安装（国外网站）
 2. 极简插件下载（推荐） <https://chrome.zzzmh.cn/index>
 
 安装步骤：
 
-![68188939040](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1681889390406.png)
+![image-20250323225227310](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323225227310.png)
 
 
 
 安装之后可以F12后看到多一个Vue的调试面板
 
-## Vue中的常用指令
+
+
+## 七、Vue中的常用指令
 
 **概念：**指令（Directives）是 Vue 提供的带有 **v- 前缀** 的 特殊 标签**属性**。
 
@@ -217,7 +239,9 @@ vue 中的指令按照不同的用途可以分为如下 6 大类：
 
 指令是 vue 开发中最基础、最常用、最简单的知识点。
 
-## 内容渲染指令
+
+
+## 八、内容渲染指令
 
 内容渲染指令用来辅助开发者渲染 DOM 元素的文本内容。常用的内容渲染指令有如下2 个：
 
@@ -259,7 +283,7 @@ vue 中的指令按照不同的用途可以分为如下 6 大类：
 
 
 
-## 条件渲染指令
+## 九、条件渲染指令
 
 条件判断指令，用来辅助开发者按需控制 DOM 的显示与隐藏。条件渲染指令有如下两个，分别是：
 
@@ -270,7 +294,7 @@ vue 中的指令按照不同的用途可以分为如下 6 大类：
    3. 原理：  切换 display:none 控制显示隐藏
    4. 场景：频繁切换显示隐藏的场景
 
-   ![68189122828](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1681891228284.png)
+   ![image-20250323225242101](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323225242101.png)
 
 2. v-if
 
@@ -279,7 +303,7 @@ vue 中的指令按照不同的用途可以分为如下 6 大类：
    3. 原理：  基于条件判断，是否创建 或 移除元素节点
    4. 场景：  要么显示，要么隐藏，不频繁切换的场景
 
-   ![68189123775](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1681891237750.png)
+   ![image-20250323225248672](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323225248672.png)
 
    示例代码：
 
@@ -334,7 +358,7 @@ vue 中的指令按照不同的用途可以分为如下 6 大类：
 
 
 
-## 事件绑定指令
+## 十、事件绑定指令
 
 使用Vue时，如需为DOM注册事件，及其的简单，语法如下：
 
@@ -432,7 +456,7 @@ vue 中的指令按照不同的用途可以分为如下 6 大类：
 
 
 
-## 属性绑定指令
+## 十一、属性绑定指令
 
 1. **作用：**动态设置html的标签属性 比如：src、url、title
 2. **语法**：**v-bind:**属性名=“表达式”
@@ -464,7 +488,7 @@ vue 中的指令按照不同的用途可以分为如下 6 大类：
 
 
 
-## 小案例-波仔的学习之旅
+## 十二、小案例-波仔的学习之旅
 
 需求：默认展示数组中的第一张图片，点击上一页下一页来回切换数组中的图片
 
@@ -480,7 +504,7 @@ vue 中的指令按照不同的用途可以分为如下 6 大类：
 
 5.当展示第一张的时候，上一页按钮应该隐藏。展示最后一张的时候，下一页按钮应该隐藏
 
-```vue
+```js
  <div id="app">
     <button>上一页</button>
     <div>
@@ -506,7 +530,9 @@ vue 中的指令按照不同的用途可以分为如下 6 大类：
   </script>
 ```
 
-## 列表渲染指令
+
+
+## 十三、列表渲染指令
 
 Vue 提供了 v-for 列表渲染指令，用来辅助开发者基于一个数组来循环渲染一个列表结构。
 
@@ -540,7 +566,7 @@ item从1 开始
 
 2.点击删除按钮时，应该把当前行从列表中删除（获取当前行的id，利用filter进行过滤）
 
-![image-20250323222335984](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323222335984.png)
+![68189663267](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1681896632672.png)
 
 准备代码：
 
@@ -573,29 +599,88 @@ item从1 开始
 
 
 
+## 十五、v-for中的key
+
+**语法：** key="唯一值"
+
+**作用：**给列表项添加的**唯一标识**。便于Vue进行列表项的**正确排序复用**。
+
+**为什么加key：**Vue 的默认行为会尝试原地修改元素（**就地复用**）
+
+实例代码：
+
+```js
+<ul>
+  <li v-for="(item, index) in booksList" :key="item.id">
+    <span>{{ item.name }}</span>
+    <span>{{ item.author }}</span>
+    <button @click="del(item.id)">删除</button>
+  </li>
+</ul>
+```
+
+注意：
+
+1.  key 的值只能是字符串 或 数字类型
+2.  key 的值必须具有唯一性
+3.  推荐使用  id 作为 key（唯一），不推荐使用 index 作为 key（会变化，不对应）
 
 
 
+## 十六、双向绑定指令
+
+所谓双向绑定就是：
+
+1. 数据改变后，呈现的页面结果会更新
+2. 页面结果更新后，数据也会随之而变
+
+**作用：** 给**表单元素**（input、radio、select）使用，双向绑定数据，可以快速 **获取** 或 **设置** 表单元素内容
+
+**语法：**v-model="变量"
+
+**需求：**使用双向绑定实现以下需求
+
+1. 点击登录按钮获取表单中的内容
+2. 点击重置按钮清空表单中的内容
+
+![68191312573](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1681913125738.png)
 
 
 
+```js
+<div id="app">
+    账户：<input type="text"> <br><br>
+    密码：<input type="password"> <br><br>
+    <button>登录</button>
+    <button>重置</button>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      data: {
+        username: '',
+        password: ''
+      },
+    })
+  </script>
+```
 
 
 
+## 十七、综合案例-小黑记事本
 
+![68191456581](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1681914565816.png)
 
+**功能需求：**
 
+1. 列表渲染
 
+2. 删除功能
 
+3. 添加功能
 
+4. 底部统计 和 清空
 
-
-
-
-
-
-
-
-
-
+   
 
