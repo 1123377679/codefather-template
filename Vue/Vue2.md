@@ -198,14 +198,10 @@ data中的数据, 最终会被添加到实例上
 
 ![image-20250323225210620](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323225210620.png)
 
-
-
 ### 3.总结
 
 1.  什么是响应式
 2.  如何访问和修改data中的数据呢
-
-
 
 ## 六、Vue开发者工具安装
 
@@ -214,13 +210,11 @@ data中的数据, 最终会被添加到实例上
 
 安装步骤：
 
-![image-20250323225227310](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323225227310.png)
+![image-20250327200510146](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250327200510146.png)
 
 
 
-安装之后可以F12后看到多一个Vue的调试面板
-
-
+安装之后可以F12后看到多一个Vue的调试面板，非常方便调试
 
 ## 七、Vue中的常用指令
 
