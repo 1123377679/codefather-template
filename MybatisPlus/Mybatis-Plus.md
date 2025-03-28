@@ -1846,6 +1846,114 @@ spring:
 
 ![image-20250316204320416](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250316204320416.png)
 
+### 批量新增拓展
+
+```java
+/**
+     * 批量新增
+     */
+    @PostMapping("/addList")
+    public Result addList(@RequestBody List<UserFormDTO> userFormDTOList) {
+        long start = System.currentTimeMillis();
+        try {
+            List<User> users = BeanUtil.copyToList(userFormDTOList, User.class);
+            //原生批量添加 批量新增成功，耗时 282709 毫秒，处理记录数: 100000
+            // for (User u : users) {
+            //     if (userService.insertUserAll(u) < 1) {
+            //         long end = System.currentTimeMillis();
+            //         log.info("批量新增失败，耗时 {} 毫秒", end - start);
+            //         return Result.error("批量新增失败");
+            //     }
+            // }
+            //MybatisPlus批量添加 批量新增成功，耗时 48456 毫秒，处理记录数: 100000
+            //&rewriteBatchedStatements=true 批量新增成功，耗时 19524 毫秒，处理记录数: 100000
+            userService.saveBatch(users);
+            long end = System.currentTimeMillis();
+            log.info("批量新增成功，耗时 {} 毫秒，处理记录数: {}", end - start, users.size());
+            return Result.success();
+        } catch (Exception e) {
+            long end = System.currentTimeMillis();
+            log.error("批量新增异常，耗时 {} 毫秒，错误: {}", end - start, e.getMessage());
+            return Result.error("系统异常");
+        }
+    }
+
+
+//分批处理 批量新增成功，耗时 19316 毫秒，处理记录数: 100000
+    @PostMapping("/addList")
+    public Result addList(@RequestBody List<UserFormDTO> userFormDTOList) {
+        long start = System.currentTimeMillis();
+        try {
+            List<User> users = BeanUtil.copyToList(userFormDTOList, User.class);
+            // 分批处理，每批1000条
+            int batchSize = 1000;
+            for (int i = 0; i < users.size(); i += batchSize) {
+                int endIndex = Math.min(i + batchSize, users.size());
+                List<User> batch = users.subList(i, endIndex);
+                userService.saveBatch(batch, batchSize);
+            }
+
+            long end = System.currentTimeMillis();
+            log.info("批量新增成功，耗时 {} 毫秒，处理记录数: {}", end - start, users.size());
+            return Result.success();
+        } catch (Exception e) {
+            long end = System.currentTimeMillis();
+            log.error("批量新增异常，耗时 {} 毫秒，错误: {}", end - start, e.getMessage());
+            return Result.error("系统异常");
+        }
+    }
+
+//多线程并行处理： 批量新增成功，耗时 14157 毫秒，处理记录数: 100000
+    @PostMapping("/addList")
+    public Result addList(@RequestBody List<UserFormDTO> userFormDTOList) {
+        long start = System.currentTimeMillis();
+        try {
+            List<User> users = BeanUtil.copyToList(userFormDTOList, User.class);
+            int batchSize = 1000;
+            int threadCount = 5; // 线程数
+            ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+            CountDownLatch latch = new CountDownLatch(threadCount);
+
+            // 将数据分成多份，每个线程处理一份
+            int size = users.size() / threadCount;
+            for (int i = 0; i < threadCount; i++) {
+                int startIndex = i * size;
+                int endIndex = (i == threadCount - 1) ? users.size() : (i + 1) * size;
+                List<User> subList = users.subList(startIndex, endIndex);
+
+                executorService.execute(() -> {
+                    try {
+                        for (int j = 0; j < subList.size(); j += batchSize) {
+                            int end = Math.min(j + batchSize, subList.size());
+                            List<User> batch = subList.subList(j, end);
+                            userService.saveBatch(batch, batchSize);
+                        }
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+            }
+
+            latch.await(); // 等待所有线程完成
+            executorService.shutdown();
+
+            long end = System.currentTimeMillis();
+            log.info("批量新增成功，耗时 {} 毫秒，处理记录数: {}", end - start, users.size());
+            return Result.success();
+        } catch (Exception e) {
+            long end = System.currentTimeMillis();
+            log.error("批量新增异常，耗时 {} 毫秒，错误: {}", end - start, e.getMessage());
+            return Result.error("系统异常");
+        }
+    }
+```
+
+
+
+
+
+
+
 ## Springboot3+Swagger+knife4j
 
 第一步引入依赖：
@@ -1973,17 +2081,99 @@ public class UserController {
 
 首先，要在配置类中注册MybatisPlus的核心插件，同时添加分页插件
 
-![image-20250323212718911](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323212718911.png)
+```java
+@Configuration
+public class MybatisConfig {
+
+    @Bean
+    public MybatisPlusInterceptor mybatisPlusInterceptor(){
+        //1.初始化分页插件
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        //2.添加分页插件
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+        //返回
+        return interceptor;
+    }
+}
+```
+
+
 
 接着就可以使用分页的API了
 
-![image-20250323212901352](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323212901352.png)
+```java
+ //分页查询前端会传哪两个参数
+        //当前页 pageNum 和 一页显示多少条 pageSize
+        int pageNum = 1;
+        int pageSize = 10;
+        //分页查询参数
+        Page<User> objectPage = Page.of(pageNum, pageSize);
+        //排序
+        objectPage.addOrder(OrderItem.asc("balance"));
+        //分页查询
+        Page<User> page = userService.page(objectPage);
+        //你要想获取到一共有多少条数据
+        System.out.println(page.getTotal());//一共有多少条数据
+        System.out.println(page.getCurrent());//当前页
+        System.out.println(page.getSize());//一页显示多少条
+        List<User> records = page.getRecords();//页面显示的数据
+        for (User u : records){
+            System.out.println(u);
+        }
+        System.out.println(page.getPages());//一共有多少页
+```
+
+
 
 ### 通用分页实体
 
 需求：遵循下面的接口规范，编写一个UserController接口，实现User的分页查询
 
 ![image-20250323213214645](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250323213214645.png)
+
+```java
+@PostMapping("/page")
+    public Result getPages(@RequestBody(required = false) PageDTO pageDTO) {
+        // 处理pageDTO为null的情况（前端不传任何参数）
+        if (pageDTO == null) {
+            pageDTO = new PageDTO(); // 使用默认值
+        }
+        // 设置默认分页参数（如果前端没传）
+        int pageNo = pageDTO.getPageNo() != null ? Integer.parseInt(pageDTO.getPageNo()) : 1;
+        int pageSize = pageDTO.getPageSize() != null ? Integer.parseInt(pageDTO.getPageSize()) : 10;
+        // 分页参数
+        Page<User> objectPage = Page.of(pageNo, pageSize);
+        // 排序处理（如果前端传了排序字段）
+        if (StringUtils.isNotBlank(pageDTO.getSortBy())) {
+            // 根据isAsc决定升序还是降序
+            if (pageDTO.getSortBy() != null) {
+                objectPage.addOrder(OrderItem.desc(pageDTO.getSortBy()));
+            } else {
+                objectPage.addOrder(OrderItem.asc(pageDTO.getSortBy()));
+            }
+        }
+        // 构建查询条件
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        // 按用户名查询（如果前端传了name参数）
+        if (StringUtils.isNotBlank(pageDTO.getName())) {
+            queryWrapper.eq("username", pageDTO.getName());
+        }
+        // 按状态查询（如果前端传了status参数）
+        if (pageDTO.getStatus() != null) {
+            queryWrapper.eq("status", pageDTO.getStatus());
+        }
+        // 执行分页查询
+        Page<User> page = userService.page(objectPage, queryWrapper);
+        // 构建返回结果(这里可以替换成beanUtil)
+        PageVO<User> pageVO = new PageVO<>();
+        pageVO.setCurrent(page.getCurrent());
+        pageVO.setSize(page.getSize());
+        pageVO.setTotal(page.getTotal());
+        pageVO.setPages(page.getPages());
+        pageVO.setTList(page.getRecords());
+        return Result.success(pageVO);
+    }
+```
 
 
 
