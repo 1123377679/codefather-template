@@ -669,12 +669,630 @@ item从1 开始
 **功能需求：**
 
 1. 列表渲染
-
 2. 删除功能
-
 3. 添加功能
-
 4. 底部统计 和 清空
 
-   
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小黑记事本</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+        
+        .notebook {
+            width: 350px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            color: #333;
+            font-size: 24px;
+        }
+        
+        h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #666;
+        }
+        
+        .add-task {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .add-task input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .add-task button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin-left: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .add-task button:hover {
+            background-color: #45a049;
+        }
+        
+        .task-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .task-item:last-child {
+            border-bottom: none;
+        }
+        
+        .task-checkbox {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        
+        .task-text {
+            flex-grow: 1;
+        }
+        
+        .summary {
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+        }
+        
+        .clear-btn {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            margin-top: 15px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .clear-btn:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="notebook">
+        <h1>小黑记事本</h1>
+        
+        <h2>请输入任务</h2>
+        <div class="add-task">
+            <input type="text" placeholder="添加新任务...">
+            <button>添加任务</button>
+        </div>
+        
+        <ul class="task-list">
+            <li class="task-item">
+                <span class="task-checkbox">✗</span>
+                <span class="task-text">跑步锻炼20分钟</span>
+            </li>
+            <li class="task-item">
+                <span class="task-checkbox">✗</span>
+                <span class="task-text">复习数组语法</span>
+            </li>
+        </ul>
+        
+        <div class="summary">
+            合计: 2
+        </div>
+        
+        <button class="clear-btn">清空任务</button>
+    </div>
+</body>
+</html>
+```
+
+## 指令修饰符
+
+### 1.什么是指令修饰符？
+
+​	所谓指令修饰符就是通过“.”指明一些指令**后缀** 不同的**后缀**封装了不同的处理操作  —> 简化代码
+
+### 2.按键修饰符
+
+- @keyup.enter  —>当点击enter键的时候才触发
+
+代码演示：
+
+```js
+  <div id="app">
+    <h3>@keyup.enter  →  监听键盘回车事件</h3>
+    <input v-model="username" type="text">
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      data: {
+        username: ''
+      },
+      methods: {
+        
+      }
+    })
+  </script>
+```
+
+### 3.v-model修饰符
+
+- v-model.trim  —>去除首位空格
+- v-model.number —>转数字
+
+### 4.事件修饰符
+
+- @事件名.stop —> 阻止冒泡
+- @事件名.prevent  —>阻止默认行为
+- @事件名.stop.prevent —>可以连用 即阻止事件冒泡也阻止默认行为
+
+```js
+ <style>
+    .father {
+      width: 200px;
+      height: 200px;
+      background-color: pink;
+      margin-top: 20px;
+    }
+    .son {
+      width: 100px;
+      height: 100px;
+      background-color: skyblue;
+    }
+  </style>
+
+ <div id="app">
+    <h3>v-model修饰符 .trim .number</h3>
+    姓名：<input v-model="username" type="text"><br>
+    年纪：<input v-model="age" type="text"><br>
+
+    
+    <h3>@事件名.stop     →  阻止冒泡</h3>
+    <div @click="fatherFn" class="father">
+      <div @click="sonFn" class="son">儿子</div>
+    </div>
+
+    <h3>@事件名.prevent  →  阻止默认行为</h3>
+    <a @click href="http://www.baidu.com">阻止默认行为</a>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      data: {
+        username: '',
+        age: '',
+      },
+      methods: {
+        fatherFn () {
+          alert('老父亲被点击了')
+        },
+        sonFn (e) {
+          // e.stopPropagation()
+          alert('儿子被点击了')
+        }
+      }
+    })
+  </script>
+```
+
+## v-bind对样式控制的增强-操作class
+
+为了方便开发者进行样式控制， Vue 扩展了 v-bind 的语法，可以针对 **class 类名** 和 **style 行内样式** 进行控制 。
+
+### 1.语法：
+
+```html
+<div> :class = "对象/数组">这是一个div</div>
+```
+
+
+
+### 2.对象语法
+
+当class动态绑定的是**对象**时，**键就是类名，值就是布尔值**，如果值是**true**，就有这个类，否则没有这个类
+
+```html
+<div class="box" :class="{ 类名1: 布尔值, 类名2: 布尔值 }"></div>
+```
+
+​    适用场景：一个类名，来回切换
+
+
+
+### 3.数组语法
+
+当class动态绑定的是**数组**时 → 数组中所有的类，都会添加到盒子上，本质就是一个 class 列表
+
+```html
+<div class="box" :class="[ 类名1, 类名2, 类名3 ]"></div>
+```
+
+   使用场景:批量添加或删除类
+
+
+
+### 4.代码练习
+
+```html
+ <style>
+    .box {
+      width: 200px;
+      height: 200px;
+      border: 3px solid #000;
+      font-size: 30px;
+      margin-top: 10px;
+    }
+    .pink {
+      background-color: pink;
+    }
+    .big {
+      width: 300px;
+      height: 300px;
+    }
+  </style>
+
+
+<div id="app">
+    <!--绑定对象-->
+    <div class="box">黑马程序员</div>
+    <!--绑定数组-->
+    <div class="box">黑马程序员</div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      data: {
+
+      }
+    })
+  </script>
+```
+
+## 京东秒杀-tab栏切换导航高亮
+
+### 1.需求：
+
+​	当我们点击哪个tab页签时，哪个tab页签就高亮
+
+### 2.准备代码:
+
+```html
+ <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    ul {
+      display: flex;
+      border-bottom: 2px solid #e01222;
+      padding: 0 10px;
+    }
+    li {
+      width: 100px;
+      height: 50px;
+      line-height: 50px;
+      list-style: none;
+      text-align: center;
+    }
+    li a {
+      display: block;
+      text-decoration: none;
+      font-weight: bold;
+      color: #333333;
+    }
+    li a.active {
+      background-color: #e01222;
+      color: #fff;
+    }
+
+  </style>
+
+<div id="app">
+    <ul>
+      <li><a class="active" href="#">京东秒杀</a></li>
+      <li><a href="#">每日特价</a></li>
+      <li><a href="#">品类秒杀</a></li>
+    </ul>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      data: {
+        list: [
+          { id: 1, name: '京东秒杀' },
+          { id: 2, name: '每日特价' },
+          { id: 3, name: '品类秒杀' }
+        ]
+      }
+    })
+  </script>
+```
+
+### 3.思路：
+
+1.基于数据，动态渲染tab（v-for）
+
+2.准备一个下标 记录高亮的是哪一个 tab
+
+3.基于下标动态切换class的类名
+
+## v-bind对有样式控制的增强-操作style
+
+### 1.语法
+
+```html
+<div class="box" :style="{ CSS属性名1: CSS属性值, CSS属性名2: CSS属性值 }"></div>
+```
+
+### 2.代码练习
+
+```html
+<style>
+    .box {
+      width: 200px;
+      height: 200px;
+      background-color: rgb(187, 150, 156);
+    }
+ </style>
+ <div id="app">
+    <div class="box"></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      data: {
+
+      }
+    })
+  </script>
+```
+
+### 3.进度条案例
+
+```html
+ <style>
+    .progress {
+      height: 25px;
+      width: 400px;
+      border-radius: 15px;
+      background-color: #272425;
+      border: 3px solid #272425;
+      box-sizing: border-box;
+      margin-bottom: 30px;
+    }
+    .inner {
+      width: 50%;
+      height: 20px;
+      border-radius: 10px;
+      text-align: right;
+      position: relative;
+      background-color: #409eff;
+      background-size: 20px 20px;
+      box-sizing: border-box;
+      transition: all 1s;
+    }
+    .inner span {
+      position: absolute;
+      right: -20px;
+      bottom: -25px;
+    }
+  </style>
+
+<div id="app">
+    <div class="progress">
+      <div class="inner">
+        <span>50%</span>
+      </div>
+    </div>
+    <button>设置25%</button>
+    <button>设置50%</button>
+    <button>设置75%</button>
+    <button>设置100%</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      data: {
+
+      }
+    })
+  </script>
+```
+
+
+
+## v-model在其他表单元素的使用
+
+### 1.讲解内容：
+
+常见的表单元素都可以用 v-model 绑定关联  →  快速 **获取** 或 **设置** 表单元素的值
+
+它会根据  **控件类型** 自动选取  **正确的方法** 来更新元素
+
+```js
+输入框  input:text   ——> value
+文本域  textarea	 ——> value
+复选框  input:checkbox  ——> checked
+单选框  input:radio   ——> checked
+下拉菜单 select    ——> value
+...
+```
+
+### 2.代码准备
+
+```html
+ <style>
+    textarea {
+      display: block;
+      width: 240px;
+      height: 100px;
+      margin: 10px 0;
+    }
+  </style>
+ <div id="app">
+    <h3>小黑学习网</h3>
+    姓名：
+      <input type="text"> 
+      <br><br>
+    是否单身：
+      <input type="checkbox"> 
+      <br><br>
+    <!-- 
+      前置理解：
+        1. name:  给单选框加上 name 属性 可以分组 → 同一组互相会互斥
+        2. value: 给单选框加上 value 属性，用于提交给后台的数据
+      结合 Vue 使用 → v-model
+    -->
+    性别: 
+      <input type="radio">男
+      <input type="radio">女
+      <br><br>
+    <!-- 
+      前置理解：
+        1. option 需要设置 value 值，提交给后台
+        2. select 的 value 值，关联了选中的 option 的 value 值
+      结合 Vue 使用 → v-model
+    -->
+    所在城市:
+      <select>
+        <option>北京</option>
+        <option>上海</option>
+        <option>成都</option>
+        <option>南京</option>
+      </select>
+      <br><br>
+    自我描述：
+      <textarea></textarea> 
+    <button>立即注册</button>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      data: {
+
+      }
+    })
+  </script>
+```
+
+
+
+## computed计算属性
+
+### 1.概念
+
+基于**现有的数据**，计算出来的**新属性**。 **依赖**的数据变化，**自动**重新计算。
+
+### 2.语法
+
+1. 声明在 **computed 配置项**中，一个计算属性对应一个函数
+2. 使用起来和普通属性一样使用  {{ 计算属性名}}  
+
+### 3.注意
+
+1. computed配置项和data配置项是**同级**的
+2. computed中的计算属性**虽然是函数的写法**，但他**依然是个属性**
+3. computed中的计算属性**不能**和data中的属性**同名**
+4. 使用computed中的计算属性和使用data中的属性是一样的用法
+5. computed中计算属性内部的**this**依然**指向的是Vue实例**
+
+### 4.案例
+
+比如我们可以使用计算属性实现下面这个业务场景
+
+![68203932785](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682039327858.png)
+
+### 5.代码准备
+
+```html
+<style>
+    table {
+      border: 1px solid #000;
+      text-align: center;
+      width: 240px;
+    }
+    th,td {
+      border: 1px solid #000;
+    }
+    h3 {
+      position: relative;
+    }
+  </style>
+
+<div id="app">
+    <h3>小黑的礼物清单</h3>
+    <table>
+      <tr>
+        <th>名字</th>
+        <th>数量</th>
+      </tr>
+      <tr v-for="(item, index) in list" :key="item.id">
+        <td>{{ item.name }}</td>
+        <td>{{ item.num }}个</td>
+      </tr>
+    </table>
+
+    <!-- 目标：统计求和，求得礼物总数 -->
+    <p>礼物总数：? 个</p>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      data: {
+        // 现有的数据
+        list: [
+          { id: 1, name: '篮球', num: 1 },
+          { id: 2, name: '玩具', num: 2 },
+          { id: 3, name: '铅笔', num: 5 },
+        ]
+      }
+    })
+  </script>
+```
 
