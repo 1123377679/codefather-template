@@ -821,6 +821,199 @@ item从1 开始
 </html>
 ```
 
+```vue
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>蓝桥记事本</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        .notebook {
+            width: 350px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            color: #333;
+            font-size: 24px;
+        }
+
+        h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .add-task {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .add-task input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .add-task button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin-left: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .add-task button:hover {
+            background-color: #45a049;
+        }
+
+        .task-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-checkbox {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .task-text {
+            flex-grow: 1;
+        }
+
+        .summary {
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+        }
+
+        .clear-btn {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            margin-top: 15px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .clear-btn:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="notebook">
+            <h1>蓝桥记事本</h1>
+
+            <h2>请输入任务</h2>
+            <div class="add-task">
+                <input @keyup.enter="add" placeholder="添加新任务..." type="text" v-model="task">
+                <button @click="add">添加任务</button>
+            </div>
+
+            <ul class="task-list">
+                <li :key="item.id" class="task-item" v-for="(item , index) in list">
+                    <span @click = "remove(item.id)" class="task-checkbox">✗</span>
+                    <span class="task-text">{{ index+1 }} , {{ item.text }}</span>
+                </li>
+            </ul>
+
+            <div class="summary" v-if=" list.length > 0 ">
+                合计: {{ list.length }}
+            </div>
+
+            <button @click="emptied" class="clear-btn" v-if=" list.length > 0">清空任务</button>
+        </div>
+    </div>
+</body>
+</html>
+<!--1.引入vue.js-->
+<script src="../js/Vue.js"></script>
+<script>
+    <!--4.创建Vue对象-->
+    const app = new Vue({
+        //5.找到你要渲染的位置(挂载点)
+        el: '#app',
+        //6.往需要渲染的位置放入数据(存放数据)
+        data: {
+            task:'',
+            /*模拟的数据*/
+            list: [
+                // { id: 1, text:'跑步锻炼20分钟' },
+                // { id: 2, text:'早起吃早饭' },
+                // { id: 3, text:'做100个俯卧撑' },
+                // { id: 4, text:'一拳超人' },
+            ]
+        },
+        methods:{
+            //添加
+            add(){
+                if ( this.task.length > 0){
+                    //unshift的作用就是在数组的前端加上一个或多个数据
+                    //push与之相反
+                    this.list.push({
+                        id: Date.now(),//用时间戳来当id
+                        text: this.task
+                    })
+                    //用户添加任务成功，就将输入框中的内容清空
+                    this.task = '';
+                }else {
+                    alert("请输入内容之后再添加")
+                }
+            },
+            //删除
+            remove(id){
+                // 使用filter过滤掉要删除的书籍(复制粘贴就好)
+                this.list = this.list.filter(item => item.id !== id);
+            },
+            //清空
+            emptied(){
+                this.list = []
+            }
+        }
+    })
+</script>
+
+```
+
 ## 指令修饰符
 
 ### 1.什么是指令修饰符？
@@ -1296,3 +1489,516 @@ item从1 开始
   </script>
 ```
 
+## computed计算属性 VS methods方法
+
+### 1.computed计算属性
+
+作用：封装了一段对于**数据**的处理，求得一个**结果**
+
+语法：
+
+1. 写在computed配置项中
+2. 作为属性，直接使用
+   - js中使用计算属性： this.计算属性
+   - 模板中使用计算属性：{{计算属性}}
+
+### 2.methods计算属性
+
+作用：给Vue实例提供一个**方法**，调用以**处理业务逻辑**。
+
+语法：
+
+1. 写在methods配置项中
+2. 作为方法调用
+   - js中调用：this.方法名()
+   - 模板中调用 {{方法名()}}  或者 @事件名=“方法名”
+
+### 3.计算属性的优势
+
+1. 缓存特性（提升性能）
+
+   计算属性会对计算出来的结果缓存，再次使用直接读取缓存，
+
+   依赖项变化了，会自动重新计算 → 并再次缓存
+
+2. methods没有缓存特性
+
+3. 通过代码比较
+
+```html
+<style>
+    table {
+      border: 1px solid #000;
+      text-align: center;
+      width: 300px;
+    }
+    th,td {
+      border: 1px solid #000;
+    }
+    h3 {
+      position: relative;
+    }
+    span {
+      position: absolute;
+      left: 145px;
+      top: -4px;
+      width: 16px;
+      height: 16px;
+      color: white;
+      font-size: 12px;
+      text-align: center;
+      border-radius: 50%;
+      background-color: #e63f32;
+    }
+  </style>
+
+<div id="app">
+    <h3>小黑的礼物清单🛒<span>?</span></h3>
+    <table>
+      <tr>
+        <th>名字</th>
+        <th>数量</th>
+      </tr>
+      <tr v-for="(item, index) in list" :key="item.id">
+        <td>{{ item.name }}</td>
+        <td>{{ item.num }}个</td>
+      </tr>
+    </table>
+
+    <p>礼物总数：{{ totalCount }} 个</p>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      data: {
+        // 现有的数据
+        list: [
+          { id: 1, name: '篮球', num: 3 },
+          { id: 2, name: '玩具', num: 2 },
+          { id: 3, name: '铅笔', num: 5 },
+        ]
+      },
+      computed: {
+        totalCount () {
+          let total = this.list.reduce((sum, item) => sum + item.num, 0)
+          return total
+        }
+      }
+    })
+  </script>
+```
+
+### 4.总结
+
+1.computed**有缓存特性**，methods**没有缓存**
+
+2.当一个结果依赖其他多个值时，推荐使用计算属性
+
+3.当处理业务逻辑时，推荐使用methods方法，比如事件的处理函数
+
+
+
+## 计算属性的完整写法
+
+**既然计算属性也是属性，能访问，应该也能修改了？**
+
+1. 计算属性默认的简写，只能读取访问，不能 "修改"
+2. 如果要 "修改"  → 需要写计算属性的完整写法
+
+![68204182296](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682041822963.png)
+
+完整写法代码演示
+
+```html
+ <div id="app">
+    姓：<input type="text" v-model="firstName"> +
+    名：<input type="text" v-model="lastName"> =
+    <span></span><br><br> 
+    <button>改名卡</button>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      data: {
+ 		firstName: '刘',
+        lastName: '备'
+      },
+      computed: {
+
+      },
+      methods: {
+
+      }
+    })
+  </script>
+```
+
+
+
+## 综合案例-成绩案例
+
+![68204248931](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682042489319.png)
+
+功能描述：
+
+1.渲染功能
+
+2.删除功能
+
+3.添加功能
+
+4.统计总分，求平均分
+
+
+
+思路分析：
+
+1.渲染功能  v-for  :key  v-bind:动态绑定class的样式
+
+2.删除功能 v-on绑定事件， 阻止a标签的默认行为
+
+3.v-model的修饰符 .trim、 .number、  判断数据是否为空后 再添加、添加后清空文本框的数据
+
+4.使用计算属性computed 计算总分和平均分的值
+
+
+
+## watch侦听器（监视器）
+
+### 1.作用：
+
+​	**监视数据变化**，执行一些业务逻辑或异步操作
+
+### 2.语法：
+
+1. watch同样声明在跟data同级的配置项中
+
+2. 简单写法： 简单类型数据直接监视
+
+3. 完整写法：添加额外配置项
+
+   ```js
+   data: { 
+     words: '苹果',
+     obj: {
+       words: '苹果'
+     }
+   },
+   
+   watch: {
+     // 该方法会在数据变化时，触发执行
+     数据属性名 (newValue, oldValue) {
+       一些业务逻辑 或 异步操作。 
+     },
+     '对象.属性名' (newValue, oldValue) {
+       一些业务逻辑 或 异步操作。 
+     }
+   }
+   ```
+
+### 3.侦听器代码准备
+
+```html
+ <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-size: 18px;
+      }
+      #app {
+        padding: 10px 20px;
+      }
+      .query {
+        margin: 10px 0;
+      }
+      .box {
+        display: flex;
+      }
+      textarea {
+        width: 300px;
+        height: 160px;
+        font-size: 18px;
+        border: 1px solid #dedede;
+        outline: none;
+        resize: none;
+        padding: 10px;
+      }
+      textarea:hover {
+        border: 1px solid #1589f5;
+      }
+      .transbox {
+        width: 300px;
+        height: 160px;
+        background-color: #f0f0f0;
+        padding: 10px;
+        border: none;
+      }
+      .tip-box {
+        width: 300px;
+        height: 25px;
+        line-height: 25px;
+        display: flex;
+      }
+      .tip-box span {
+        flex: 1;
+        text-align: center;
+      }
+      .query span {
+        font-size: 18px;
+      }
+
+      .input-wrap {
+        position: relative;
+      }
+      .input-wrap span {
+        position: absolute;
+        right: 15px;
+        bottom: 15px;
+        font-size: 12px;
+      }
+      .input-wrap i {
+        font-size: 20px;
+        font-style: normal;
+      }
+    </style>
+
+ <div id="app">
+      <!-- 条件选择框 -->
+      <div class="query">
+        <span>翻译成的语言：</span>
+        <select>
+          <option value="italy">意大利</option>
+          <option value="english">英语</option>
+          <option value="german">德语</option>
+        </select>
+      </div>
+
+      <!-- 翻译框 -->
+      <div class="box">
+        <div class="input-wrap">
+          <textarea v-model="words"></textarea>
+          <span><i>⌨️</i>文档翻译</span>
+        </div>
+        <div class="output-wrap">
+          <div class="transbox">mela</div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+      // 接口地址：https://applet-base-api-t.itheima.net/api/translate
+      // 请求方式：get
+      // 请求参数：
+      // （1）words：需要被翻译的文本（必传）
+      // （2）lang： 需要被翻译成的语言（可选）默认值-意大利
+      // -----------------------------------------------
+      
+      const app = new Vue({
+        el: '#app',
+        data: {
+          words: ''
+        },
+        // 具体讲解：(1) watch语法 (2) 具体业务实现
+      })
+    </script>
+```
+
+
+
+## 翻译案例-代码实现
+
+```js
+  <script>
+      // 接口地址：https://applet-base-api-t.itheima.net/api/translate
+      // 请求方式：get
+      // 请求参数：
+      // （1）words：需要被翻译的文本（必传）
+      // （2）lang： 需要被翻译成的语言（可选）默认值-意大利
+      // -----------------------------------------------
+      
+      const app = new Vue({
+        el: '#app',
+        data: {
+           //words: ''
+           obj: {
+            words: ''
+          },
+          result: '', // 翻译结果
+          // timer: null // 延时器id
+        },
+        // 具体讲解：(1) watch语法 (2) 具体业务实现
+        watch: {
+          // 该方法会在数据变化时调用执行
+          // newValue新值, oldValue老值（一般不用）
+          // words (newValue) {
+          //   console.log('变化了', newValue)
+          // }
+
+          'obj.words' (newValue) {
+            // console.log('变化了', newValue)
+            // 防抖: 延迟执行 → 干啥事先等一等，延迟一会，一段时间内没有再次触发，才执行
+            clearTimeout(this.timer)
+            this.timer = setTimeout(async () => {
+              const res = await axios({
+                url: 'https://applet-base-api-t.itheima.net/api/translate',
+                params: {
+                  words: newValue
+                }
+              })
+              this.result = res.data.data
+              console.log(res.data.data)
+            }, 300)
+          }
+        }
+      })
+    </script>
+```
+
+
+
+## watch侦听器
+
+### 1.语法
+
+完整写法 —>添加额外的配置项
+
+1. deep:true 对复杂类型进行深度监听
+2. immdiate:true 初始化 立刻执行一次
+
+```js
+data: {
+  obj: {
+    words: '苹果',
+    lang: 'italy'
+  },
+},
+
+watch: {// watch 完整写法
+  对象: {
+    deep: true, // 深度监视
+    immdiate:true,//立即执行handler函数
+    handler (newValue) {
+      console.log(newValue)
+    }
+  }
+}
+
+```
+
+### 2.需求
+
+![68205051572](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682050515722.png)
+
+
+
+- 当文本框输入的时候 右侧翻译内容要时时变化
+- 当下拉框中的语言发生变化的时候 右侧翻译的内容依然要时时变化
+- 如果文本框中有默认值的话要立即翻译
+
+### 3.代码实现
+
+```js
+ <script> 
+      const app = new Vue({
+        el: '#app',
+        data: {
+          obj: {
+            words: '小黑',
+            lang: 'italy'
+          },
+          result: '', // 翻译结果
+        },
+        watch: {
+          obj: {
+            deep: true, // 深度监视
+            immediate: true, // 立刻执行，一进入页面handler就立刻执行一次
+            handler (newValue) {
+              clearTimeout(this.timer)
+              this.timer = setTimeout(async () => {
+                const res = await axios({
+                  url: 'https://applet-base-api-t.itheima.net/api/translate',
+                  params: newValue
+                })
+                this.result = res.data.data
+                console.log(res.data.data)
+              }, 300)
+            }
+          } 
+        }
+      })
+    </script>
+```
+
+### 4.总结
+
+watch侦听器的写法有几种？
+
+1.简单写法
+
+```js
+watch: {
+  数据属性名 (newValue, oldValue) {
+    一些业务逻辑 或 异步操作。 
+  },
+  '对象.属性名' (newValue, oldValue) {
+    一些业务逻辑 或 异步操作。 
+  }
+}
+```
+
+2.完整写法
+
+```js
+watch: {// watch 完整写法
+  数据属性名: {
+    deep: true, // 深度监视(针对复杂类型)
+    immediate: true, // 是否立刻执行一次handler
+    handler (newValue) {
+      console.log(newValue)
+    }
+  }
+}
+```
+
+## 十四、综合案例
+
+购物车案例
+
+![68205100897](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682051008978.png)
+
+
+
+需求说明：
+
+1. 渲染功能
+2. 删除功能
+3. 修改个数
+4. 全选反选
+5. 统计 选中的 总价 和 总数量 
+6. 持久化到本地
+
+
+
+实现思路：
+
+1.基本渲染：  v-for遍历、:class动态绑定样式
+
+2.删除功能 ： v-on 绑定事件，获取当前行的id
+
+3.修改个数 ： v-on绑定事件，获取当前行的id，进行筛选出对应的项然后增加或减少
+
+4.全选反选 
+
+1. 必须所有的小选框都选中，全选按钮才选中 → every
+2. 如果全选按钮选中，则所有小选框都选中
+3. 如果全选取消，则所有小选框都取消选中
+
+声明计算属性，判断数组中的每一个checked属性的值，看是否需要全部选
+
+5.统计 选中的 总价 和 总数量 ：通过计算属性来计算**选中的**总价和总数量
+
+6.持久化到本地： 在数据变化时都要更新下本地存储 watch
