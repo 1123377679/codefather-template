@@ -679,7 +679,7 @@ item从1 开始
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>蓝桥记事本</title>
+    <title>记事本</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -792,7 +792,7 @@ item从1 开始
 </head>
 <body>
     <div class="notebook">
-        <h1>蓝桥记事本</h1>
+        <h1>小黑记事本</h1>
         
         <h2>请输入任务</h2>
         <div class="add-task">
@@ -1589,8 +1589,11 @@ item从1 开始
 
 1. 写在methods配置项中
 2. 作为方法调用
-   - js中调用：this.方法名()
-   - 模板中调用 {{方法名()}}  或者 @事件名=“方法名”
+
+```java
+- js中调用：this.方法名()
+- 模板中调用 {{方法名()}}  或者 @事件名=“方法名”
+```
 
 ### 3.计算属性的优势
 
