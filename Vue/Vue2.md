@@ -662,7 +662,7 @@ item从1 开始
 
 
 
-## 十七、综合案例-小黑记事本
+## 十七、综合案例-蓝桥记事本
 
 ![68191456581](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1681914565816.png)
 
@@ -679,7 +679,7 @@ item从1 开始
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小黑记事本</title>
+    <title>蓝桥记事本</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -792,7 +792,7 @@ item从1 开始
 </head>
 <body>
     <div class="notebook">
-        <h1>小黑记事本</h1>
+        <h1>蓝桥记事本</h1>
         
         <h2>请输入任务</h2>
         <div class="add-task">
@@ -1336,8 +1336,6 @@ item从1 开始
   </script>
 ```
 
-
-
 ## v-model在其他表单元素的使用
 
 ### 1.讲解内容：
@@ -1367,7 +1365,7 @@ item从1 开始
     }
   </style>
  <div id="app">
-    <h3>小黑学习网</h3>
+    <h3>蓝桥学习网</h3>
     姓名：
       <input type="text"> 
       <br><br>
@@ -1411,6 +1409,87 @@ item从1 开始
       }
     })
   </script>
+```
+
+```java
+<!DOCTYPE html>
+<html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        textarea {
+            display: block;
+            width: 240px;
+            height: 100px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h3>蓝桥学习网</h3>
+        姓名：
+        <input type="text" v-model="username">
+        <br><br>
+        是否单身：
+        <input type="checkbox" v-model="isSingle">
+        <br><br>
+        <!--
+          前置理解：
+            1. name:  给单选框加上 name 属性 可以分组 → 同一组互相会互斥
+            2. value: 给单选框加上 value 属性，用于提交给后台的数据
+          结合 Vue 使用 → v-model
+        -->
+        性别:
+        <input name="sex" type="radio" v-model="sex" value="0">男
+        <input name="sex" type="radio" v-model="sex" value="1">女
+        <br><br>
+        <!--
+          前置理解：
+            1. option 需要设置 value 值，提交给后台
+            2. select 的 value 值，关联了选中的 option 的 value 值
+          结合 Vue 使用 → v-model
+        -->
+        所在城市:
+        <select  v-model="address">
+            <option value="北京">北京</option>
+            <option value="上海">上海</option>
+            <option value="成都">成都</option>
+            <option value="南京">南京</option>
+        </select>
+        <br><br>
+        自我描述：
+        <textarea v-model = "text"></textarea>
+        <button @click="register">立即注册</button>
+    </div>
+</body>
+</html>
+<!--1.引入vue.js-->
+<script src="../js/Vue.js"></script>
+<!--3.渲染数据-->
+<script>
+    <!--4.创建Vue对象-->
+    const app = new Vue({
+        //5.找到你要渲染的位置(挂载点)
+        el: '#app',
+        //6.往需要渲染的位置放入数据(存放数据)
+        data: {
+            username:'',
+            isSingle:false,
+            sex:'',
+            address:'北京',
+            text:''
+        },
+        methods:{
+            //注册方法
+            register(){
+                console.log(this)
+            }
+        }
+    })
+</script>
+
 ```
 
 
@@ -1597,8 +1676,6 @@ item从1 开始
 
 3.当处理业务逻辑时，推荐使用methods方法，比如事件的处理函数
 
-
-
 ## 计算属性的完整写法
 
 **既然计算属性也是属性，能访问，应该也能修改了？**
@@ -1635,8 +1712,6 @@ item从1 开始
   </script>
 ```
 
-
-
 ## 综合案例-成绩案例
 
 ![68204248931](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682042489319.png)
@@ -1651,8 +1726,6 @@ item从1 开始
 
 4.统计总分，求平均分
 
-
-
 思路分析：
 
 1.渲染功能  v-for  :key  v-bind:动态绑定class的样式
@@ -1662,8 +1735,6 @@ item从1 开始
 3.v-model的修饰符 .trim、 .number、  判断数据是否为空后 再添加、添加后清空文本框的数据
 
 4.使用计算属性computed 计算总分和平均分的值
-
-
 
 ## watch侦听器（监视器）
 
@@ -1807,8 +1878,6 @@ item从1 开始
     </script>
 ```
 
-
-
 ## 翻译案例-代码实现
 
 ```js
@@ -1857,8 +1926,6 @@ item从1 开始
       })
     </script>
 ```
-
-
 
 ## watch侦听器
 
@@ -1980,8 +2047,6 @@ watch: {// watch 完整写法
 4. 全选反选
 5. 统计 选中的 总价 和 总数量 
 6. 持久化到本地
-
-
 
 实现思路：
 
