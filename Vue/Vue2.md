@@ -1522,50 +1522,59 @@ item从1 开始
 ### 5.代码准备
 
 ```html
-<style>
-    table {
-      border: 1px solid #000;
-      text-align: center;
-      width: 240px;
-    }
-    th,td {
-      border: 1px solid #000;
-    }
-    h3 {
-      position: relative;
-    }
-  </style>
-
-<div id="app">
-    <h3>小黑的礼物清单</h3>
-    <table>
-      <tr>
-        <th>名字</th>
-        <th>数量</th>
-      </tr>
-      <tr v-for="(item, index) in list" :key="item.id">
-        <td>{{ item.name }}</td>
-        <td>{{ item.num }}个</td>
-      </tr>
-    </table>
-
-    <!-- 目标：统计求和，求得礼物总数 -->
-    <p>礼物总数：? 个</p>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-  <script>
-    const app = new Vue({
-      el: '#app',
-      data: {
-        // 现有的数据
-        list: [
-          { id: 1, name: '篮球', num: 1 },
-          { id: 2, name: '玩具', num: 2 },
-          { id: 3, name: '铅笔', num: 5 },
-        ]
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+      table {
+        border: 1px solid #000;
+        text-align: center;
+        width: 240px;
       }
-    })
-  </script>
+      th,td {
+        border: 1px solid #000;
+      }
+      h3 {
+        position: relative;
+      }
+    </style>
+</head>
+<body>
+<div id="app">
+  <h3>小蓝的礼物清单</h3>
+  <table>
+    <tr>
+      <th>名字</th>
+      <th>数量</th>
+    </tr>
+    <tr v-for="(item, index) in list" :key="item.id">
+      <td>{{ item.name }}</td>
+      <td>{{ item.num }}个</td>
+    </tr>
+  </table>
+
+  <!-- 目标：统计求和，求得礼物总数 -->
+  <p>礼物总数：? 个</p>
+</div>
+</body>
+</html>
+<script src="../js/Vue.js"></script>
+<script>
+  const app = new Vue({
+    el: '#app',
+    data: {
+      // 现有的数据
+      list: [
+        { id: 1, name: '篮球', num: 1 },
+        { id: 2, name: '玩具', num: 2 },
+        { id: 3, name: '铅笔', num: 5 },
+      ]
+    }
+  })
+</script>
+
 ```
 
 ## computed计算属性 VS methods方法
@@ -1590,7 +1599,7 @@ item从1 开始
 1. 写在methods配置项中
 2. 作为方法调用
 
-```java
+```javascript
 - js中调用：this.方法名()
 - 模板中调用 {{方法名()}}  或者 @事件名=“方法名”
 ```
@@ -1718,6 +1727,118 @@ item从1 开始
 ## 综合案例-成绩案例
 
 ![68204248931](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682042489319.png)
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成绩管理系统</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button.delete {
+            background-color: #f44336;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        .summary {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <table>
+            <thead>
+                <tr>
+                    <th>编号</th>
+                    <th>科目</th>
+                    <th>成绩</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>语文</td>
+                    <td>46</td>
+                    <td><button class="delete">删除</button></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>英语</td>
+                    <td>80</td>
+                    <td><button class="delete">删除</button></td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>数学</td>
+                    <td>100</td>
+                    <td><button class="delete">删除</button></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="input-group">
+            <div>
+                <label>科目：</label>
+                <input type="text" placeholder="请输入科目">
+            </div>
+            <div>
+                <label>分数：</label>
+                <input type="number" placeholder="请输入分数">
+            </div>
+            <button>添加</button>
+        </div>
+
+        <div class="summary">
+            <p>总分：226</p>
+            <p>平均分：75</p>
+        </div>
+    </div>
+</body>
+</html>
+```
+
+
 
 功能描述：
 
