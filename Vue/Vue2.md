@@ -2191,3 +2191,313 @@ watch: {// watch 完整写法
 5.统计 选中的 总价 和 总数量 ：通过计算属性来计算**选中的**总价和总数量
 
 6.持久化到本地： 在数据变化时都要更新下本地存储 watch
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>购物车</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 15px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 15px;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .tabs {
+      display: flex;
+      color: #999;
+    }
+
+    .tabs span {
+      margin-left: 15px;
+      cursor: pointer;
+    }
+
+    .tabs span.active {
+      color: #e4393c;
+    }
+
+    .cart-header {
+      display: flex;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+      color: #666;
+      background-color: #f9f9f9;
+    }
+
+    .cart-header span {
+      text-align: center;
+      padding: 0 10px;
+    }
+
+    .select-all {
+      width: 80px;
+      text-align: left;
+      padding-left: 15px;
+    }
+
+    .product-info {
+      flex: 2;
+      text-align: left;
+      padding-left: 15px;
+    }
+
+    .price {
+      width: 120px;
+      text-align: center;
+    }
+
+    .quantity {
+      width: 150px;
+      text-align: center;
+    }
+
+    .subtotal {
+      width: 120px;
+      text-align: center;
+    }
+
+    .action {
+      width: 100px;
+      text-align: center;
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      padding: 15px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .cart-item input[type="checkbox"] {
+      margin: 0 15px;
+    }
+
+    .product-image {
+      width: 80px;
+      height: 80px;
+      background-color: #f7f7f7;
+      margin-right: 15px;
+      border-radius: 4px;
+    }
+
+    .product-name {
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .product-name p:first-child {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .product-name p:last-child {
+      color: #999;
+      font-size: 12px;
+    }
+
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .quantity-btn {
+      width: 30px;
+      height: 30px;
+      line-height: 30px;
+      text-align: center;
+      border: 1px solid #ddd;
+      background-color: #f5f5f5;
+      cursor: pointer;
+      font-size: 16px;
+      user-select: none;
+    }
+
+    .quantity-btn:hover {
+      background-color: #eee;
+    }
+
+    .quantity-input {
+      width: 50px;
+      height: 30px;
+      text-align: center;
+      border: 1px solid #ddd;
+      border-left: none;
+      border-right: none;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .price, .subtotal {
+      font-weight: bold;
+      color: #e4393c;
+      font-size: 16px;
+    }
+
+    .delete-btn {
+      color: #999;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .delete-btn:hover {
+      color: #e4393c;
+    }
+
+    .cart-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      margin-top: 20px;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      padding: 15px 20px;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+    }
+
+    .footer-left input[type="checkbox"] {
+      margin: 0 10px;
+    }
+
+    .total-price {
+      font-weight: bold;
+      color: #e4393c;
+      font-size: 18px;
+      margin: 0 15px;
+    }
+
+    .checkout-btn {
+      background-color: #e4393c;
+      color: white;
+      border: none;
+      padding: 10px 30px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+
+    .checkout-btn:hover {
+      background-color: #c72d30;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="title">水果 SHUI GUO Fulajs</div>
+    <div class="tabs">
+      <span class="active">金</span>
+      <span>/ 购物车</span>
+    </div>
+  </div>
+
+  <div class="cart-header">
+    <span class="select-all">选中</span>
+    <span class="product-info">商品信息</span>
+    <span class="price">单价</span>
+    <span class="quantity">数量</span>
+    <span class="subtotal">小计</span>
+    <span class="action">操作</span>
+  </div>
+
+  <div class="cart-item">
+    <input type="checkbox" checked>
+    <div class="product-image"></div>
+    <div class="product-name">
+      <p>商品名称1</p>
+      <p>商品描述信息</p>
+    </div>
+    <span class="price">¥12.00</span>
+    <div class="quantity">
+      <div class="quantity-control">
+        <div class="quantity-btn">-</div>
+        <input type="text" class="quantity-input" value="2">
+        <div class="quantity-btn">+</div>
+      </div>
+    </div>
+    <span class="subtotal">¥24.00</span>
+    <span class="action delete-btn">删除</span>
+  </div>
+
+  <div class="cart-item">
+    <input type="checkbox" checked>
+    <div class="product-image"></div>
+    <div class="product-name">
+      <p>商品名称2</p>
+      <p>商品描述信息</p>
+    </div>
+    <span class="price">¥14.00</span>
+    <div class="quantity">
+      <div class="quantity-control">
+        <div class="quantity-btn">-</div>
+        <input type="text" class="quantity-input" value="1">
+        <div class="quantity-btn">+</div>
+      </div>
+    </div>
+    <span class="subtotal">¥14.00</span>
+    <span class="action delete-btn">删除</span>
+  </div>
+
+  <div class="cart-footer">
+    <div class="footer-left">
+      <input type="checkbox" id="select-all">
+      <label for="select-all">全选</label>
+    </div>
+    <div>
+      <span>总价：</span>
+      <span class="total-price">¥38.00</span>
+      <button class="checkout-btn">结算(3)</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+
+```
+
+
+
+
+
+
+
