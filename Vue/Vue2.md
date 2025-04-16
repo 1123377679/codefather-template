@@ -2495,7 +2495,93 @@ watch: {// watch 完整写法
 
 ```
 
+## Vue生命周期
 
+思考：什么时候可以发送初始化渲染请求？（越早越好）什么时候可以开始操作dom？（至少dom得渲染出来）
+
+Vue生命周期：就是一个Vue实例从创建 到 销毁 的整个过程。
+
+生命周期四个阶段：① 创建 ② 挂载 ③ 更新 ④ 销毁
+
+1.创建阶段：创建响应式数据
+
+2.挂载阶段：渲染模板
+
+3.更新阶段：修改数据，更新视图
+
+4.销毁阶段：销毁Vue实例
+
+![image-20250417004704072](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250417004704072.png)
+
+```vue
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="app">
+    <h3>{{ title }}</h3>
+    <div>
+        <button @click="count--">-</button>
+        <span>{{ count }}</span>
+        <button @click="count++">+</button>
+    </div>
+</div>
+
+</body>
+</html>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script>
+    const app = new Vue({
+        el: '#app',
+        data: {
+            count: 100,
+            title: '计数器'
+        },
+
+        // 1. 创建阶段（准备数据）
+        beforeCreate() {
+            console.log('1. beforeCreate - 实例刚创建，data和methods还未初始化');
+        },
+        created() {
+            console.log('2. created - 实例创建完成，data和methods已初始化');
+            console.log('当前count值:', this.count);
+        },
+
+        // 2. 挂载阶段（渲染模板）
+        beforeMount() {
+            console.log('3. beforeMount - 模板编译完成，但还未挂载到页面');
+            console.log('DOM元素内容:', document.getElementById('app').innerHTML);
+        },
+        mounted() {
+            console.log('4. mounted - 实例已挂载到页面');
+            console.log('DOM元素内容:', document.getElementById('app').innerHTML);
+        },
+
+        // 3. 更新阶段(修改数据 → 更新视图)
+        beforeUpdate() {
+            console.log('5. beforeUpdate - 数据即将更新，但DOM还未重新渲染');
+            console.log('当前count值:', this.count);
+        },
+        updated() {
+            console.log('6. updated - 数据已更新，DOM已重新渲染');
+            console.log('当前count值:', this.count);
+        },
+
+        // 4. 卸载阶段
+        beforeDestroy() {
+            console.log('7. beforeDestroy - 实例即将销毁');
+        },
+        destroyed() {
+            console.log('8. destroyed - 实例已销毁');
+        }
+    });
+</script>
+
+```
 
 
 
