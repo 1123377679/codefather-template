@@ -2999,9 +2999,25 @@ Vue生命周期：就是一个Vue实例从创建 到 销毁 的整个过程。
 ####    使用步骤：
 
 1. 全局安装（只需安装一次即可） yarn global add @vue/cli 或者 npm i @vue/cli -g
-2. 查看vue/cli版本： vue --version
+2. 查看vue/cli版本： vue -V
 3. 创建项目架子：**vue create project-name**(项目名不能使用中文)
 4. 启动项目：**yarn serve** 或者 **npm run serve**(命令不固定，找package.json)
+
+需要先安装node.js
+
+https://blog.csdn.net/muzidigbig/article/details/80493880
+
+然后根据要求安装Vue-cli
+
+https://blog.csdn.net/muzidigbig/article/details/80490884
+
+注意执行命令的时候要执行：
+
+```shell
+npm install -g @vue/cli
+```
+
+
 
 ## 项目目录介绍和运行流程
 
@@ -3189,4 +3205,95 @@ export default {
 - A组件内部注册的局部组件能在B组件使用吗
 - 局部注册组件的步骤是什么
 - 使用组件时 应该按照什么命名法
+
+## 普通组件的注册使用-全局注册
+
+### 1.特点：
+
+全局注册的组件，在项目的**任何组件**中都能使用
+
+### 2.步骤
+
+1. 创建.vue组件（三个组成部分）
+2. **main.js**中进行全局注册
+
+### 3.使用方式
+
+当成HTML标签直接使用
+
+> <组件名></组件名>
+
+### 4.注意
+
+组件名规范 —> 大驼峰命名法， 如 HmHeader
+
+### 5.语法
+
+Vue.component('组件名', 组件对象)
+
+例：
+
+```js
+// 导入需要全局注册的组件
+import HmButton from './components/HmButton'
+Vue.component('HmButton', HmButton)
+```
+
+### 6.练习
+
+在以下3个局部组件中是展示一个通用按钮
+
+![68226318734](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682263187344.png)
+
+```vue
+<template>
+  <button class="hm-button">通用按钮</button>
+</template>
+
+<script>
+export default {
+
+}
+</script>
+
+<style>
+.hm-button {
+  height: 50px;
+  line-height: 50px;
+  padding: 0 20px;
+  background-color: #3bae56;
+  border-radius: 5px;
+  color: white;
+  border: none;
+  vertical-align: middle;
+  cursor: pointer;
+}
+</style>
+```
+
+### 7.总结
+
+1.全局注册组件应该在哪个文件中注册以及语法是什么？
+
+2.全局组件在项目中的任何一个组件中可不可以使用？
+
+## 综合案例
+
+### 1.小兔仙首页启动项目演示
+
+### 2.小兔仙组件拆分示意图
+
+![68226549162](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682265491628.png)
+
+
+
+### 3.开发思路
+
+1. 分析页面，按模块拆分组件，搭架子  (局部或全局注册)
+
+2. 根据设计图，编写组件 html 结构 css 样式 (已准备好)
+
+3. 拆分封装通用小组件  (局部或全局注册)
+
+   将来 → 通过 js 动态渲染，实现功能
 
