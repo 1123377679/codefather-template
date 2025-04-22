@@ -2815,41 +2815,48 @@ Vue生命周期：就是一个Vue实例从创建 到 销毁 的整个过程。
 ### 4.代码准备
 
 ```html
- <!-- CSS only -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
-    />
-    <style>
-      .red {
-        color: red!important;
-      }
-      .search {
-        width: 300px;
-        margin: 20px 0;
-       
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+  <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .red {
+      color: red!important;
+    }
+    .search {
+      width: 300px;
+      margin: 20px 0;
+    }
       .my-form {
         display: flex;
         margin: 20px 0;
       }
+
       .my-form input {
         flex: 1;
         margin-right: 20px;
       }
+
       .table > :not(:first-child) {
         border-top: none;
       }
+
       .contain {
         display: flex;
         padding: 10px;
       }
+
       .list-box {
         flex: 1;
         padding: 0 30px;
       }
-      .list-box  a {
+
+      .list-box a {
         text-decoration: none;
       }
+
       .echarts-box {
         width: 600px;
         height: 400px;
@@ -2857,94 +2864,329 @@ Vue生命周期：就是一个Vue实例从创建 到 销毁 的整个过程。
         margin: 0 auto;
         border: 1px solid #ccc;
       }
+
       tfoot {
         font-weight: bold;
       }
+
       @media screen and (max-width: 1000px) {
         .contain {
           flex-wrap: wrap;
         }
+
         .list-box {
           width: 100%;
         }
+
         .echarts-box {
           margin-top: 30px;
         }
       }
-    </style>
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="contain">
+    <!-- 左侧列表 -->
+    <div class="list-box">
 
+      <!-- 添加资产 -->
+      <form class="my-form">
+        <input type="text" class="form-control" placeholder="消费名称" />
+        <input type="text" class="form-control" placeholder="消费价格" />
+        <button type="button" class="btn btn-primary">添加账单</button>
+      </form>
 
-  <div id="app">
-      <div class="contain">
-        <!-- 左侧列表 -->
-        <div class="list-box">
-
-          <!-- 添加资产 -->
-          <form class="my-form">
-            <input type="text" class="form-control" placeholder="消费名称" />
-            <input type="text" class="form-control" placeholder="消费价格" />
-            <button type="button" class="btn btn-primary">添加账单</button>
-          </form>
-
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>编号</th>
-                <th>消费名称</th>
-                <th>消费价格</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td>帽子</td>
-                <td>99.00</td>
-                <td><a href="javascript:;">删除</a></td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td>大衣</td>
-                <td class="red">199.00</td>
-                <td><a href="javascript:;">删除</a></td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="4">消费总计： 298.00</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-        
-        <!-- 右侧图表 -->
-        <div class="echarts-box" id="main"></div>
-      </div>
+      <table class="table table-hover">
+        <thead>
+        <tr>
+          <th>编号</th>
+          <th>消费名称</th>
+          <th>消费价格</th>
+          <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>1</td>
+          <td>帽子</td>
+          <td>99.00</td>
+          <td><a href="javascript:;">删除</a></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>大衣</td>
+          <td class="red">199.00</td>
+          <td><a href="javascript:;">删除</a></td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+          <td colspan="4">消费总计： 298.00</td>
+        </tr>
+        </tfoot>
+      </table>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script>
-      /**
-       * 接口文档地址：
-       * https://www.apifox.cn/apidoc/shared-24459455-ebb1-4fdc-8df8-0aff8dc317a8/api-53371058
-       * 
-       * 功能需求：
-       * 1. 基本渲染
-       * 2. 添加功能
-       * 3. 删除功能
-       * 4. 饼图渲染
-       */
-      const app = new Vue({
-        el: '#app',
-        data: {
-          
-        },
-      })
-    </script>
+
+    <!-- 右侧图表 -->
+    <div class="echarts-box" id="main"></div>
+  </div>
+</div>
+</body>
+</html>
+<script src="../js/Vue.js"></script>
+<script src="../js/axios.min.js"></script>
+<script>
+  /**
+   * 接口文档地址：
+   * https://www.apifox.cn/apidoc/shared-24459455-ebb1-4fdc-8df8-0aff8dc317a8/api-53371058
+   *
+   * 功能需求：
+   * 1. 基本渲染
+   * 2. 添加功能
+   * 3. 删除功能
+   * 4. 饼图渲染
+   */
+  const app = new Vue({
+    el: '#app',
+    data: {
+
+    },
+  })
+</script>
+
+```
+
+## 工程化开发和脚手架
+
+### 1.开发Vue的两种方式
+
+- 核心包传统开发模式：基于html / css / js 文件，直接引入核心包，开发 Vue。
+- **工程化开发模式：基于构建工具（例如：webpack）的环境中开发Vue。**
+
+![68209003907](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682090039070.png)
+
+
+
+工程化开发模式优点：
+
+   提高编码效率，比如使用JS新语法、Less/Sass、Typescript等通过webpack都可以编译成浏览器识别的ES3/ES5/CSS等
+
+工程化开发模式问题：
+
+- webpack配置**不简单**
+- **雷同**的基础配置
+- 缺乏**统一的标准**
+
+为了解决以上问题，所以我们需要一个工具，生成标准化的配置
+
+
+
+### 2.脚手架Vue CLI
+
+####   基本介绍：
+
+   Vue CLI 是Vue官方提供的一个**全局命令工具**
+
+   可以帮助我们**快速创建**一个开发Vue项目的**标准化基础架子**。【集成了webpack配置】
+
+####    好处：
+
+1. 开箱即用，零配置
+2. 内置babel等工具
+3. 标准化的webpack配置
+
+####    使用步骤：
+
+1. 全局安装（只需安装一次即可） yarn global add @vue/cli 或者 npm i @vue/cli -g
+2. 查看vue/cli版本： vue --version
+3. 创建项目架子：**vue create project-name**(项目名不能使用中文)
+4. 启动项目：**yarn serve** 或者 **npm run serve**(命令不固定，找package.json)
+
+## 项目目录介绍和运行流程
+
+### 1.项目目录介绍
+
+![68209214852](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682092148521.png)
+
+虽然脚手架中的文件有很多，目前咱们只需人事三个文件即可
+
+1. main.js  入口文件
+2. App.vue  App根组件 
+3. index.html 模板文件
+
+### 2.运行流程
+
+![68209403287](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682094032876.png)
+
+## 组件化开发
+
+​     组件化：一个页面可以拆分成一个个组件，每个组件有着自己独立的结构、样式、行为。
+
+​     好处：便于维护，利于复用 → 提升开发效率。
+
+​     组件分类：普通组件、根组件。
+
+​      比如：下面这个页面，可以把所有的代码都写在一个页面中，但是这样显得代码比较混乱，难易维护。咱们可以按模块进行组件划分
+
+![68216885237](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682168852372.png)
+
+总结：
+
+组件化的好处是什么？
+
+组件的分类？
+
+
+
+## 根组件 App.vue
+
+### 1.根组件介绍
+
+整个应用最上层的组件，包裹所有普通小组件
+
+![68216913168](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682169131688.png)
+
+### 组件是由三部分构成
+
+- 三部分构成
+
+  - template：结构 （有且只能一个根元素）
+  - script:   js逻辑 
+  - style： 样式 (可支持less，需要装包)
+
+- 让组件支持less
+
+  （1） style标签，lang="less" 开启less功能 
+
+  （2） 装包: yarn add less less-loader -D 或者npm i less less-loader -D
+
+## 普通组件的注册使用-局部注册
+
+### 1.特点：
+
+只能在注册的组件内使用
+
+### 2.步骤：
+
+1. 创建.vue文件（三个组成部分）
+2. 在使用的组件内先导入再注册，最后使用
+
+### 3.使用方式：
+
+当成html标签使用即可  <组件名></组件名>
+
+### 4.注意：
+
+组件名规范 —> 大驼峰命名法， 如 HmHeader
+
+### 5.语法：
+
+![68222796681](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682227966812.png)
+
+```js
+// 导入需要注册的组件
+import 组件对象 from '.vue文件路径'
+import HmHeader from './components/HmHeader'
+
+export default {  // 局部注册
+  components: {
+   '组件名': 组件对象,
+    HmHeader:HmHeaer,
+    HmHeader
+  }
+}
 ```
 
 
 
+### 6.练习
 
+在App组件中，完成以下练习。在App.vue中使用组件的方式完成下面布局
+
+![68222790287](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682227902873.png)
+
+
+
+```vue
+<template>
+  <div class="hm-header">
+    我是hm-header
+  </div>
+</template>
+
+<script>
+export default {
+
+}
+</script>
+
+<style>
+.hm-header {
+  height: 100px;
+  line-height: 100px;
+  text-align: center;
+  font-size: 30px;
+  background-color: #8064a2;
+  color: white;
+}
+</style>
+```
+
+```vue
+<template>
+  <div class="hm-main">
+    我是hm-main
+  </div>
+</template>
+
+<script>
+export default {
+
+}
+</script>
+
+<style>
+.hm-main {
+  height: 400px;
+  line-height: 400px;
+  text-align: center;
+  font-size: 30px;
+  background-color: #f79646;
+  color: white;
+  margin: 20px 0;
+}
+</style>
+```
+
+```vue
+<template>
+  <div class="hm-footer">
+    我是hm-footer
+  </div>
+</template>
+
+<script>
+export default {
+
+}
+</script>
+
+<style>
+.hm-footer {
+  height: 100px;
+  line-height: 100px;
+  text-align: center;
+  font-size: 30px;
+  background-color: #4f81bd;
+  color: white;
+}
+</style>
+```
+
+### 7.总结
+
+- A组件内部注册的局部组件能在B组件使用吗
+- 局部注册组件的步骤是什么
+- 使用组件时 应该按照什么命名法
 
