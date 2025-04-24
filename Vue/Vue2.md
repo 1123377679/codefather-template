@@ -3297,3 +3297,284 @@ export default {
 
    将来 → 通过 js 动态渲染，实现功能
 
+## scoped解决样式冲突
+
+### **1.默认情况**：
+
+写在组件中的样式会 **全局生效** →  因此很容易造成多个组件之间的样式冲突问题。
+
+1. **全局样式**: 默认组件中的样式会作用到全局，任何一个组件中都会受到此样式的影响
+
+
+2. **局部样式**: 可以给组件加上**scoped** 属性,可以**让样式只作用于当前组件**
+
+### 2.代码演示
+
+BaseOne.vue
+
+```vue
+<template>
+  <div class="base-one">
+    BaseOne
+  </div>
+</template>
+
+<script>
+export default {
+
+}
+</script>
+<style scoped>
+</style>
+```
+
+BaseTwo.vue
+
+```vue
+<template>
+  <div class="base-one">
+    BaseTwo
+  </div>
+</template>
+
+<script>
+export default {
+
+}
+</script>
+
+<style scoped>
+</style>
+```
+
+App.vue
+
+```vue
+<template>
+  <div id="app">
+    <BaseOne></BaseOne>
+    <BaseTwo></BaseTwo>
+  </div>
+</template>
+
+<script>
+import BaseOne from './components/BaseOne'
+import BaseTwo from './components/BaseTwo'
+export default {
+  name: 'App',
+  components: {
+    BaseOne,
+    BaseTwo
+  }
+}
+</script>
+```
+
+### 3.scoped原理
+
+1. 当前组件内标签都被添加**data-v-hash值** 的属性 
+2. css选择器都被添加 [**data-v-hash值**] 的属性选择器
+
+最终效果: **必须是当前组件的元素**, 才会有这个自定义属性, 才会被这个样式作用到 
+
+![68230651737](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682306517375.png)
+
+### 4.总结
+
+1. style的默认样式是作用到哪里的？
+2. scoped的作用是什么？
+3. style中推不推荐加scoped？
+
+## data必须是一个函数
+
+### 1、data为什么要写成函数
+
+一个组件的 **data** 选项必须**是一个函数**。目的是为了：保证每个组件实例，维护**独立**的一份**数据**对象。
+
+每次创建新的组件实例，都会新**执行一次data 函数**，得到一个新对象。
+
+![68230695207](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682306952078.png)
+
+### 2.代码演示
+
+BaseCount.vue
+
+```vue
+<template>
+  <div class="base-count">
+    <button @click="count--">-</button>
+    <span>{{ count }}</span>
+    <button @click="count++">+</button>
+  </div>
+</template>
+
+<script>
+export default {
+  data: function () {
+    return {
+      count: 100,
+    }
+  },
+}
+</script>
+
+<style>
+.base-count {
+  margin: 20px;
+}
+</style>
+```
+
+App.vue
+
+```vue
+<template>
+  <div class="app">
+    <BaseCount></BaseCount>
+  </div>
+</template>
+
+<script>
+import BaseCount from './components/BaseCount'
+export default {
+  components: {
+    BaseCount,
+  },
+}
+</script>
+
+<style>
+</style>
+```
+
+### 3.总结
+
+data写成函数的目的是什么？
+
+## 组件通信
+
+### 1.什么是组件通信？
+
+组件通信，就是指**组件与组件**之间的**数据传递**
+
+- 组件的数据是独立的，无法直接访问其他组件的数据。
+- 想使用其他组件的数据，就需要组件通信
+
+### 2.组件之间如何通信
+
+![68230890309](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682308903094.png)
+
+思考：
+
+1. 组件之间有哪些关系？
+2. 对应的组件通信方案有哪几类？
+
+### 3.组件关系分类
+
+1. 父子关系
+2. 非父子关系
+
+![68231807380](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682318073803.png)
+
+
+
+### 4.通信解决方案
+
+![68231811109](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682318111090.png)
+
+
+
+
+
+### 5.父子通信流程
+
+1. 父组件通过 **props** 将数据传递给子组件
+2. 子组件利用 **$emit** 通知父组件修改更新
+
+![68231844456](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682318444566.png)
+
+
+
+### 6.父向子通信代码示例
+
+父组件通过**props**将数据传递给子组件
+
+父组件App.vue
+
+```vue
+<template>
+  <div class="app" style="border: 3px solid #000; margin: 10px">
+    我是APP组件 
+    <Son></Son>
+  </div>
+</template>
+
+<script>
+import Son from './components/Son.vue'
+export default {
+  name: 'App',
+  data() {
+    return {
+      myTitle: '学前端',
+    }
+  },
+  components: {
+    Son,
+  },
+}
+</script>
+
+<style>
+</style>
+```
+
+
+
+子组件Son.vue
+
+```vue
+<template>
+  <div class="son" style="border:3px solid #000;margin:10px">
+    我是Son组件
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'Son-Child',
+}
+</script>
+
+<style>
+
+</style>
+```
+
+![68231871178](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682318711785.png)
+
+父向子传值步骤
+
+1. 给子组件以添加属性的方式传值
+2. 子组件内部通过props接收
+3. 模板中直接使用 props接收的值
+
+
+
+### 7.子向父通信代码示例
+
+子组件利用 **$emit** 通知父组件，进行修改更新
+
+![68231896563](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682318965635.png)
+
+子向父传值步骤
+
+1. $emit触发事件，给父组件发送消息通知
+2. 父组件监听$emit触发的事件
+3. 提供处理函数，在函数的性参中获取传过来的参数
+
+### 8.总结
+
+1. 组件关系分类有哪两种
+2. 父子组件通信的流程是什么？
+   1. 父向子
+   2. 子向父
