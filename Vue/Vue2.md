@@ -3541,7 +3541,7 @@ export default {
 
 <script>
 export default {
-  name: 'Son-Child',
+  name: 'son',
 }
 </script>
 
@@ -3550,7 +3550,7 @@ export default {
 </style>
 ```
 
-![68231871178](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682318711785.png)
+![image-20250424175258610](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250424175258610.png)
 
 父向子传值步骤
 
@@ -3564,7 +3564,74 @@ export default {
 
 子组件利用 **$emit** 通知父组件，进行修改更新
 
-![68231896563](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682318965635.png)
+App.vue
+
+```vue
+<template>
+  <div class="app" style="border: 3px solid #000; margin: 10px">
+    我是APP组件
+    <!-- 2.父组件对子组件的消息进行监听 -->
+    <Son :title="myTitle" @changTitle="handleChange"></Son>
+  </div>
+</template>
+
+<script>
+import Son from './components/Son.vue'
+export default {
+  name: 'App',
+  data() {
+    return {
+      myTitle: '学前端',
+    }
+  },
+  components: {
+    Son,
+  },
+  methods: {
+    // 3.提供处理函数，提供逻辑
+    handleChange(newTitle) {
+      this.myTitle = newTitle
+    },
+  },
+}
+</script>
+
+<style>
+</style>
+
+```
+
+Son.vue
+
+```vue
+<template>
+  <div class="son" style="border: 3px solid #000; margin: 10px">
+    我是Son组件 {{ title }}
+    <button @click="changeFn">修改title</button>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'Son-Child',
+  props: ['title'],
+  methods: {
+    changeFn() {
+      // 通过this.$emit() 向父组件发送通知
+      this.$emit('changTitle', '蓝桥云课')
+    },
+  },
+}
+</script>
+
+<style>
+</style>
+
+```
+
+
+
+![image-20250424181543083](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250424181543083.png)
 
 子向父传值步骤
 
@@ -3575,6 +3642,427 @@ export default {
 ### 8.总结
 
 1. 组件关系分类有哪两种
-2. 父子组件通信的流程是什么？
-   1. 父向子
-   2. 子向父
+
+<details>
+<summary>解析查看</summary>
+<pre><code>
+    父传子
+    子传父
+</code></pre>
+</details>
+
+1. 父子组件通信的流程是什么？
+
+<details>
+<summary>解析查看</summary>
+<pre><code>
+    父传子 props
+    子传父 $emit
+</code></pre>
+</details>
+
+## 什么是props
+
+![image-20250424185513112](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250424185513112.png)
+
+### 1.Props 定义
+
+组件上 注册的一些  自定义属性
+
+### 2.Props 作用
+
+向子组件传递数据
+
+### 3.特点
+
+1. 可以 传递 **任意数量** 的prop
+2. 可以 传递 **任意类型** 的prop
+
+![68232015691](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682320156914.png)
+
+### 4.代码演示
+
+父组件App.vue
+
+```vue
+<template>
+  <div class="app">
+    <UserInfo
+      :username="username"
+      :age="age"
+      :isSingle="isSingle"
+      :car="car"
+      :hobby="hobby"
+    ></UserInfo>
+  </div>
+</template>
+
+<script>
+import UserInfo from './components/UserInfo.vue'
+export default {
+  data() {
+    return {
+      username: '小帅',
+      age: 28,
+      isSingle: true,
+      car: {
+        brand: '宝马',
+      },
+      hobby: ['篮球', '足球', '羽毛球'],
+    }
+  },
+  components: {
+    UserInfo,
+  },
+}
+</script>
+
+<style>
+</style>
+```
+
+子组件UserInfo.vue
+
+```vue
+<template>
+  <div class="userinfo">
+    <h3>我是个人信息组件</h3>
+    <div>姓名：</div>
+    <div>年龄：</div>
+    <div>是否单身：</div>
+    <div>座驾：</div>
+    <div>兴趣爱好：</div>
+  </div>
+</template>
+
+<script>
+export default {
+  
+}
+</script>
+
+<style>
+.userinfo {
+  width: 300px;
+  border: 3px solid #000;
+  padding: 20px;
+}
+.userinfo > div {
+  margin: 20px 10px;
+}
+</style>
+```
+
+## props校验
+
+### 1.思考
+
+组件的props可以乱传吗
+
+### 2.作用
+
+为组件的 prop 指定**验证要求**，不符合要求，控制台就会有**错误提示**  → 帮助开发者，快速发现错误
+
+### 3.语法
+
+- **类型校验**
+- 非空校验
+- 默认值
+- 自定义校验
+
+![68232068405](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682320684053.png)
+
+### 4.代码演示
+
+App.vue
+
+```vue
+<template>
+  <div class="app">
+    <BaseProgress :w="width"></BaseProgress>
+  </div>
+</template>
+
+<script>
+import BaseProgress from './components/BaseProgress.vue'
+export default {
+  data() {
+    return {
+      width: 30,
+    }
+  },
+  components: {
+    BaseProgress,
+  },
+}
+</script>
+
+<style>
+</style>
+```
+
+BaseProgress.vue
+
+```vue
+<template>
+  <div class="base-progress">
+    <div class="inner" :style="{ width: w + '%' }">
+      <span>{{ w }}%</span>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  props: ['w'],
+}
+</script>
+
+<style scoped>
+.base-progress {
+  height: 26px;
+  width: 400px;
+  border-radius: 15px;
+  background-color: #272425;
+  border: 3px solid #272425;
+  box-sizing: border-box;
+  margin-bottom: 30px;
+}
+.inner {
+  position: relative;
+  background: #379bff;
+  border-radius: 15px;
+  height: 25px;
+  box-sizing: border-box;
+  left: -3px;
+  top: -2px;
+}
+.inner span {
+  position: absolute;
+  right: 0;
+  top: 26px;
+}
+</style>
+```
+
+## props校验完整写法
+
+### 1.语法
+
+```vue
+props: {
+  校验的属性名: {
+    type: 类型,  // Number String Boolean ...
+    required: true, // 是否必填
+    default: 默认值, // 默认值
+    validator (value) {
+      // 自定义校验逻辑
+      return 是否通过校验
+    }
+  }
+},
+```
+
+### 2.代码实例
+
+```vue
+<script>
+export default {
+  // 完整写法（类型、默认值、非空、自定义校验）
+  props: {
+    w: {
+      type: Number,
+      //required: true,
+      default: 0,
+      validator(val) {
+        // console.log(val)
+        if (val >= 100 || val <= 0) {
+          console.error('传入的范围必须是0-100之间')
+          return false
+        } else {
+          return true
+        }
+      },
+    },
+  },
+}
+</script>
+```
+
+### 3.注意
+
+1.default和required一般不同时写（因为当时必填项时，肯定是有值的）
+
+2.default后面如果是简单类型的值，可以直接写默认。如果是复杂类型的值，则需要以函数的形式return一个默认值
+
+## props&data、单向数据流
+
+### 1.共同点
+
+都可以给组件提供数据
+
+### 2.区别
+
+- data 的数据是**自己**的  →   随便改  
+- prop 的数据是**外部**的  →   不能直接改，要遵循 **单向数据流**
+
+### 3.单向数据流：
+
+父级props 的数据更新，会向下流动，影响子组件。这个数据流动是单向的
+
+### 4.代码演示
+
+App.vue
+
+```vue
+<template>
+  <div class="app">
+    <BaseCount></BaseCount>
+  </div>
+</template>
+
+<script>
+import BaseCount from './components/BaseCount.vue'
+export default {
+  components:{
+    BaseCount
+  },
+  data(){
+  },
+}
+</script>
+
+<style>
+
+</style>
+```
+
+BaseCount.vue
+
+```vue
+<template>
+  <div class="base-count">
+    <button @click="count--">-</button>
+    <span>{{ count }}</span>
+    <button @click="count++">+</button>
+  </div>
+</template>
+
+<script>
+export default {
+  // 1.自己的数据随便修改  （谁的数据 谁负责）
+   data () {
+     return {
+       count: 100,
+     }
+   },
+  // 2.外部传过来的数据 不能随便修改
+  //props: {
+  //  count: {
+  //    type: Number,
+  //  }, 
+  //}
+}
+</script>
+
+<style>
+.base-count {
+  margin: 20px;
+}
+</style>
+```
+
+![68232373422](E:/BaiduNetdiskDownload/Vue2-Vue3/day04/assets/1682323734228.png)
+
+### 5.口诀
+
+**谁的数据谁负责**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
