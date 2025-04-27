@@ -4111,15 +4111,451 @@ export default {
 2. 清空功能：监听事件 —> **子组件**通知父组件 —>父组件清空
 3. 持久化存储：watch监听数据变化，持久化到本地
 
+## ref和$refs
 
 
 
+### 1.作用
+
+利用ref 和 $refs 可以用于 获取 dom 元素 或 组件实例
+
+### 2.特点：
+
+查找范围 →  当前组件内(更精确稳定)
+
+### 3.语法
+
+1.给要获取的盒子添加ref属性
+
+```html
+<div ref="chartRef">我是渲染图表的容器</div>
+```
+
+2.获取时通过 $refs获取  this.\$refs.chartRef 获取
+
+```html
+mounted () {
+  console.log(this.$refs.chartRef)
+}
+```
+
+### 4.注意
+
+之前只用document.querySelect('.box') 获取的是整个页面中的盒子
+
+![image-20250427211357757](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250427211357757.png)
+
+### 5.代码示例
+
+App.vue
+
+```vue
+<template>
+  <div class="app">
+    <BaseChart></BaseChart>
+  </div>
+</template>
+
+<script>
+import BaseChart from './components/BaseChart.vue'
+export default {
+  components:{
+    BaseChart
+  }
+}
+</script>
+
+<style>
+</style>
+```
+
+BaseChart.vue
+
+```vue
+<template>
+  <div class="base-chart-box" ref="baseChartBox">子组件</div>
+</template>
+
+<script>
+// yarn add echarts 或者 npm i echarts
+import * as echarts from 'echarts'
+
+export default {
+  mounted() {
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.querySelect('.base-chart-box'))
+    // 绘制图表
+    myChart.setOption({
+      title: {
+        text: 'ECharts 入门示例',
+      },
+      tooltip: {},
+      xAxis: {
+        data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子'],
+      },
+      yAxis: {},
+      series: [
+        {
+          name: '销量',
+          type: 'bar',
+          data: [5, 20, 36, 10, 10, 20],
+        },
+      ],
+    })
+  },
+}
+</script>
+
+<style scoped>
+.base-chart-box {
+  width: 400px;
+  height: 300px;
+  border: 3px solid #000;
+  border-radius: 6px;
+}
+</style>
+```
+
+## 异步更新 & $nextTick
+
+### 1.需求
+
+编辑标题,  编辑框自动聚焦
+
+1. 点击编辑，显示编辑框
+2. 让编辑框，立刻获取焦点
+
+![68239449534](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682394495346.png)
+
+![image-20250427212047351](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250427212047351.png)
+
+### 2.代码实现
+
+```vue
+<template>
+  <div class="app">
+    <div v-if="isShowEdit">
+      <input type="text" v-model="editValue" ref="inp" />
+      <button>确认</button>
+    </div>
+    <div v-else>
+      <span>{{ title }}</span>
+      <button @click="editFn">编辑</button>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      title: '大标题',
+      isShowEdit: false,
+      editValue: '',
+    }
+  },
+  methods: {
+    editFn() {
+        // 显示输入框
+        this.isShowEdit = true  
+        // 获取焦点
+        this.$refs.inp.focus() 
+    }  },
+}
+</script> 
+```
 
 
 
+### 3.问题
+
+"显示之后"，立刻获取焦点是不能成功的！
+
+原因：Vue 是异步更新DOM  (提升性能)
 
 
 
+### 4.解决方案
+
+$nextTick：**等 DOM更新后**,才会触发执行此方法里的函数体
+
+**语法:** this.$nextTick(函数体)
+
+```js
+this.$nextTick(() => {
+  this.$refs.inp.focus()
+})
+```
+
+**注意：**$nextTick 内的函数体 一定是**箭头函数**，这样才能让函数内部的this指向Vue实例
+
+
+
+## 自定义指令
+
+### 1.指令介绍
+
+- 内置指令：**v-html、v-if、v-bind、v-on**... 这都是Vue给咱们内置的一些指令，可以直接使用
+
+- 自定义指令：同时Vue也支持让开发者，自己注册一些指令。这些指令被称为**自定义指令**
+
+  每个指令都有自己各自独立的功能
+
+### 2.自定义指令
+
+概念：自己定义的指令，可以**封装一些DOM操作**，扩展额外的功能
+
+### 3.自定义指令语法
+
+- 全局注册
+
+  ```js
+  //在main.js中
+  Vue.directive('指令名', {
+    "inserted" (el) {
+      // 可以对 el 标签，扩展额外功能
+      el.focus()
+    }
+  })
+  ```
+
+- 局部注册
+
+  ```js
+  //在Vue组件的配置项中
+  directives: {
+    "指令名": {
+      inserted () {
+        // 可以对 el 标签，扩展额外功能
+        el.focus()
+      }
+    }
+  }
+  ```
+
+- 使用指令
+
+  注意：在使用指令的时候，一定要**先注册**，**再使用**，否则会报错
+  使用指令语法： v-指令名。如：<input type="text"  v-focus/>  
+
+  **注册**指令时**不用**加**v-前缀**，但**使用时**一定要**加v-前缀**
+
+### 4.指令中的配置项介绍
+
+inserted:被绑定元素插入父节点时调用的钩子函数
+
+el：使用指令的那个DOM元素
+
+
+
+### 5.代码示例
+
+需求：当页面加载时，让元素获取焦点（**autofocus在safari浏览器有兼容性**）
+
+App.vue
+
+```vue
+  <div>
+    <h1>自定义指令</h1>
+    <input v-focus ref="inp" type="text">
+  </div>
+```
+
+App.vue
+
+```js
+<template>
+  <div>
+    <h1>自定义指令</h1>
+    <input v-focus ref="inp" type="text">
+  </div>
+</template>
+
+<script>
+export default {
+  // mounted () {
+  //   this.$refs.inp.focus()
+  // }
+  
+  // 2. 局部注册指令
+  directives: {
+    // 指令名：指令的配置项
+    focus: {
+      inserted (el) {
+        el.focus()
+      }
+    }
+  }
+}
+</script>
+
+<style>
+
+</style>
+```
+
+main.js
+
+```js
+import Vue from 'vue'
+import App from './App.vue'
+
+Vue.config.productionTip = false
+
+// // 1. 全局注册指令
+// Vue.directive('focus', {
+//   // inserted 会在 指令所在的元素，被插入到页面中时触发
+//   inserted (el) {
+//     // el 就是指令所绑定的元素
+//     // console.log(el);
+//     el.focus()
+//   }
+// })
+
+
+new Vue({
+  render: h => h(App),
+}).$mount('#app')
+
+```
+
+
+
+### 6.总结
+
+1.自定义指令的作用是什么？
+
+2.使用自定义指令的步骤是哪两步？
+
+
+
+## 自定义指令-指令的值
+
+### 1.需求
+
+实现一个 color 指令 - 传入不同的颜色, 给标签设置文字颜色
+
+### 2.语法
+
+1.在绑定指令时，可以通过“等号”的形式为指令 绑定 具体的参数值
+
+```html
+<div v-color="color">我是内容</div>
+```
+
+2.通过 binding.value 可以拿到指令值，**指令值修改会 触发 update 函数**
+
+```js
+directives: {
+  color: {
+    inserted (el, binding) {
+      el.style.color = binding.value
+    },
+    update (el, binding) {
+      el.style.color = binding.value
+    }
+  }
+}
+```
+
+### 3.代码示例
+
+App.vue
+
+```vue
+<template>
+  <div>
+     <!--显示红色--> 
+    <h2 v-color="color1">指令的值1测试</h2>
+     <!--显示蓝色--> 
+    <h2 v-color="color2">指令的值2测试</h2>
+     <button>
+        改变第一个h1的颜色
+    </button>
+  </div>
+</template>
+
+<script>
+export default {
+  data () {
+    return {
+      color1: 'red',
+      color2: 'blue'
+    }
+  }
+}
+</script>
+
+<style>
+
+</style>
+```
+
+vue.app
+
+```js
+<template>
+  <div>
+    <h1 v-color="color1">指令的值1测试</h1>
+    <h1 v-color="color2">指令的值2测试</h1>
+  </div>
+</template>
+
+<script>
+export default {
+  data () {
+    return {
+      color1: 'red',
+      color2: 'orange'
+    }
+  },
+  directives: {
+    color: {
+      // 1. inserted 提供的是元素被添加到页面中时的逻辑
+      inserted (el, binding) {
+        // console.log(el, binding.value);
+        // binding.value 就是指令的值
+        el.style.color = binding.value
+      },
+      // 2. update 指令的值修改的时候触发，提供值变化后，dom更新的逻辑
+      update (el, binding) {
+        console.log('指令的值修改了');
+        el.style.color = binding.value
+      }
+    }
+  }
+}
+</script>
+
+<style>
+
+</style>
+```
+
+main.js
+
+```js
+import Vue from 'vue'
+import App from './App.vue'
+
+Vue.config.productionTip = false
+
+// // 1. 全局注册指令
+// Vue.directive('focus', {
+//   // inserted 会在 指令所在的元素，被插入到页面中时触发
+//   inserted (el) {
+//     // el 就是指令所绑定的元素
+//     // console.log(el);
+//     el.focus()
+//   }
+// })
+
+
+new Vue({
+  render: h => h(App),
+}).$mount('#app')
+
+```
 
 
 
