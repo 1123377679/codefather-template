@@ -4113,8 +4113,6 @@ export default {
 
 ## ref和$refs
 
-
-
 ### 1.作用
 
 利用ref 和 $refs 可以用于 获取 dom 元素 或 组件实例
@@ -4183,7 +4181,7 @@ import * as echarts from 'echarts'
 export default {
   mounted() {
     // 基于准备好的dom，初始化echarts实例
-    var myChart = echarts.init(document.querySelect('.base-chart-box'))
+    var myChart = echarts.init(document.querySelector('.base-chart-box'))
     // 绘制图表
     myChart.setOption({
       title: {
@@ -4264,8 +4262,6 @@ export default {
 }
 </script> 
 ```
-
-
 
 ### 3.问题
 
@@ -4557,9 +4553,1143 @@ new Vue({
 
 ```
 
+## 自定义指令-v-loading指令的封装
+
+### 1.场景
+
+实际开发过程中，发送请求需要时间，在请求的数据未回来时，页面会处于**空白状态**  =>  用户体验不好
+
+### 2.需求
+
+封装一个 v-loading 指令，实现加载中的效果
+
+### 3.分析
+
+1.本质 loading效果就是一个蒙层，盖在了盒子上
+
+2.数据请求中，开启loading状态，添加蒙层
+
+3.数据请求完毕，关闭loading状态，移除蒙层
+
+### 4.实现
+
+1.准备一个 loading类，通过伪元素定位，设置宽高，实现蒙层
+
+2.开启关闭 loading状态（添加移除蒙层），本质只需要添加移除类即可
+
+3.结合自定义指令的语法进行封装复用
+
+```css
+.loading:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff url("./loading.gif") no-repeat center;
+}
+```
+
+### 5.准备代码
+
+```html
+<template>
+  <div class="main">
+    <div class="box">
+      <ul>
+        <li v-for="item in list" :key="item.id" class="news">
+          <div class="left">
+            <div class="title">{{ item.title }}</div>
+            <div class="info">
+              <span>{{ item.source }}</span>
+              <span>{{ item.time }}</span>
+            </div>
+          </div>
+          <div class="right">
+            <img :src="item.img" alt="">
+          </div>
+        </li>
+      </ul>
+    </div> 
+  </div>
+</template>
+
+<script>
+// 安装axios =>  yarn add axios || npm i axios
+import axios from 'axios'
+
+// 接口地址：http://hmajax.itheima.net/api/news
+// 请求方式：get
+export default {
+  data () {
+    return {
+      list: [],
+      isLoading: false,
+      isLoading2: false
+    }
+  },
+  async created () {
+    // 1. 发送请求获取数据
+    const res = await axios.get('http://hmajax.itheima.net/api/news')
+    
+    setTimeout(() => {
+      // 2. 更新到 list 中，用于页面渲染 v-for
+      this.list = res.data.data
+    }, 2000)
+  }
+}
+</script>
+
+<style>
+.loading:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff url('./loading.gif') no-repeat center;
+}
+
+.box2 {
+  width: 400px;
+  height: 400px;
+  border: 2px solid #000;
+  position: relative;
+}
 
 
 
+.box {
+  width: 800px;
+  min-height: 500px;
+  border: 3px solid orange;
+  border-radius: 5px;
+  position: relative;
+}
+.news {
+  display: flex;
+  height: 120px;
+  width: 600px;
+  margin: 0 auto;
+  padding: 20px 0;
+  cursor: pointer;
+}
+.news .left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-right: 10px;
+}
+.news .left .title {
+  font-size: 20px;
+}
+.news .left .info {
+  color: #999999;
+}
+.news .left .info span {
+  margin-right: 20px;
+}
+.news .right {
+  width: 160px;
+  height: 120px;
+}
+.news .right img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+</style>
+```
+
+完整代码：
+app.vue
+
+```js
+<template>
+  <div class="main">
+    <div class="box" v-loading="isLoading">
+      <ul>
+        <li v-for="item in list" :key="item.id" class="news">
+          <div class="left">
+            <div class="title">{{ item.title }}</div>
+            <div class="info">
+              <span>{{ item.source }}</span>
+              <span>{{ item.time }}</span>
+            </div>
+          </div>
+
+          <div class="right">
+            <img :src="item.img" alt="">
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="box2" v-loading="isLoading2"></div>
+  </div>
+</template>
+
+<script>
+// 安装axios =>  yarn add axios
+import axios from 'axios'
+
+// 接口地址：http://hmajax.itheima.net/api/news
+// 请求方式：get
+export default {
+  data () {
+    return {
+      list: [],
+      isLoading: true,
+      isLoading2: true
+    }
+  },
+  async created () {
+    // 1. 发送请求获取数据
+    const res = await axios.get('http://hmajax.itheima.net/api/news')
+    
+    setTimeout(() => {
+      // 2. 更新到 list 中，用于页面渲染 v-for
+      this.list = res.data.data
+      this.isLoading = false
+    }, 2000)
+  },
+  directives: {
+    loading: {
+      inserted (el, binding) {
+        binding.value ? el.classList.add('loading') : el.classList.remove('loading')
+      },
+      update (el, binding) {
+        binding.value ? el.classList.add('loading') : el.classList.remove('loading')
+      }
+    }
+  }
+}
+</script>
+
+<style>
+.loading:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff url('./loading.gif') no-repeat center;
+}
+
+.box2 {
+  width: 400px;
+  height: 400px;
+  border: 2px solid #000;
+  position: relative;
+}
+
+
+
+.box {
+  width: 800px;
+  min-height: 500px;
+  border: 3px solid orange;
+  border-radius: 5px;
+  position: relative;
+}
+.news {
+  display: flex;
+  height: 120px;
+  width: 600px;
+  margin: 0 auto;
+  padding: 20px 0;
+  cursor: pointer;
+}
+.news .left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-right: 10px;
+}
+.news .left .title {
+  font-size: 20px;
+}
+.news .left .info {
+  color: #999999;
+}
+.news .left .info span {
+  margin-right: 20px;
+}
+.news .right {
+  width: 160px;
+  height: 120px;
+}
+.news .right img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+</style>
+```
+
+main.js
+
+```js
+import Vue from 'vue'
+import App from './App.vue'
+
+Vue.config.productionTip = false
+
+// // 1. 全局注册指令
+// Vue.directive('focus', {
+//   // inserted 会在 指令所在的元素，被插入到页面中时触发
+//   inserted (el) {
+//     // el 就是指令所绑定的元素
+//     // console.log(el);
+//     el.focus()
+//   }
+// })
+
+
+new Vue({
+  render: h => h(App),
+}).$mount('#app')
+
+```
+
+
+
+## 插槽-默认插槽
+
+### 1.作用
+
+让组件内部的一些 **结构** 支持 **自定义**
+
+![68241021524](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682410215245.png)
+
+### 2.需求
+
+将需要多次显示的对话框,封装成一个组件
+
+### 3.问题
+
+组件的内容部分，**不希望写死**，希望能使用的时候**自定义**。怎么办
+
+### 4.插槽的基本语法
+
+1. 组件内需要定制的结构部分，改用**<slot></slot>**占位
+2. 使用组件时, **<MyDialog></MyDialog>**标签内部, 传入结构替换slot
+3. 给插槽传入内容时，可以传入**纯文本、html标签、组件**
+
+![68241032979](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682410329794.png)
+
+
+
+### 5.代码示例
+
+MyDialog.vue
+
+```vue
+<template>
+  <div class="dialog">
+    <div class="dialog-header">
+      <h3>友情提示</h3>
+      <span class="close">✖️</span>
+    </div>
+
+    <div class="dialog-content">
+      您确定要进行删除操作吗？
+    </div>
+    <div class="dialog-footer">
+      <button>取消</button>
+      <button>确认</button>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data () {
+    return {
+
+    }
+  }
+}
+</script>
+
+<style scoped>
+* {
+  margin: 0;
+  padding: 0;
+}
+.dialog {
+  width: 470px;
+  height: 230px;
+  padding: 0 25px;
+  background-color: #ffffff;
+  margin: 40px auto;
+  border-radius: 5px;
+}
+.dialog-header {
+  height: 70px;
+  line-height: 70px;
+  font-size: 20px;
+  border-bottom: 1px solid #ccc;
+  position: relative;
+}
+.dialog-header .close {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  cursor: pointer;
+}
+.dialog-content {
+  height: 80px;
+  font-size: 18px;
+  padding: 15px 0;
+}
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+.dialog-footer button {
+  width: 65px;
+  height: 35px;
+  background-color: #ffffff;
+  border: 1px solid #e1e3e9;
+  cursor: pointer;
+  outline: none;
+  margin-left: 10px;
+  border-radius: 3px;
+}
+.dialog-footer button:last-child {
+  background-color: #007acc;
+  color: #fff;
+}
+</style>
+```
+
+App.vue
+
+```vue
+<template>
+  <div>
+    <MyDialog>
+    </MyDialog>
+  </div>
+</template>
+
+<script>
+import MyDialog from './components/MyDialog.vue'
+export default {
+  data () {
+    return {
+
+    }
+  },
+  components: {
+    MyDialog
+  }
+}
+</script>
+
+<style>
+body {
+  background-color: #b3b3b3;
+}
+</style>
+```
+
+### 6.总结
+
+场景：组件内某一部分结构不确定，想要自定义怎么办
+
+使用：插槽的步骤分为哪几步？
+
+## 插槽-后备内容（默认值）
+
+### 1.问题
+
+通过插槽完成了内容的定制，传什么显示什么, 但是如果不传，则是空白
+
+![68241149461](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682411494612.png)
+
+能否给插槽设置 默认显示内容 呢？
+
+### 2.插槽的后备内容
+
+封装组件时，可以为预留的 `<slot>` 插槽提供后备内容（默认内容）。
+
+### 3.语法
+
+在 <slot> 标签内，放置内容, 作为默认显示内容
+
+![68241233912](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682412365046.png)
+
+### 4.效果
+
+- 外部使用组件时，不传东西，则slot会显示后备内容 
+
+  ![68241243265](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682412432656.png)
+
+- 外部使用组件时，传东西了，则slot整体会被换掉
+
+  ![68241245902](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682412459027.png)
+
+### 5.代码示例
+
+App.vue
+
+```vue
+<template>
+  <div>
+    <MyDialog></MyDialog>
+    <MyDialog>
+      你确认要退出么
+    </MyDialog>
+  </div>
+</template>
+
+<script>
+import MyDialog from './components/MyDialog.vue'
+export default {
+  data () {
+    return {
+
+    }
+  },
+  components: {
+    MyDialog
+  }
+}
+</script>
+
+<style>
+body {
+  background-color: #b3b3b3;
+}
+</style>
+```
+
+完整代码
+
+app.vue
+
+```js
+<template>
+  <div>
+    <!-- 2. 在使用组件时，组件标签内填入内容 -->
+    <MyDialog>
+      <div>你确认要删除么</div>
+    </MyDialog>
+
+    <MyDialog>
+      <p>你确认要退出么</p>
+    </MyDialog>
+  </div>
+</template>
+
+<script>
+import MyDialog from './components/MyDialog.vue'
+export default {
+  data () {
+    return {
+
+    }
+  },
+  components: {
+    MyDialog
+  }
+}
+</script>
+
+<style>
+body {
+  background-color: #b3b3b3;
+}
+</style>
+```
+
+MyDialog.vue
+
+```vue
+<template>
+  <div class="dialog">
+    <div class="dialog-header">
+      <h3>友情提示</h3>
+      <span class="close">✖️</span>
+    </div>
+
+    <div class="dialog-content">
+      <!-- 1. 在需要定制的位置，使用slot占位 -->
+      <slot></slot>
+    </div>
+    <div class="dialog-footer">
+      <button>取消</button>
+      <button>确认</button>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data () {
+    return {
+
+    }
+  }
+}
+</script>
+
+<style scoped>
+* {
+  margin: 0;
+  padding: 0;
+}
+.dialog {
+  width: 470px;
+  height: 230px;
+  padding: 0 25px;
+  background-color: #ffffff;
+  margin: 40px auto;
+  border-radius: 5px;
+}
+.dialog-header {
+  height: 70px;
+  line-height: 70px;
+  font-size: 20px;
+  border-bottom: 1px solid #ccc;
+  position: relative;
+}
+.dialog-header .close {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  cursor: pointer;
+}
+.dialog-content {
+  height: 80px;
+  font-size: 18px;
+  padding: 15px 0;
+}
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+.dialog-footer button {
+  width: 65px;
+  height: 35px;
+  background-color: #ffffff;
+  border: 1px solid #e1e3e9;
+  cursor: pointer;
+  outline: none;
+  margin-left: 10px;
+  border-radius: 3px;
+}
+.dialog-footer button:last-child {
+  background-color: #007acc;
+  color: #fff;
+}
+</style>
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 插槽-具名插槽
+
+### 1.需求
+
+一个组件内有多处结构，需要外部传入标签，进行定制 ![68241313487](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682413134876.png)
+
+上面的弹框中有**三处不同**，但是**默认插槽**只能**定制一个位置**，这时候怎么办呢?
+
+### 2.具名插槽语法
+
+- 多个slot使用name属性区分名字 
+
+  ![68241339172](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682413391727.png)
+
+- template配合v-slot:名字来分发对应标签
+
+  ![68241341192](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682413411921.png)
+
+  完整代码；
+  MyDialog
+
+  ```vue
+  <template>
+    <div class="dialog">
+      <div class="dialog-header">
+        <!-- 一旦插槽起了名字，就是具名插槽，只支持定向分发 -->
+        <slot name="head"></slot>
+      </div>
+  
+      <div class="dialog-content">
+        <slot name="content"></slot>
+      </div>
+      <div class="dialog-footer">
+        <slot name="footer"></slot>
+      </div>
+    </div>
+  </template>
+  
+  <script>
+  export default {
+    data () {
+      return {
+  
+      }
+    }
+  }
+  </script>
+  
+  <style scoped>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+  .dialog {
+    width: 470px;
+    height: 230px;
+    padding: 0 25px;
+    background-color: #ffffff;
+    margin: 40px auto;
+    border-radius: 5px;
+  }
+  .dialog-header {
+    height: 70px;
+    line-height: 70px;
+    font-size: 20px;
+    border-bottom: 1px solid #ccc;
+    position: relative;
+  }
+  .dialog-header .close {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    cursor: pointer;
+  }
+  .dialog-content {
+    height: 80px;
+    font-size: 18px;
+    padding: 15px 0;
+  }
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .dialog-footer button {
+    width: 65px;
+    height: 35px;
+    background-color: #ffffff;
+    border: 1px solid #e1e3e9;
+    cursor: pointer;
+    outline: none;
+    margin-left: 10px;
+    border-radius: 3px;
+  }
+  .dialog-footer button:last-child {
+    background-color: #007acc;
+    color: #fff;
+  }
+  </style>
+  
+  ```
+
+  app.vue
+
+  ```vue
+  <template>
+    <div>
+      <MyDialog>
+        <!-- 需要通过template标签包裹需要分发的结构，包成一个整体 -->
+        <template v-slot:head>
+          <div>我是大标题</div>
+        </template>
+        
+        <template v-slot:content>
+          <div>我是内容</div>
+        </template>
+  
+        <template #footer>
+          <button>取消</button>
+          <button>确认</button>
+        </template>
+      </MyDialog>
+    </div>
+  </template>
+  
+  <script>
+  import MyDialog from './components/MyDialog.vue'
+  export default {
+    data () {
+      return {
+  
+      }
+    },
+    components: {
+      MyDialog
+    }
+  }
+  </script>
+  
+  <style>
+  body {
+    background-color: #b3b3b3;
+  }
+  </style>
+  ```
+
+  
+
+### 3.v-slot的简写
+
+v-slot写起来太长，vue给我们提供一个简单写法 **v-slot —> #**
+
+### 4.总结
+
+- 组件内 有多处不确定的结构 怎么办?
+- 具名插槽的语法是什么？
+- v-slot:插槽名可以简化成什么?
+
+## 作用域插槽
+
+### 1.插槽分类
+
+- 默认插槽
+
+- 具名插槽
+
+  插槽只有两种，作用域插槽不属于插槽的一种分类
+
+### 2.作用
+
+定义slot 插槽的同时, 是可以**传值**的。给 **插槽** 上可以 **绑定数据**，将来 **使用组件时可以用**
+
+### 3.场景
+
+封装表格组件
+
+![68241434213](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682414342139.png)
+
+### 4.使用步骤
+
+1. 给 slot 标签, 以 添加属性的方式传值
+
+   ```vue
+   <slot :id="item.id" msg="测试文本"></slot>
+   ```
+
+2. 所有添加的属性, 都会被收集到一个对象中
+
+   ```vue
+   { id: 3, msg: '测试文本' }
+   ```
+
+3. 在template中, 通过  ` #插槽名= "obj"` 接收，默认插槽名为 default
+
+   ```vue
+   <MyTable :list="list">
+     <template #default="obj">
+       <button @click="del(obj.id)">删除</button>
+     </template>
+   </MyTable>
+   ```
+
+### 5.代码示例
+
+MyTable.vue
+
+```vue
+<template>
+  <table class="my-table">
+    <thead>
+      <tr>
+        <th>序号</th>
+        <th>姓名</th>
+        <th>年纪</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>赵小云</td>
+        <td>19</td>
+        <td>
+          <button>
+          	查看    
+    	  </button>
+        </td>
+      </tr>
+        <tr>
+        <td>1</td>
+        <td>张小花</td>
+        <td>19</td>
+        <td>
+          <button>
+          	查看    
+    	  </button>
+        </td>
+      </tr>
+        <tr>
+        <td>1</td>
+        <td>孙大明</td>
+        <td>19</td>
+        <td>
+          <button>
+          	查看    
+    	  </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</template>
+
+<script>
+export default {
+  props: {
+    data: Array
+  }
+}
+</script>
+
+<style scoped>
+.my-table {
+  width: 450px;
+  text-align: center;
+  border: 1px solid #ccc;
+  font-size: 24px;
+  margin: 30px auto;
+}
+.my-table thead {
+  background-color: #1f74ff;
+  color: #fff;
+}
+.my-table thead th {
+  font-weight: normal;
+}
+.my-table thead tr {
+  line-height: 40px;
+}
+.my-table th,
+.my-table td {
+  border-bottom: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+}
+.my-table td:last-child {
+  border-right: none;
+}
+.my-table tr:last-child td {
+  border-bottom: none;
+}
+.my-table button {
+  width: 65px;
+  height: 35px;
+  font-size: 18px;
+  border: 1px solid #ccc;
+  outline: none;
+  border-radius: 3px;
+  cursor: pointer;
+  background-color: #ffffff;
+  margin-left: 5px;
+}
+</style>
+```
+
+App.vue
+
+```vue
+<template>
+  <div>
+    <MyTable :data="list"></MyTable>
+    <MyTable :data="list2"></MyTable>
+  </div>
+</template>
+
+<script>
+  import MyTable from './components/MyTable.vue'
+  export default {
+    data () {
+      return {
+     	list: [
+            { id: 1, name: '张小花', age: 18 },
+            { id: 2, name: '孙大明', age: 19 },
+            { id: 3, name: '刘德忠', age: 17 },
+          ],
+          list2: [
+            { id: 1, name: '赵小云', age: 18 },
+            { id: 2, name: '刘蓓蓓', age: 19 },
+            { id: 3, name: '姜肖泰', age: 17 },
+          ]
+      }
+    },
+    components: {
+      MyTable
+    }
+  }
+</script>
+```
+
+完整代码:
+
+myTable
+
+```vue
+<template>
+  <table class="my-table">
+    <thead>
+      <tr>
+        <th>序号</th>
+        <th>姓名</th>
+        <th>年纪</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="(item, index) in data" :key="item.id">
+        <td>{{ index + 1 }}</td>
+        <td>{{ item.name }}</td>
+        <td>{{ item.age }}</td>
+        <td>
+          <!-- 1. 给slot标签，添加属性的方式传值 -->
+          <slot :row="item" msg="测试文本"></slot>
+
+          <!-- 2. 将所有的属性，添加到一个对象中 -->
+          <!-- 
+             {
+               row: { id: 2, name: '孙大明', age: 19 },
+               msg: '测试文本'
+             }
+           -->
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</template>
+
+<script>
+export default {
+  props: {
+    data: Array
+  }
+}
+</script>
+
+<style scoped>
+.my-table {
+  width: 450px;
+  text-align: center;
+  border: 1px solid #ccc;
+  font-size: 24px;
+  margin: 30px auto;
+}
+.my-table thead {
+  background-color: #1f74ff;
+  color: #fff;
+}
+.my-table thead th {
+  font-weight: normal;
+}
+.my-table thead tr {
+  line-height: 40px;
+}
+.my-table th,
+.my-table td {
+  border-bottom: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+}
+.my-table td:last-child {
+  border-right: none;
+}
+.my-table tr:last-child td {
+  border-bottom: none;
+}
+.my-table button {
+  width: 65px;
+  height: 35px;
+  font-size: 18px;
+  border: 1px solid #ccc;
+  outline: none;
+  border-radius: 3px;
+  cursor: pointer;
+  background-color: #ffffff;
+  margin-left: 5px;
+}
+</style>
+```
+
+vue.js
+
+```vue
+<template>
+  <div>
+    <MyTable :data="list">
+      <!-- 3. 通过template #插槽名="变量名" 接收 -->
+      <template #default="obj">
+        <button @click="del(obj.row.id)">
+          删除
+        </button>
+      </template>
+    </MyTable>
+    
+    <MyTable :data="list2">
+      <template #default="{ row }">
+        <button @click="show(row)">查看</button>
+      </template>
+    </MyTable>
+  </div>
+</template>
+
+<script>
+import MyTable from './components/MyTable.vue'
+export default {
+  data () {
+    return {
+      list: [
+        { id: 1, name: '张小花', age: 18 },
+        { id: 2, name: '孙大明', age: 19 },
+        { id: 3, name: '刘德忠', age: 17 },
+      ],
+      list2: [
+        { id: 1, name: '赵小云', age: 18 },
+        { id: 2, name: '刘蓓蓓', age: 19 },
+        { id: 3, name: '姜肖泰', age: 17 },
+      ]
+    }
+  },
+  methods: {
+    del (id) {
+      this.list = this.list.filter(item => item.id !== id)
+    },
+    show (row) {
+      // console.log(row);
+      alert(`姓名：${row.name}; 年纪：${row.age}`)
+    }
+  },
+  components: {
+    MyTable
+  }
+}
+</script>
+
+```
+
+### 6.总结
+
+1.作用域插槽的作用是什么？
+
+2.作用域插槽的使用步骤是什么？
 
 
 
