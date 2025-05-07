@@ -6020,7 +6020,7 @@ App.vue
 
 MyTag.vue
 
-```
+```vue
 <template>
   <div class="my-tag">
     <input
@@ -6258,9 +6258,183 @@ export default {
 </script>
 ```
 
+## 单页应用程序介绍
+
+### 1.概念
+
+单页应用程序：SPA【Single Page Application】是指所有的功能都在**一个html页面**上实现
+
+### 2.具体示例
+
+单页应用网站： 网易云音乐  <https://music.163.com/>
+
+多页应用网站：京东  https://jd.com/
+
+### 3.单页应用 VS 多页面应用
+
+![68244191297](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682441912977.png)
+
+单页应用类网站：系统类网站 / 内部网站 / 文档类网站 / 移动端站点
+
+多页应用类网站：公司官网 / 电商类网站 
+
+### 4.总结
+
+1.什么是单页面应用程序?
+
+2.单页面应用优缺点?
+
+3.单页应用场景？
 
 
 
+## 路由介绍
+
+### 1.思考
+
+单页面应用程序，之所以开发效率高，性能好，用户体验好
+
+最大的原因就是：**页面按需更新**
+
+![68244269977](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682442699775.png)
+
+比如当点击【发现音乐】和【关注】时，**只是更新下面部分内容**，对于头部是不更新的
+
+要按需更新，首先就需要明确：**访问路径**和 **组件**的对应关系！
+
+访问路径 和 组件的对应关系如何确定呢？ **路由**
+
+
+
+### 2.路由的介绍
+
+生活中的路由：设备和ip的映射关系
+
+![68244294505](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682442945057.png)
+
+Vue中的路由：**路径和组件**的**映射**关系
+
+![68244304037](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682443040372.png)
+
+### 3.总结
+
+- 什么是路由
+- Vue中的路由是什么
+
+## 路由的基本使用
+
+### 1.目标
+
+认识插件 VueRouter，掌握 VueRouter 的基本使用步骤
+
+### 2.作用
+
+**修改**地址栏路径时，**切换显示**匹配的**组件**
+
+### 3.说明
+
+Vue 官方的一个路由插件，是一个第三方包
+
+### 4.官网
+
+<https://v3.router.vuejs.org/zh/>
+
+### 5.VueRouter的使用（5+2）
+
+固定5个固定的步骤（不用死背，熟能生巧）
+
+1. 下载 VueRouter 模块到当前工程，版本3.6.5
+
+   ```bash
+   yarn add vue-router@3.6.5
+   ```
+
+2. main.js中引入VueRouter
+
+   ```vue
+   import VueRouter from 'vue-router'
+   ```
+
+3. 安装注册
+
+   ```vue
+   Vue.use(VueRouter)
+   ```
+
+4. 创建路由对象
+
+   ```vue
+   const router = new VueRouter()
+   ```
+
+5. 注入，将路由对象注入到new Vue实例中，建立关联
+
+   ```vue
+   new Vue({
+     render: h => h(App),
+     router:router
+   }).$mount('#app')
+   
+   ```
+
+
+当我们配置完以上5步之后 就可以看到浏览器地址栏中的路由 变成了 /#/的形式。表示项目的路由已经被Vue-Router管理了
+
+![68247920745](E:/BaiduNetdiskDownload/Vue2-Vue3/day05/assets/1682479207453.png)
+
+### 6.代码示例
+
+main.js
+
+```vue
+// 路由的使用步骤 5 + 2
+// 5个基础步骤
+// 1. 下载 v3.6.5
+// yarn add vue-router@3.6.5
+// 2. 引入
+// 3. 安装注册 Vue.use(Vue插件)
+// 4. 创建路由对象
+// 5. 注入到new Vue中，建立关联
+
+
+import VueRouter from 'vue-router'
+Vue.use(VueRouter) // VueRouter插件初始化
+
+const router = new VueRouter()
+
+new Vue({
+  render: h => h(App),
+  router
+}).$mount('#app')
+```
+
+
+
+### 7.两个核心步骤
+
+1. 创建需要的组件 (views目录)，配置路由规则
+
+   ![68247963966](E:/BaiduNetdiskDownload/Vue2-Vue3/day05/assets/1682479639666.png)
+
+2. 配置导航，配置路由出口(路径匹配的组件显示的位置)
+
+   App.vue
+
+   ```vue
+   <div class="footer_wrap">
+     <a href="#/find">发现音乐</a>
+     <a href="#/my">我的音乐</a>
+     <a href="#/friend">朋友</a>
+   </div>
+   <div class="top">
+     <router-view></router-view>
+   </div>
+   ```
+
+### 8.总结
+
+1. 如何实现 路径改变，对应组件 切换,应该使用哪个插件?
+2. Vue-Router的使用步骤是什么(5+2)?
 
 
 
