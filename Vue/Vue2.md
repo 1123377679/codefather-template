@@ -1,4 +1,4 @@
-# Vue2
+Vue2
 
 ## 为什么要学习Vue
 
@@ -5193,18 +5193,6 @@ export default {
 
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
 ## 插槽-具名插槽
 
 ### 1.需求
@@ -6177,8 +6165,6 @@ export default {
 </style>
 ```
 
-
-
 ## 综合案例-封装MyTable组件-自定义结构
 
 App.vue
@@ -6380,7 +6366,7 @@ Vue 官方的一个路由插件，是一个第三方包
 
 当我们配置完以上5步之后 就可以看到浏览器地址栏中的路由 变成了 /#/的形式。表示项目的路由已经被Vue-Router管理了
 
-![68247920745](E:/BaiduNetdiskDownload/Vue2-Vue3/day05/assets/1682479207453.png)
+![68247920745](E:\BaiduNetdiskDownload\Vue2-Vue3\day05\assets\1682479207453.png)
 
 ### 6.代码示例
 
@@ -6414,7 +6400,7 @@ new Vue({
 
 1. 创建需要的组件 (views目录)，配置路由规则
 
-   ![68247963966](E:/BaiduNetdiskDownload/Vue2-Vue3/day05/assets/1682479639666.png)
+   ![image-20250508174546179](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250508174546179.png)
 
 2. 配置导航，配置路由出口(路径匹配的组件显示的位置)
 
@@ -6436,13 +6422,320 @@ new Vue({
 1. 如何实现 路径改变，对应组件 切换,应该使用哪个插件?
 2. Vue-Router的使用步骤是什么(5+2)?
 
+## 路由的封装抽离
+
+问题：所有的路由配置都在main.js中合适吗？
+
+目标：将路由模块抽离出来。  好处：**拆分模块，利于维护**
+
+![68248141030](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682481410304.png)
+
+路径简写：
+
+**脚手架环境下** @指代src目录，可以用于快速引入组件
 
 
 
+总结：
+
+- 路由模块的封装抽离的好处是什么？
+- 以后如何快速引入组件？
+
+![image-20250508175811387](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250508175811387.png)
+
+## 声明式导航-导航链接
+
+### 1.需求
+
+实现导航高亮效果
+
+![68249204474](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682492044744.png)
+
+如果使用a标签进行跳转的话，需要给当前跳转的导航加样式，同时要移除上一个a标签的样式，太麻烦！！！
+
+### 2.解决方案
+
+vue-router 提供了一个全局组件 router-link (取代 a 标签)
+
+- **能跳转**，配置 to 属性指定路径(**必须**) 。本质还是 a 标签 ，**to 无需 #**
+- **能高亮**，默认就会提供**高亮类名**，可以直接设置高亮样式
+
+语法： <router-link to="path的值">发现音乐</router-link>
+
+```vue
+  <div>
+    <div class="footer_wrap">
+      <router-link to="/find">发现音乐</router-link>
+      <router-link to="/my">我的音乐</router-link>
+      <router-link to="/friend">朋友</router-link>
+    </div>
+    <div class="top">
+      <!-- 路由出口 → 匹配的组件所展示的位置 -->
+      <router-view></router-view>
+    </div>
+  </div>
+```
+
+### 3.通过router-link自带的两个样式进行高亮
+
+使用router-link跳转后，我们发现。当前点击的链接默认加了两个class的值 `router-link-exact-active`和`router-link-active`
+
+我们可以给任意一个class属性添加高亮样式即可实现功能
 
 
 
+### 4.总结
 
+- router-link是什么？
+- router-link怎么用？
+- router-link的好处是什么？
+
+## 声明式导航-两个类名
+
+当我们使用<router-link></router-link>跳转时，自动给当前导航加了**两个类名**
+
+![68249312105](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682493121052.png)
+
+
+
+### 1.router-link-active
+
+**模糊匹配（用的多）**
+
+to="/my"  可以匹配 /my    /my/a    /my/b    ....  
+
+只要是以/my开头的路径 都可以和 to="/my"匹配到
+
+
+
+### 2.router-link-exact-active
+
+**精确匹配**
+
+to="/my" 仅可以匹配  /my
+
+
+
+### 3.在地址栏中输入二级路由查看类名的添加
+
+
+
+### 4.总结
+
+- router-link 会自动给当前导航添加两个类名，有什么区别呢？
+
+## 声明式导航-查询参数传参
+
+### 1.目标
+
+在跳转路由时，进行传参
+
+比如：现在我们在搜索页点击了热门搜索链接，跳转到详情页，**需要把点击的内容带到详情页**，改怎么办呢？
+
+### 2.跳转传参
+
+我们可以通过两种方式，在跳转的时候把所需要的参数传到其他页面中
+
+- 查询参数传参
+- 动态路由传参
+
+
+
+### 3.查询参数传参
+
+- 如何传参？
+
+  <router-link to="/path?参数名=值"></router-link>
+
+- 如何接受参数
+
+  固定用法：$router.query.参数名
+
+
+
+### 4.代码演示
+
+App.vue
+
+```vue
+<template>
+  <div id="app">
+    <div class="link">
+      <router-link to="/home">首页</router-link>
+      <router-link to="/search">搜索页</router-link>
+    </div>
+
+    <router-view></router-view>
+  </div>
+</template>
+
+<script>
+export default {};
+</script>
+
+<style scoped>
+.link {
+  height: 50px;
+  line-height: 50px;
+  background-color: #495150;
+  display: flex;
+  margin: -8px -8px 0 -8px;
+  margin-bottom: 50px;
+}
+.link a {
+  display: block;
+  text-decoration: none;
+  background-color: #ad2a26;
+  width: 100px;
+  text-align: center;
+  margin-right: 5px;
+  color: #fff;
+  border-radius: 5px;
+}
+</style>
+```
+
+Home.vue
+
+```vue
+<template>
+  <div class="home">
+    <div class="logo-box"></div>
+    <div class="search-box">
+      <input type="text">
+      <button>搜索一下</button>
+    </div>
+    <div class="hot-link">
+      热门搜索：
+      <router-link to="">蓝桥</router-link>
+      <router-link to="">前端培训</router-link>
+      <router-link to="">如何成为前端大牛</router-link>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'FindMusic'
+}
+</script>
+
+<style>
+.logo-box {
+  height: 150px;
+  background: url('@/assets/logo.jpeg') no-repeat center;
+}
+.search-box {
+  display: flex;
+  justify-content: center;
+}
+.search-box input {
+  width: 400px;
+  height: 30px;
+  line-height: 30px;
+  border: 2px solid #c4c7ce;
+  border-radius: 4px 0 0 4px;
+  outline: none;
+}
+.search-box input:focus {
+  border: 2px solid #ad2a26;
+}
+.search-box button {
+  width: 100px;
+  height: 36px;
+  border: none;
+  background-color: #ad2a26;
+  color: #fff;
+  position: relative;
+  left: -2px;
+  border-radius: 0 4px 4px 0;
+}
+.hot-link {
+  width: 508px;
+  height: 60px;
+  line-height: 60px;
+  margin: 0 auto;
+}
+.hot-link a {
+  margin: 0 5px;
+}
+</style>
+```
+
+Search.vue
+
+```vue
+<template>
+  <div class="search">
+    <p>搜索关键字: 蓝桥云课</p>
+    <p>搜索结果: </p>
+    <ul>
+      <li>.............</li>
+      <li>.............</li>
+      <li>.............</li>
+      <li>.............</li>
+    </ul>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'MyFriend',
+  created () {
+    // 在created中，获取路由参数
+  }
+}
+</script>
+
+<style>
+.search {
+  width: 400px;
+  height: 240px;
+  padding: 0 20px;
+  margin: 0 auto;
+  border: 2px solid #c4c7ce;
+  border-radius: 5px;
+}
+</style>
+```
+
+router/index.js
+
+```js
+import Home from '@/views/Home'
+import Search from '@/views/Search'
+import Vue from 'vue'
+import VueRouter from 'vue-router'
+Vue.use(VueRouter) // VueRouter插件初始化
+
+// 创建了一个路由对象
+const router = new VueRouter({
+  routes: [
+    { path: '/home', component: Home },
+    { path: '/search', component: Search }
+  ]
+})
+
+export default router
+```
+
+main.js
+
+```
+...
+import router from './router/index'
+...
+new Vue({
+  render: h => h(App),
+  router
+}).$mount('#app')
+```
+
+替换蓝桥云课
+
+```vue
+{{ $route.query.key }}
+```
 
 
 
