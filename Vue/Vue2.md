@@ -8,7 +8,7 @@ Vue2
 
 3.提高开发效率
 
-4.高薪必备技能（Vue2+Vue3）
+4.高薪必备技能（Vue2+Vue3） 
 
 
 
@@ -3651,6 +3651,7 @@ export default {
 </code></pre>
 </details>
 
+
 1. 父子组件通信的流程是什么？
 
 <details>
@@ -3660,6 +3661,7 @@ export default {
     子传父 $emit
 </code></pre>
 </details>
+
 
 ## 什么是props
 
@@ -4856,8 +4858,6 @@ new Vue({
 
 ```
 
-
-
 ## 插槽-默认插槽
 
 ### 1.作用
@@ -5021,11 +5021,11 @@ body {
 
 ### 3.语法
 
-在 <slot> 标签内，放置内容, 作为默认显示内容
+在 `<slot>` 标签内，放置内容, 作为默认显示内容
 
 ![68241233912](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682412365046.png)
 
-### 4.效果
+### 效果
 
 - 外部使用组件时，不传东西，则slot会显示后备内容 
 
@@ -5034,199 +5034,98 @@ body {
 - 外部使用组件时，传东西了，则slot整体会被换掉
 
   ![68241245902](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682412459027.png)
-
-### 5.代码示例
-
-App.vue
-
-```vue
-<template>
-  <div>
-    <MyDialog></MyDialog>
-    <MyDialog>
-      你确认要退出么
-    </MyDialog>
-  </div>
-</template>
-
-<script>
-import MyDialog from './components/MyDialog.vue'
-export default {
-  data () {
-    return {
-
-    }
-  },
-  components: {
-    MyDialog
-  }
-}
-</script>
-
-<style>
-body {
-  background-color: #b3b3b3;
-}
-</style>
-```
-
-完整代码
-
-app.vue
-
-```js
-<template>
-  <div>
-    <!-- 2. 在使用组件时，组件标签内填入内容 -->
-    <MyDialog>
-      <div>你确认要删除么</div>
-    </MyDialog>
-
-    <MyDialog>
-      <p>你确认要退出么</p>
-    </MyDialog>
-  </div>
-</template>
-
-<script>
-import MyDialog from './components/MyDialog.vue'
-export default {
-  data () {
-    return {
-
-    }
-  },
-  components: {
-    MyDialog
-  }
-}
-</script>
-
-<style>
-body {
-  background-color: #b3b3b3;
-}
-</style>
-```
-
-MyDialog.vue
-
-```vue
-<template>
-  <div class="dialog">
-    <div class="dialog-header">
-      <h3>友情提示</h3>
-      <span class="close">✖️</span>
+  
+  ### 5.代码示例
+  
+  App.vue
+  
+  ```vue
+  <template>
+    <div>
+      <MyDialog></MyDialog>
+      <MyDialog>
+        你确认要退出么
+      </MyDialog>
     </div>
-
-    <div class="dialog-content">
-      <!-- 1. 在需要定制的位置，使用slot占位 -->
-      <slot></slot>
-    </div>
-    <div class="dialog-footer">
-      <button>取消</button>
-      <button>确认</button>
-    </div>
-  </div>
-</template>
-
-<script>
-export default {
-  data () {
-    return {
-
+  </template>
+  
+  <script>
+  import MyDialog from './components/MyDialog.vue'
+  export default {
+    data () {
+      return {
+  
+      }
+    },
+    components: {
+      MyDialog
     }
   }
-}
-</script>
-
-<style scoped>
-* {
-  margin: 0;
-  padding: 0;
-}
-.dialog {
-  width: 470px;
-  height: 230px;
-  padding: 0 25px;
-  background-color: #ffffff;
-  margin: 40px auto;
-  border-radius: 5px;
-}
-.dialog-header {
-  height: 70px;
-  line-height: 70px;
-  font-size: 20px;
-  border-bottom: 1px solid #ccc;
-  position: relative;
-}
-.dialog-header .close {
-  position: absolute;
-  right: 0px;
-  top: 0px;
-  cursor: pointer;
-}
-.dialog-content {
-  height: 80px;
-  font-size: 18px;
-  padding: 15px 0;
-}
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-}
-.dialog-footer button {
-  width: 65px;
-  height: 35px;
-  background-color: #ffffff;
-  border: 1px solid #e1e3e9;
-  cursor: pointer;
-  outline: none;
-  margin-left: 10px;
-  border-radius: 3px;
-}
-.dialog-footer button:last-child {
-  background-color: #007acc;
-  color: #fff;
-}
-</style>
-
-```
-
-## 插槽-具名插槽
-
-### 1.需求
-
-一个组件内有多处结构，需要外部传入标签，进行定制 ![68241313487](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682413134876.png)
-
-上面的弹框中有**三处不同**，但是**默认插槽**只能**定制一个位置**，这时候怎么办呢?
-
-### 2.具名插槽语法
-
-- 多个slot使用name属性区分名字 
-
-  ![68241339172](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682413391727.png)
-
-- template配合v-slot:名字来分发对应标签
-
-  ![68241341192](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682413411921.png)
-
-  完整代码；
-  MyDialog
-
+  </script>
+  
+  <style>
+  body {
+    background-color: #b3b3b3;
+  }
+  </style>
+  ```
+  
+  完整代码
+  
+  app.vue
+  
+  ```js
+  <template>
+    <div>
+      <!-- 2. 在使用组件时，组件标签内填入内容 -->
+      <MyDialog>
+        <div>你确认要删除么</div>
+      </MyDialog>
+  
+      <MyDialog>
+        <p>你确认要退出么</p>
+      </MyDialog>
+    </div>
+  </template>
+  
+  <script>
+  import MyDialog from './components/MyDialog.vue'
+  export default {
+    data () {
+      return {
+  
+      }
+    },
+    components: {
+      MyDialog
+    }
+  }
+  </script>
+  
+  <style>
+  body {
+    background-color: #b3b3b3;
+  }
+  </style>
+  ```
+  
+  MyDialog.vue
+  
   ```vue
   <template>
     <div class="dialog">
       <div class="dialog-header">
-        <!-- 一旦插槽起了名字，就是具名插槽，只支持定向分发 -->
-        <slot name="head"></slot>
+        <h3>友情提示</h3>
+        <span class="close">✖️</span>
       </div>
   
       <div class="dialog-content">
-        <slot name="content"></slot>
+        <!-- 1. 在需要定制的位置，使用slot占位 -->
+        <slot></slot>
       </div>
       <div class="dialog-footer">
-        <slot name="footer"></slot>
+        <button>取消</button>
+        <button>确认</button>
       </div>
     </div>
   </template>
@@ -5293,421 +5192,904 @@ export default {
   </style>
   
   ```
-
-  app.vue
-
+  
+  ## 插槽-具名插槽
+  
+  ### 1.需求
+  
+  一个组件内有多处结构，需要外部传入标签，进行定制 ![68241313487](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682413134876.png)
+  
+  上面的弹框中有**三处不同**，但是**默认插槽**只能**定制一个位置**，这时候怎么办呢?
+  
+  ### 2.具名插槽语法
+  
+  - 多个slot使用name属性区分名字 
+  
+    ![68241339172](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682413391727.png)
+  
+  - template配合v-slot:名字来分发对应标签
+  
+    ![68241341192](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682413411921.png)
+  
+    完整代码；
+    MyDialog
+  
+    ```vue
+    <template>
+      <div class="dialog">
+        <div class="dialog-header">
+          <!-- 一旦插槽起了名字，就是具名插槽，只支持定向分发 -->
+          <slot name="head"></slot>
+        </div>
+    
+        <div class="dialog-content">
+          <slot name="content"></slot>
+        </div>
+        <div class="dialog-footer">
+          <slot name="footer"></slot>
+        </div>
+      </div>
+    </template>
+    
+    <script>
+    export default {
+      data () {
+        return {
+    
+        }
+      }
+    }
+    </script>
+    
+    <style scoped>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    .dialog {
+      width: 470px;
+      height: 230px;
+      padding: 0 25px;
+      background-color: #ffffff;
+      margin: 40px auto;
+      border-radius: 5px;
+    }
+    .dialog-header {
+      height: 70px;
+      line-height: 70px;
+      font-size: 20px;
+      border-bottom: 1px solid #ccc;
+      position: relative;
+    }
+    .dialog-header .close {
+      position: absolute;
+      right: 0px;
+      top: 0px;
+      cursor: pointer;
+    }
+    .dialog-content {
+      height: 80px;
+      font-size: 18px;
+      padding: 15px 0;
+    }
+    .dialog-footer {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .dialog-footer button {
+      width: 65px;
+      height: 35px;
+      background-color: #ffffff;
+      border: 1px solid #e1e3e9;
+      cursor: pointer;
+      outline: none;
+      margin-left: 10px;
+      border-radius: 3px;
+    }
+    .dialog-footer button:last-child {
+      background-color: #007acc;
+      color: #fff;
+    }
+    </style>
+    
+    ```
+  
+    app.vue
+  
+    ```vue
+    <template>
+      <div>
+        <MyDialog>
+          <!-- 需要通过template标签包裹需要分发的结构，包成一个整体 -->
+          <template v-slot:head>
+            <div>我是大标题</div>
+          </template>
+          
+          <template v-slot:content>
+            <div>我是内容</div>
+          </template>
+    
+          <template #footer>
+            <button>取消</button>
+            <button>确认</button>
+          </template>
+        </MyDialog>
+      </div>
+    </template>
+    
+    <script>
+    import MyDialog from './components/MyDialog.vue'
+    export default {
+      data () {
+        return {
+    
+        }
+      },
+      components: {
+        MyDialog
+      }
+    }
+    </script>
+    
+    <style>
+    body {
+      background-color: #b3b3b3;
+    }
+    </style>
+    ```
+  
+    
+  
+  ### 3.v-slot的简写
+  
+  v-slot写起来太长，vue给我们提供一个简单写法 **v-slot —> #**
+  
+  ### 4.总结
+  
+  - 组件内 有多处不确定的结构 怎么办?
+  - 具名插槽的语法是什么？
+  - v-slot:插槽名可以简化成什么?
+  
+  ## 作用域插槽
+  
+  ### 1.插槽分类
+  
+  - 默认插槽
+  
+  - 具名插槽
+  
+    插槽只有两种，作用域插槽不属于插槽的一种分类
+  
+  ### 2.作用
+  
+  定义slot 插槽的同时, 是可以**传值**的。给 **插槽** 上可以 **绑定数据**，将来 **使用组件时可以用**
+  
+  ### 3.场景
+  
+  封装表格组件
+  
+  ![68241434213](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682414342139.png)
+  
+  ### 4.使用步骤
+  
+  1. 给 slot 标签, 以 添加属性的方式传值
+  
+     ```vue
+     <slot :id="item.id" msg="测试文本"></slot>
+     ```
+  
+  2. 所有添加的属性, 都会被收集到一个对象中
+  
+     ```vue
+     { id: 3, msg: '测试文本' }
+     ```
+  
+  3. 在template中, 通过  ` #插槽名= "obj"` 接收，默认插槽名为 default
+  
+     ```vue
+     <MyTable :list="list">
+       <template #default="obj">
+         <button @click="del(obj.id)">删除</button>
+       </template>
+     </MyTable>
+     ```
+  
+  ### 5.代码示例
+  
+  MyTable.vue
+  
   ```vue
   <template>
-    <div>
-      <MyDialog>
-        <!-- 需要通过template标签包裹需要分发的结构，包成一个整体 -->
-        <template v-slot:head>
-          <div>我是大标题</div>
-        </template>
-        
-        <template v-slot:content>
-          <div>我是内容</div>
-        </template>
-  
-        <template #footer>
-          <button>取消</button>
-          <button>确认</button>
-        </template>
-      </MyDialog>
-    </div>
+    <table class="my-table">
+      <thead>
+        <tr>
+          <th>序号</th>
+          <th>姓名</th>
+          <th>年纪</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>赵小云</td>
+          <td>19</td>
+          <td>
+            <button>
+            	查看    
+      	  </button>
+          </td>
+        </tr>
+          <tr>
+          <td>1</td>
+          <td>张小花</td>
+          <td>19</td>
+          <td>
+            <button>
+            	查看    
+      	  </button>
+          </td>
+        </tr>
+          <tr>
+          <td>1</td>
+          <td>孙大明</td>
+          <td>19</td>
+          <td>
+            <button>
+            	查看    
+      	  </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </template>
   
   <script>
-  import MyDialog from './components/MyDialog.vue'
   export default {
-    data () {
-      return {
-  
-      }
-    },
-    components: {
-      MyDialog
+    props: {
+      data: Array
     }
   }
   </script>
   
-  <style>
-  body {
-    background-color: #b3b3b3;
+  <style scoped>
+  .my-table {
+    width: 450px;
+    text-align: center;
+    border: 1px solid #ccc;
+    font-size: 24px;
+    margin: 30px auto;
+  }
+  .my-table thead {
+    background-color: #1f74ff;
+    color: #fff;
+  }
+  .my-table thead th {
+    font-weight: normal;
+  }
+  .my-table thead tr {
+    line-height: 40px;
+  }
+  .my-table th,
+  .my-table td {
+    border-bottom: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+  }
+  .my-table td:last-child {
+    border-right: none;
+  }
+  .my-table tr:last-child td {
+    border-bottom: none;
+  }
+  .my-table button {
+    width: 65px;
+    height: 35px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    outline: none;
+    border-radius: 3px;
+    cursor: pointer;
+    background-color: #ffffff;
+    margin-left: 5px;
   }
   </style>
   ```
-
   
-
-### 3.v-slot的简写
-
-v-slot写起来太长，vue给我们提供一个简单写法 **v-slot —> #**
-
-### 4.总结
-
-- 组件内 有多处不确定的结构 怎么办?
-- 具名插槽的语法是什么？
-- v-slot:插槽名可以简化成什么?
-
-## 作用域插槽
-
-### 1.插槽分类
-
-- 默认插槽
-
-- 具名插槽
-
-  插槽只有两种，作用域插槽不属于插槽的一种分类
-
-### 2.作用
-
-定义slot 插槽的同时, 是可以**传值**的。给 **插槽** 上可以 **绑定数据**，将来 **使用组件时可以用**
-
-### 3.场景
-
-封装表格组件
-
-![68241434213](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682414342139.png)
-
-### 4.使用步骤
-
-1. 给 slot 标签, 以 添加属性的方式传值
-
-   ```vue
-   <slot :id="item.id" msg="测试文本"></slot>
-   ```
-
-2. 所有添加的属性, 都会被收集到一个对象中
-
-   ```vue
-   { id: 3, msg: '测试文本' }
-   ```
-
-3. 在template中, 通过  ` #插槽名= "obj"` 接收，默认插槽名为 default
-
-   ```vue
-   <MyTable :list="list">
-     <template #default="obj">
-       <button @click="del(obj.id)">删除</button>
-     </template>
-   </MyTable>
-   ```
-
-### 5.代码示例
-
-MyTable.vue
-
-```vue
-<template>
-  <table class="my-table">
-    <thead>
-      <tr>
-        <th>序号</th>
-        <th>姓名</th>
-        <th>年纪</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>1</td>
-        <td>赵小云</td>
-        <td>19</td>
-        <td>
-          <button>
-          	查看    
-    	  </button>
-        </td>
-      </tr>
+  App.vue
+  
+  ```vue
+  <template>
+    <div>
+      <MyTable :data="list"></MyTable>
+      <MyTable :data="list2"></MyTable>
+    </div>
+  </template>
+  
+  <script>
+    import MyTable from './components/MyTable.vue'
+    export default {
+      data () {
+        return {
+       	list: [
+              { id: 1, name: '张小花', age: 18 },
+              { id: 2, name: '孙大明', age: 19 },
+              { id: 3, name: '刘德忠', age: 17 },
+            ],
+            list2: [
+              { id: 1, name: '赵小云', age: 18 },
+              { id: 2, name: '刘蓓蓓', age: 19 },
+              { id: 3, name: '姜肖泰', age: 17 },
+            ]
+        }
+      },
+      components: {
+        MyTable
+      }
+    }
+  </script>
+  ```
+  
+  完整代码:
+  
+  myTable
+  
+  ```vue
+  <template>
+    <table class="my-table">
+      <thead>
         <tr>
-        <td>1</td>
-        <td>张小花</td>
-        <td>19</td>
-        <td>
-          <button>
-          	查看    
-    	  </button>
-        </td>
-      </tr>
-        <tr>
-        <td>1</td>
-        <td>孙大明</td>
-        <td>19</td>
-        <td>
-          <button>
-          	查看    
-    	  </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</template>
-
-<script>
-export default {
-  props: {
-    data: Array
+          <th>序号</th>
+          <th>姓名</th>
+          <th>年纪</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(item, index) in data" :key="item.id">
+          <td>{{ index + 1 }}</td>
+          <td>{{ item.name }}</td>
+          <td>{{ item.age }}</td>
+          <td>
+            <!-- 1. 给slot标签，添加属性的方式传值 -->
+            <slot :row="item" msg="测试文本"></slot>
+  
+            <!-- 2. 将所有的属性，添加到一个对象中 -->
+            <!-- 
+               {
+                 row: { id: 2, name: '孙大明', age: 19 },
+                 msg: '测试文本'
+               }
+             -->
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </template>
+  
+  <script>
+  export default {
+    props: {
+      data: Array
+    }
   }
-}
-</script>
-
-<style scoped>
-.my-table {
-  width: 450px;
-  text-align: center;
-  border: 1px solid #ccc;
-  font-size: 24px;
-  margin: 30px auto;
-}
-.my-table thead {
-  background-color: #1f74ff;
-  color: #fff;
-}
-.my-table thead th {
-  font-weight: normal;
-}
-.my-table thead tr {
-  line-height: 40px;
-}
-.my-table th,
-.my-table td {
-  border-bottom: 1px solid #ccc;
-  border-right: 1px solid #ccc;
-}
-.my-table td:last-child {
-  border-right: none;
-}
-.my-table tr:last-child td {
-  border-bottom: none;
-}
-.my-table button {
-  width: 65px;
-  height: 35px;
-  font-size: 18px;
-  border: 1px solid #ccc;
-  outline: none;
-  border-radius: 3px;
-  cursor: pointer;
-  background-color: #ffffff;
-  margin-left: 5px;
-}
-</style>
-```
-
-App.vue
-
-```vue
-<template>
-  <div>
-    <MyTable :data="list"></MyTable>
-    <MyTable :data="list2"></MyTable>
-  </div>
-</template>
-
-<script>
+  </script>
+  
+  <style scoped>
+  .my-table {
+    width: 450px;
+    text-align: center;
+    border: 1px solid #ccc;
+    font-size: 24px;
+    margin: 30px auto;
+  }
+  .my-table thead {
+    background-color: #1f74ff;
+    color: #fff;
+  }
+  .my-table thead th {
+    font-weight: normal;
+  }
+  .my-table thead tr {
+    line-height: 40px;
+  }
+  .my-table th,
+  .my-table td {
+    border-bottom: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+  }
+  .my-table td:last-child {
+    border-right: none;
+  }
+  .my-table tr:last-child td {
+    border-bottom: none;
+  }
+  .my-table button {
+    width: 65px;
+    height: 35px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    outline: none;
+    border-radius: 3px;
+    cursor: pointer;
+    background-color: #ffffff;
+    margin-left: 5px;
+  }
+  </style>
+  ```
+  
+  vue.js
+  
+  ```vue
+  <template>
+    <div>
+      <MyTable :data="list">
+        <!-- 3. 通过template #插槽名="变量名" 接收 -->
+        <template #default="obj">
+          <button @click="del(obj.row.id)">
+            删除
+          </button>
+        </template>
+      </MyTable>
+      
+      <MyTable :data="list2">
+        <template #default="{ row }">
+          <button @click="show(row)">查看</button>
+        </template>
+      </MyTable>
+    </div>
+  </template>
+  
+  <script>
   import MyTable from './components/MyTable.vue'
   export default {
     data () {
       return {
-     	list: [
-            { id: 1, name: '张小花', age: 18 },
-            { id: 2, name: '孙大明', age: 19 },
-            { id: 3, name: '刘德忠', age: 17 },
-          ],
-          list2: [
-            { id: 1, name: '赵小云', age: 18 },
-            { id: 2, name: '刘蓓蓓', age: 19 },
-            { id: 3, name: '姜肖泰', age: 17 },
-          ]
+        list: [
+          { id: 1, name: '张小花', age: 18 },
+          { id: 2, name: '孙大明', age: 19 },
+          { id: 3, name: '刘德忠', age: 17 },
+        ],
+        list2: [
+          { id: 1, name: '赵小云', age: 18 },
+          { id: 2, name: '刘蓓蓓', age: 19 },
+          { id: 3, name: '姜肖泰', age: 17 },
+        ]
+      }
+    },
+    methods: {
+      del (id) {
+        this.list = this.list.filter(item => item.id !== id)
+      },
+      show (row) {
+        // console.log(row);
+        alert(`姓名：${row.name}; 年纪：${row.age}`)
       }
     },
     components: {
       MyTable
     }
   }
-</script>
-```
-
-完整代码:
-
-myTable
-
-```vue
-<template>
-  <table class="my-table">
-    <thead>
-      <tr>
-        <th>序号</th>
-        <th>姓名</th>
-        <th>年纪</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="(item, index) in data" :key="item.id">
-        <td>{{ index + 1 }}</td>
-        <td>{{ item.name }}</td>
-        <td>{{ item.age }}</td>
-        <td>
-          <!-- 1. 给slot标签，添加属性的方式传值 -->
-          <slot :row="item" msg="测试文本"></slot>
-
-          <!-- 2. 将所有的属性，添加到一个对象中 -->
-          <!-- 
-             {
-               row: { id: 2, name: '孙大明', age: 19 },
-               msg: '测试文本'
-             }
-           -->
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</template>
-
-<script>
-export default {
-  props: {
-    data: Array
-  }
-}
-</script>
-
-<style scoped>
-.my-table {
-  width: 450px;
-  text-align: center;
-  border: 1px solid #ccc;
-  font-size: 24px;
-  margin: 30px auto;
-}
-.my-table thead {
-  background-color: #1f74ff;
-  color: #fff;
-}
-.my-table thead th {
-  font-weight: normal;
-}
-.my-table thead tr {
-  line-height: 40px;
-}
-.my-table th,
-.my-table td {
-  border-bottom: 1px solid #ccc;
-  border-right: 1px solid #ccc;
-}
-.my-table td:last-child {
-  border-right: none;
-}
-.my-table tr:last-child td {
-  border-bottom: none;
-}
-.my-table button {
-  width: 65px;
-  height: 35px;
-  font-size: 18px;
-  border: 1px solid #ccc;
-  outline: none;
-  border-radius: 3px;
-  cursor: pointer;
-  background-color: #ffffff;
-  margin-left: 5px;
-}
-</style>
-```
-
-vue.js
-
-```vue
-<template>
-  <div>
-    <MyTable :data="list">
-      <!-- 3. 通过template #插槽名="变量名" 接收 -->
-      <template #default="obj">
-        <button @click="del(obj.row.id)">
-          删除
-        </button>
-      </template>
-    </MyTable>
-    
-    <MyTable :data="list2">
-      <template #default="{ row }">
-        <button @click="show(row)">查看</button>
-      </template>
-    </MyTable>
-  </div>
-</template>
-
-<script>
-import MyTable from './components/MyTable.vue'
-export default {
-  data () {
-    return {
-      list: [
-        { id: 1, name: '张小花', age: 18 },
-        { id: 2, name: '孙大明', age: 19 },
-        { id: 3, name: '刘德忠', age: 17 },
-      ],
-      list2: [
-        { id: 1, name: '赵小云', age: 18 },
-        { id: 2, name: '刘蓓蓓', age: 19 },
-        { id: 3, name: '姜肖泰', age: 17 },
-      ]
-    }
-  },
-  methods: {
-    del (id) {
-      this.list = this.list.filter(item => item.id !== id)
+  </script>
+  
+  ```
+  
+  ### 6.总结
+  
+  1.作用域插槽的作用是什么？
+  
+  2.作用域插槽的使用步骤是什么？
+  
+  ## 综合案例 - 商品列表-MyTag组件抽离
+  
+  ![68241640658](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682416406585.png)
+  
+  ### 1.需求说明
+  
+  1. **my-tag 标签组件封装**
+  
+  ​    (1) 双击显示输入框，输入框获取焦点
+  
+  ​    (2) 失去焦点，隐藏输入框
+  
+  ​    (3) 回显标签信息
+  
+  ​    (4) 内容修改，回车 → 修改标签信息
+  
+  2. **my-table 表格组件封装**
+  
+  ​    (1) 动态传递表格数据渲染
+  
+  ​    (2) 表头支持用户自定义
+  
+  ​    (3) 主体支持用户自定义
+  
+  ### 2.代码准备
+  
+  ```vue
+  <template>
+    <div class="table-case">
+      <table class="my-table">
+        <thead>
+          <tr>
+            <th>编号</th>
+            <th>名称</th>
+            <th>图片</th>
+            <th width="100px">标签</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>梨皮朱泥三绝清代小品壶经典款紫砂壶</td>
+            <td>
+              <img src="https://yanxuan-item.nosdn.127.net/f8c37ffa41ab1eb84bff499e1f6acfc7.jpg" />
+            </td>
+            <td>
+              <div class="my-tag">
+                <!-- <input 
+                  class="input"
+                  type="text"
+                  placeholder="输入标签"
+                /> -->
+                <div class="text">
+                  茶具
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>梨皮朱泥三绝清代小品壶经典款紫砂壶</td>
+            <td>
+              <img src="https://yanxuan-item.nosdn.127.net/221317c85274a188174352474b859d7b.jpg" />
+            </td>
+            <td>
+              <div class="my-tag">
+                <!-- <input
+                  ref="inp"
+                  class="input"
+                  type="text"
+                  placeholder="输入标签"
+                /> -->
+                <div class="text">
+                  男靴
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </template>
+  
+  <script>
+  export default {
+    name: 'TableCase',
+    components: {},
+    data() {
+      return {
+        goods: [
+          {
+            id: 101,
+            picture:
+              'https://yanxuan-item.nosdn.127.net/f8c37ffa41ab1eb84bff499e1f6acfc7.jpg',
+            name: '梨皮朱泥三绝清代小品壶经典款紫砂壶',
+            tag: '茶具',
+          },
+          {
+            id: 102,
+            picture:
+              'https://yanxuan-item.nosdn.127.net/221317c85274a188174352474b859d7b.jpg',
+            name: '全防水HABU旋钮牛皮户外徒步鞋山宁泰抗菌',
+            tag: '男鞋',
+          },
+          {
+            id: 103,
+            picture:
+              'https://yanxuan-item.nosdn.127.net/cd4b840751ef4f7505c85004f0bebcb5.png',
+            name: '毛茸茸小熊出没，儿童羊羔绒背心73-90cm',
+            tag: '儿童服饰',
+          },
+          {
+            id: 104,
+            picture:
+              'https://yanxuan-item.nosdn.127.net/56eb25a38d7a630e76a608a9360eec6b.jpg',
+            name: '基础百搭，儿童套头针织毛衣1-9岁',
+            tag: '儿童服饰',
+          },
+        ],
+      }
     },
-    show (row) {
-      // console.log(row);
-      alert(`姓名：${row.name}; 年纪：${row.age}`)
-    }
-  },
-  components: {
-    MyTable
   }
-}
-</script>
-
-```
-
-### 6.总结
-
-1.作用域插槽的作用是什么？
-
-2.作用域插槽的使用步骤是什么？
-
-## 综合案例 - 商品列表-MyTag组件抽离
-
-![68241640658](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682416406585.png)
-
-### 1.需求说明
-
-1. **my-tag 标签组件封装**
-
-​    (1) 双击显示输入框，输入框获取焦点
-
-​    (2) 失去焦点，隐藏输入框
-
-​    (3) 回显标签信息
-
-​    (4) 内容修改，回车 → 修改标签信息
-
-2. **my-table 表格组件封装**
-
-​    (1) 动态传递表格数据渲染
-
-​    (2) 表头支持用户自定义
-
-​    (3) 主体支持用户自定义
-
-### 2.代码准备
-
-```vue
-<template>
-  <div class="table-case">
+  </script>
+  
+  <style lang="less" scoped>
+  .table-case {
+    width: 1000px;
+    margin: 50px auto;
+    img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      vertical-align: middle;
+    }
+  
+    .my-table {
+      width: 100%;
+      border-spacing: 0;
+      img {
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
+        vertical-align: middle;
+      }
+      th {
+        background: #f5f5f5;
+        border-bottom: 2px solid #069;
+      }
+      td {
+        border-bottom: 1px dashed #ccc;
+      }
+      td,
+      th {
+        text-align: center;
+        padding: 10px;
+        transition: all 0.5s;
+        &.red {
+          color: red;
+        }
+      }
+      .none {
+        height: 100px;
+        line-height: 100px;
+        color: #999;
+      }
+    }
+    .my-tag {
+      cursor: pointer;
+      .input {
+        appearance: none;
+        outline: none;
+        border: 1px solid #ccc;
+        width: 100px;
+        height: 40px;
+        box-sizing: border-box;
+        padding: 10px;
+        color: #666;
+        &::placeholder {
+          color: #666;
+        }
+      }
+    }
+  }
+  </style>
+  ```
+  
+  ### 3.my-tag组件封装-创建组件
+  
+  MyTag.vue
+  
+  ```vue
+  <template>
+    <div class="my-tag">
+    <!--  <input
+        class="input"
+        type="text"
+        placeholder="输入标签" 
+      /> -->
+      <div  
+        class="text">
+         茶具
+      </div>
+    </div>
+  </template>
+  
+  <script>
+  export default {
+   
+  }
+  </script>
+  
+  <style lang="less" scoped>
+  .my-tag {
+    cursor: pointer;
+    .input {
+      appearance: none;
+      outline: none;
+      border: 1px solid #ccc;
+      width: 100px;
+      height: 40px;
+      box-sizing: border-box;
+      padding: 10px;
+      color: #666;
+      &::placeholder {
+        color: #666;
+      }
+    }
+  }
+  </style>
+  ```
+  
+  App.vue
+  
+  ```vue
+  <template>
+    ...
+   <tbody>
+         <tr>
+            ....
+            <td>
+              <MyTag></MyTag>
+            </td>
+         </tr>
+   </tbody>
+   ...
+  </template>
+  <script>
+  import MyTag from './components/MyTag.vue'
+  export default {
+    name: 'TableCase',
+    components: {
+      MyTag,
+    },
+   ....
+   </script>
+  ```
+  
+  ## 综合案例-MyTag组件控制显示隐藏
+  
+  MyTag.vue
+  
+  ```vue
+  <template>
+    <div class="my-tag">
+      <input
+        v-if="isEdit"
+        v-focus
+        ref="inp"
+        class="input"
+        type="text"
+        placeholder="输入标签" 
+        @blur="isEdit = false" 
+      />
+      <div 
+        v-else
+        @dblclick="handleClick"
+        class="text">
+         茶具
+      </div>
+    </div>
+  </template>
+  
+  <script>
+  export default {
+    data () {
+      return {
+        isEdit: false
+      }
+    },
+    methods: {
+      handleClick () {
+        this.isEdit = true
+      }
+    }
+  }
+  </script> 
+  ```
+  
+  main.js
+  
+  ```js
+  // 封装全局指令 focus
+  Vue.directive('focus', {
+    // 指令所在的dom元素，被插入到页面中时触发
+    inserted (el) {
+      el.focus()
+    }
+  })
+  ```
+  
+  
+  
+  ## 综合案例-MyTag组件进行v-model绑定
+  
+  App.vue
+  
+  ```vue
+  <MyTag v-model="tempText"></MyTag>
+  <script>
+      export default {
+          data(){
+              tempText:'水杯'
+          }
+      }
+  </script>
+  ```
+  
+  MyTag.vue
+  
+  ```vue
+  <template>
+    <div class="my-tag">
+      <input
+        v-if="isEdit"
+        v-focus
+        ref="inp"
+        class="input"
+        type="text"
+        placeholder="输入标签"
+        :value="value"
+        @blur="isEdit = false"
+        @keyup.enter="handleEnter"
+      />
+      <div 
+        v-else
+        @dblclick="handleClick"
+        class="text">
+        {{ value }}
+      </div>
+    </div>
+  </template>
+  
+  <script>
+  export default {
+    props: {
+      value: String
+    },
+    data () {
+      return {
+        isEdit: false
+      }
+    },
+    methods: {
+      handleClick () {
+        this.isEdit = true
+      },
+      handleEnter (e) {
+        // 非空处理
+        if (e.target.value.trim() === '') return alert('标签内容不能为空')
+        this.$emit('input', e.target.value)
+        // 提交完成，关闭输入状态
+        this.isEdit = false
+      }
+    }
+  }
+  </script> 
+  ```
+  
+  
+  
+  ## 综合案例-封装MyTable组件-动态渲染数据
+  
+  App.vue
+  
+  ```vue
+  <template>
+    <div class="table-case">
+      <MyTable :data="goods"></MyTable>
+    </div>
+  </template>
+  
+  <script>
+  import MyTable from './components/MyTable.vue'
+  export default {
+    name: 'TableCase',
+    components: { 
+      MyTable
+    },
+    data(){
+      return {
+          ....
+      }
+    },
+  }
+  </script> 
+  ```
+  
+  MyTable.vue
+  
+  ```vue
+  <template>
     <table class="my-table">
       <thead>
         <tr>
@@ -5718,102 +6100,36 @@ export default {
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>1</td>
-          <td>梨皮朱泥三绝清代小品壶经典款紫砂壶</td>
+        <tr v-for="(item, index) in data" :key="item.id">
+         <td>{{ index + 1 }}</td>
+          <td>{{ item.name }}</td>
           <td>
-            <img src="https://yanxuan-item.nosdn.127.net/f8c37ffa41ab1eb84bff499e1f6acfc7.jpg" />
+            <img
+              :src="item.picture"
+            />
           </td>
           <td>
-            <div class="my-tag">
-              <!-- <input 
-                class="input"
-                type="text"
-                placeholder="输入标签"
-              /> -->
-              <div class="text">
-                茶具
-              </div>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>梨皮朱泥三绝清代小品壶经典款紫砂壶</td>
-          <td>
-            <img src="https://yanxuan-item.nosdn.127.net/221317c85274a188174352474b859d7b.jpg" />
-          </td>
-          <td>
-            <div class="my-tag">
-              <!-- <input
-                ref="inp"
-                class="input"
-                type="text"
-                placeholder="输入标签"
-              /> -->
-              <div class="text">
-                男靴
-              </div>
-            </div>
+            标签内容
+           <!-- <MyTag v-model="item.tag"></MyTag> -->
           </td>
         </tr>
       </tbody>
     </table>
-  </div>
-</template>
-
-<script>
-export default {
-  name: 'TableCase',
-  components: {},
-  data() {
-    return {
-      goods: [
-        {
-          id: 101,
-          picture:
-            'https://yanxuan-item.nosdn.127.net/f8c37ffa41ab1eb84bff499e1f6acfc7.jpg',
-          name: '梨皮朱泥三绝清代小品壶经典款紫砂壶',
-          tag: '茶具',
-        },
-        {
-          id: 102,
-          picture:
-            'https://yanxuan-item.nosdn.127.net/221317c85274a188174352474b859d7b.jpg',
-          name: '全防水HABU旋钮牛皮户外徒步鞋山宁泰抗菌',
-          tag: '男鞋',
-        },
-        {
-          id: 103,
-          picture:
-            'https://yanxuan-item.nosdn.127.net/cd4b840751ef4f7505c85004f0bebcb5.png',
-          name: '毛茸茸小熊出没，儿童羊羔绒背心73-90cm',
-          tag: '儿童服饰',
-        },
-        {
-          id: 104,
-          picture:
-            'https://yanxuan-item.nosdn.127.net/56eb25a38d7a630e76a608a9360eec6b.jpg',
-          name: '基础百搭，儿童套头针织毛衣1-9岁',
-          tag: '儿童服饰',
-        },
-      ],
+  </template>
+  
+  <script>
+  export default {
+    props: {
+      data: {
+        type: Array,
+        required: true
+      }
     }
-  },
-}
-</script>
-
-<style lang="less" scoped>
-.table-case {
-  width: 1000px;
-  margin: 50px auto;
-  img {
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
-    vertical-align: middle;
-  }
-
+  };
+  </script>
+  
+  <style lang="less" scoped>
+  
   .my-table {
     width: 100%;
     border-spacing: 0;
@@ -5834,7 +6150,7 @@ export default {
     th {
       text-align: center;
       padding: 10px;
-      transition: all 0.5s;
+      transition: all .5s;
       &.red {
         color: red;
       }
@@ -5845,953 +6161,890 @@ export default {
       color: #999;
     }
   }
-  .my-tag {
-    cursor: pointer;
-    .input {
-      appearance: none;
-      outline: none;
-      border: 1px solid #ccc;
-      width: 100px;
-      height: 40px;
-      box-sizing: border-box;
-      padding: 10px;
-      color: #666;
-      &::placeholder {
-        color: #666;
+  
+  </style>
+  ```
+  
+  ## 综合案例-封装MyTable组件-自定义结构
+  
+  App.vue
+  
+  ```vue
+  <template>
+    <div class="table-case">
+      <MyTable :data="goods">
+        <template #head>
+          <th>编号</th>
+          <th>名称</th>
+          <th>图片</th>
+          <th width="100px">标签</th>
+        </template>
+  
+        <template #body="{ item, index }">
+          <td>{{ index + 1 }}</td>
+          <td>{{ item.name }}</td>
+          <td>
+            <img
+              :src="item.picture"
+            />
+          </td>
+          <td>
+            <MyTag v-model="item.tag"></MyTag>
+          </td>
+        </template>
+      </MyTable>
+    </div>
+  </template>
+  
+  <script>
+  import MyTag from './components/MyTag.vue'
+  import MyTable from './components/MyTable.vue'
+  export default {
+    name: 'TableCase',
+    components: {
+      MyTag,
+      MyTable
+    },
+    data () {
+      return {
+        ....
+    }
+  }
+  </script>
+   
+  ```
+  
+  MyTable.vue
+  
+  ```vue
+  <template>
+    <table class="my-table">
+      <thead>
+        <tr>
+          <slot name="head"></slot>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(item, index) in data" :key="item.id">
+          <slot name="body" :item="item" :index="index" ></slot>
+        </tr>
+      </tbody>
+    </table>
+  </template>
+  
+  <script>
+  export default {
+    props: {
+      data: {
+        type: Array,
+        required: true
       }
     }
-  }
-}
-</style>
-```
-
-### 3.my-tag组件封装-创建组件
-
-MyTag.vue
-
-```vue
-<template>
-  <div class="my-tag">
-  <!--  <input
-      class="input"
-      type="text"
-      placeholder="输入标签" 
-    /> -->
-    <div  
-      class="text">
-       茶具
+  };
+  </script>
+  ```
+  
+  ## 单页应用程序介绍
+  
+  ### 1.概念
+  
+  单页应用程序：SPA【Single Page Application】是指所有的功能都在**一个html页面**上实现
+  
+  ### 2.具体示例
+  
+  单页应用网站： 网易云音乐  <https://music.163.com/>
+  
+  多页应用网站：京东  https://jd.com/
+  
+  ### 3.单页应用 VS 多页面应用
+  
+  ![68244191297](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682441912977.png)
+  
+  单页应用类网站：系统类网站 / 内部网站 / 文档类网站 / 移动端站点
+  
+  多页应用类网站：公司官网 / 电商类网站 
+  
+  ### 4.总结
+  
+  1.什么是单页面应用程序?
+  
+  2.单页面应用优缺点?
+  
+  3.单页应用场景？
+  
+  
+  
+  ## 路由介绍
+  
+  ### 1.思考
+  
+  单页面应用程序，之所以开发效率高，性能好，用户体验好
+  
+  最大的原因就是：**页面按需更新**
+  
+  ![68244269977](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682442699775.png)
+  
+  比如当点击【发现音乐】和【关注】时，**只是更新下面部分内容**，对于头部是不更新的
+  
+  要按需更新，首先就需要明确：**访问路径**和 **组件**的对应关系！
+  
+  访问路径 和 组件的对应关系如何确定呢？ **路由**
+  
+  
+  
+  ### 2.路由的介绍
+  
+  生活中的路由：设备和ip的映射关系
+  
+  ![68244294505](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682442945057.png)
+  
+  Vue中的路由：**路径和组件**的**映射**关系
+  
+  ![68244304037](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682443040372.png)
+  
+  ### 3.总结
+  
+  - 什么是路由
+  - Vue中的路由是什么
+  
+  ## 路由的基本使用
+  
+  ### 1.目标
+  
+  认识插件 VueRouter，掌握 VueRouter 的基本使用步骤
+  
+  ### 2.作用
+  
+  **修改**地址栏路径时，**切换显示**匹配的**组件**
+  
+  ### 3.说明
+  
+  Vue 官方的一个路由插件，是一个第三方包
+  
+  ### 4.官网
+  
+  <https://v3.router.vuejs.org/zh/>
+  
+  ### 5.VueRouter的使用（5+2）
+  
+  固定5个固定的步骤（不用死背，熟能生巧）
+  
+  1. 下载 VueRouter 模块到当前工程，版本3.6.5
+  
+     ```bash
+     yarn add vue-router@3.6.5
+     ```
+  
+  2. main.js中引入VueRouter
+  
+     ```vue
+     import VueRouter from 'vue-router'
+     ```
+  
+  3. 安装注册
+  
+     ```vue
+     Vue.use(VueRouter)
+     ```
+  
+  4. 创建路由对象
+  
+     ```vue
+     const router = new VueRouter()
+     ```
+  
+  5. 注入，将路由对象注入到new Vue实例中，建立关联
+  
+     ```vue
+     new Vue({
+       render: h => h(App),
+       router:router
+     }).$mount('#app')
+     
+     ```
+  
+  
+  当我们配置完以上5步之后 就可以看到浏览器地址栏中的路由 变成了 /#/的形式。表示项目的路由已经被Vue-Router管理了
+  
+  ![image-20250511184558022](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250511184558022.png)
+  
+  ### 6.代码示例
+  
+  main.js
+  
+  ```vue
+  // 路由的使用步骤 5 + 2
+  // 5个基础步骤
+  // 1. 下载 v3.6.5
+  // yarn add vue-router@3.6.5
+  // 2. 引入
+  // 3. 安装注册 Vue.use(Vue插件)
+  // 4. 创建路由对象
+  // 5. 注入到new Vue中，建立关联
+  
+  
+  import VueRouter from 'vue-router'
+  Vue.use(VueRouter) // VueRouter插件初始化
+  
+  const router = new VueRouter()
+  
+  new Vue({
+    render: h => h(App),
+    router
+  }).$mount('#app')
+  ```
+  
+  
+  
+  ### 7.两个核心步骤
+  
+  1. 创建需要的组件 (views目录)，配置路由规则
+  
+     ![image-20250508174546179](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250508174546179.png)
+  
+  2. 配置导航，配置路由出口(路径匹配的组件显示的位置)
+  
+     App.vue
+  
+     ```vue
+     <div class="footer_wrap">
+       <a href="#/find">发现音乐</a>
+       <a href="#/my">我的音乐</a>
+       <a href="#/friend">朋友</a>
+     </div>
+     <div class="top">
+       <router-view></router-view>
+     </div>
+     ```
+  
+  ### 8.总结
+  
+  1. 如何实现 路径改变，对应组件 切换,应该使用哪个插件?
+  2. Vue-Router的使用步骤是什么(5+2)?
+  
+  ## 路由的封装抽离
+  
+  问题：所有的路由配置都在main.js中合适吗？
+  
+  目标：将路由模块抽离出来。  好处：**拆分模块，利于维护**
+  
+  ![68248141030](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682481410304.png)
+  
+  路径简写：
+  
+  **脚手架环境下** @指代src目录，可以用于快速引入组件
+  
+  
+  
+  总结：
+  
+  - 路由模块的封装抽离的好处是什么？
+  - 以后如何快速引入组件？
+  
+  ![image-20250508175811387](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250508175811387.png)
+  
+  ## 声明式导航-导航链接
+  
+  ### 1.需求
+  
+  实现导航高亮效果
+  
+  ![68249204474](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682492044744.png)
+  
+  如果使用a标签进行跳转的话，需要给当前跳转的导航加样式，同时要移除上一个a标签的样式，太麻烦！！！
+  
+  ### 2.解决方案
+  
+  vue-router 提供了一个全局组件 router-link (取代 a 标签)
+  
+  - **能跳转**，配置 to 属性指定路径(**必须**) 。本质还是 a 标签 ，**to 无需 #**
+  - **能高亮**，默认就会提供**高亮类名**，可以直接设置高亮样式
+  
+  语法:
+  
+  ```vue
+  语法： <router-link to="path的值">发现音乐</router-link>
+  ```
+  
+  ```vue
+    <div>
+      <div class="footer_wrap">
+        <router-link to="/find">发现音乐</router-link>
+        <router-link to="/my">我的音乐</router-link>
+        <router-link to="/friend">朋友</router-link>
+      </div>
+      <div class="top">
+        <!-- 路由出口 → 匹配的组件所展示的位置 -->
+        <router-view></router-view>
+      </div>
     </div>
-  </div>
-</template>
-
-<script>
-export default {
- 
-}
-</script>
-
-<style lang="less" scoped>
-.my-tag {
-  cursor: pointer;
-  .input {
-    appearance: none;
-    outline: none;
-    border: 1px solid #ccc;
+  ```
+  
+  ### 3.通过router-link自带的两个样式进行高亮
+  
+  使用router-link跳转后，我们发现。当前点击的链接默认加了两个class的值 `router-link-exact-active`和`router-link-active`
+  
+  我们可以给任意一个class属性添加高亮样式即可实现功能
+  
+  ### 4.总结
+  
+  - router-link是什么？
+  - router-link怎么用？
+  - router-link的好处是什么？
+  
+  ## 声明式导航-两个类名
+  
+  ```vue
+  当我们使用<router-link></router-link>跳转时，自动给当前导航加了**两个类名**
+  ```
+  
+  (https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682493121052.png)
+  
+  
+  
+  ### 1.router-link-active
+  
+  **模糊匹配（用的多）**
+  
+  to="/my"  可以匹配 /my    /my/a    /my/b    ....  
+  
+  只要是以/my开头的路径 都可以和 to="/my"匹配到
+  
+  
+  
+  ### 2.router-link-exact-active
+  
+  **精确匹配**
+  
+  to="/my" 仅可以匹配  /my
+  
+  
+  
+  ### 3.在地址栏中输入二级路由查看类名的添加
+  
+  
+  
+  ### 4.总结
+  
+  - router-link 会自动给当前导航添加两个类名，有什么区别呢？
+  
+  ## 声明式导航-查询参数传参
+  
+  ### 1.目标
+  
+  在跳转路由时，进行传参
+  
+  比如：现在我们在搜索页点击了热门搜索链接，跳转到详情页，**需要把点击的内容带到详情页**，改怎么办呢？
+  
+  ### 2.跳转传参
+  
+  我们可以通过两种方式，在跳转的时候把所需要的参数传到其他页面中
+  
+  - 查询参数传参
+  - 动态路由传参
+  
+  
+  
+  ### 3.查询参数传参
+  
+  - 如何传参？
+  
+    ```vue
+    <router-link to="/path?参数名=值"></router-link>
+    ```
+  
+  - 如何接受参数
+  
+    固定用法：$route.query.参数名
+  
+  ### 4.代码演示
+  
+  App.vue
+  
+  ```vue
+  <template>
+    <div id="app">
+      <div class="link">
+        <router-link to="/home">首页</router-link>
+        <router-link to="/search">搜索页</router-link>
+      </div>
+  
+      <router-view></router-view>
+    </div>
+  </template>
+  
+  <script>
+  export default {};
+  </script>
+  
+  <style scoped>
+  .link {
+    height: 50px;
+    line-height: 50px;
+    background-color: #495150;
+    display: flex;
+    margin: -8px -8px 0 -8px;
+    margin-bottom: 50px;
+  }
+  .link a {
+    display: block;
+    text-decoration: none;
+    background-color: #ad2a26;
     width: 100px;
-    height: 40px;
-    box-sizing: border-box;
-    padding: 10px;
-    color: #666;
-    &::placeholder {
-      color: #666;
-    }
+    text-align: center;
+    margin-right: 5px;
+    color: #fff;
+    border-radius: 5px;
   }
-}
-</style>
-```
-
-App.vue
-
-```vue
-<template>
-  ...
- <tbody>
-       <tr>
-          ....
-          <td>
-            <MyTag></MyTag>
-          </td>
-       </tr>
- </tbody>
- ...
-</template>
-<script>
-import MyTag from './components/MyTag.vue'
-export default {
-  name: 'TableCase',
-  components: {
-    MyTag,
-  },
- ....
- </script>
-```
-
-## 综合案例-MyTag组件控制显示隐藏
-
-MyTag.vue
-
-```vue
-<template>
-  <div class="my-tag">
-    <input
-      v-if="isEdit"
-      v-focus
-      ref="inp"
-      class="input"
-      type="text"
-      placeholder="输入标签" 
-      @blur="isEdit = false" 
-    />
-    <div 
-      v-else
-      @dblclick="handleClick"
-      class="text">
-       茶具
+  </style>
+  ```
+  
+  Home.vue
+  
+  ```vue
+  <template>
+    <div class="home">
+      <div class="logo-box"></div>
+      <div class="search-box">
+        <input type="text">
+        <button>搜索一下</button>
+      </div>
+      <div class="hot-link">
+        热门搜索：
+        <router-link to="">蓝桥</router-link>
+        <router-link to="">前端培训</router-link>
+        <router-link to="">如何成为前端大牛</router-link>
+      </div>
     </div>
-  </div>
-</template>
-
-<script>
-export default {
-  data () {
-    return {
-      isEdit: false
-    }
-  },
-  methods: {
-    handleClick () {
-      this.isEdit = true
+  </template>
+  
+  <script>
+  export default {
+    name: 'FindMusic'
+  }
+  </script>
+  
+  <style>
+  .logo-box {
+    height: 150px;
+    background: url('@/assets/logo.jpeg') no-repeat center;
+  }
+  .search-box {
+    display: flex;
+    justify-content: center;
+  }
+  .search-box input {
+    width: 400px;
+    height: 30px;
+    line-height: 30px;
+    border: 2px solid #c4c7ce;
+    border-radius: 4px 0 0 4px;
+    outline: none;
+  }
+  .search-box input:focus {
+    border: 2px solid #ad2a26;
+  }
+  .search-box button {
+    width: 100px;
+    height: 36px;
+    border: none;
+    background-color: #ad2a26;
+    color: #fff;
+    position: relative;
+    left: -2px;
+    border-radius: 0 4px 4px 0;
+  }
+  .hot-link {
+    width: 508px;
+    height: 60px;
+    line-height: 60px;
+    margin: 0 auto;
+  }
+  .hot-link a {
+    margin: 0 5px;
+  }
+  </style>
+  ```
+  
+  Search.vue
+  
+  ```vue
+  <template>
+    <div class="search">
+      <p>搜索关键字: 蓝桥云课</p>
+      <p>搜索结果: </p>
+      <ul>
+        <li>.............</li>
+        <li>.............</li>
+        <li>.............</li>
+        <li>.............</li>
+      </ul>
+    </div>
+  </template>
+  
+  <script>
+  export default {
+    name: 'MyFriend',
+    created () {
+      // 在created中，获取路由参数
     }
   }
-}
-</script> 
-```
+  </script>
+  
+  <style>
+  .search {
+    width: 400px;
+    height: 240px;
+    padding: 0 20px;
+    margin: 0 auto;
+    border: 2px solid #c4c7ce;
+    border-radius: 5px;
+  }
+  </style>
+  ```
+  
+  router/index.js
+  
+  ```js
+  import Home from '@/views/Home'
+  import Search from '@/views/Search'
+  import Vue from 'vue'
+  import VueRouter from 'vue-router'
+  Vue.use(VueRouter) // VueRouter插件初始化
+  
+  // 创建了一个路由对象
+  const router = new VueRouter({
+    routes: [
+      { path: '/home', component: Home },
+      { path: '/search', component: Search }
+    ]
+  })
+  
+  export default router
+  ```
+  
+  main.js
+  
+  ```
+  ...
+  import router from './router/index'
+  ...
+  new Vue({
+    render: h => h(App),
+    router
+  }).$mount('#app')
+  ```
+  
+  替换蓝桥云课
+  
+  ```vue
+  {{ $route.query.key }}
+  ```
+  
+  ## 声明式导航-动态路由传参
+  
+  ### 1.动态路由传参方式
+  
+  - 配置动态路由
+  
+    > 动态路由后面的参数可以随便起名，但要有语义
+  
+    ```js
+    const router = new VueRouter({
+      routes: [
+        ...,
+        { 
+          path: '/search/:words', 
+          component: Search 
+        }
+      ]
+    })
+    ```
+  
+  - 配置导航链接
+  
+    to="/path/参数值"
+  
+  - 对应页面组件**接受参数**
+  
+    $route.**params**.参数名
+  
+    > params后面的参数名要和动态路由配置的参数保持一致
 
-main.js
+### 2.查询参数传参 VS 动态路由传参
+
+1. 查询参数传参  (比较适合传**多个参数**) 
+
+   1. 跳转：to="/path?参数名=值&参数名2=值"
+   2. 获取：$route.query.参数名
+
+2. 动态路由传参 (**优雅简洁**，传单个参数比较方便)
+
+   1. 配置动态路由：path: "/path/:参数名" 
+   2. 跳转：to="/path/参数值"
+   3. 获取：$route.params.参数名 
+
+   注意：动态路由也可以传多个参数，但一般只传一个
+
+### 3.总结
+
+声明式导航跳转时, 有几种方式传值给路由页面？
+
+- 查询参数传参（多个参数）
+- 动态路由传参（一个参数，优雅简洁）
+
+## Vue路由-重定向
+
+### 1.问题
+
+网页打开时， url 默认是 / 路径，未匹配到组件时，会出现空白
+
+### 2.解决方案
+
+**重定向** → 匹配 / 后, 强制跳转 /home 路径
+
+
 
 ```js
-// 封装全局指令 focus
-Vue.directive('focus', {
-  // 指令所在的dom元素，被插入到页面中时触发
-  inserted (el) {
-    el.focus()
-  }
+{ path: 匹配路径, redirect: 重定向到的路径 },
+比如：
+{ path:'/' ,redirect:'/home' }
+```
+
+### 4.代码演示
+
+```
+const router = new VueRouter({
+  routes: [
+    { path: '/', redirect: '/home'},
+ 	 ...
+  ]
 })
 ```
 
 
 
-## 综合案例-MyTag组件进行v-model绑定
+## Vue路由-404
 
-App.vue
+### 1.作用
 
-```vue
-<MyTag v-model="tempText"></MyTag>
-<script>
-    export default {
-        data(){
-            tempText:'水杯'
-        }
-    }
-</script>
+当路径找不到匹配时，给个提示页面
+
+### 2.位置
+
+404的路由，虽然配置在任何一个位置都可以，但一般都**配置在其他路由规则的最后面**
+
+### 3.语法
+
+path: "*"   (任意路径) – 前面不匹配就命中最后这个
+
+```js
+import NotFind from '@/views/NotFind'
+
+const router = new VueRouter({
+  routes: [
+    ...
+    { path: '*', component: NotFind } //最后一个
+  ]
+})
 ```
 
-MyTag.vue
+### 4.代码示例
+
+NotFound.vue
 
 ```vue
 <template>
-  <div class="my-tag">
-    <input
-      v-if="isEdit"
-      v-focus
-      ref="inp"
-      class="input"
-      type="text"
-      placeholder="输入标签"
-      :value="value"
-      @blur="isEdit = false"
-      @keyup.enter="handleEnter"
-    />
-    <div 
-      v-else
-      @dblclick="handleClick"
-      class="text">
-      {{ value }}
-    </div>
-  </div>
-</template>
-
-<script>
-export default {
-  props: {
-    value: String
-  },
-  data () {
-    return {
-      isEdit: false
-    }
-  },
-  methods: {
-    handleClick () {
-      this.isEdit = true
-    },
-    handleEnter (e) {
-      // 非空处理
-      if (e.target.value.trim() === '') return alert('标签内容不能为空')
-      this.$emit('input', e.target.value)
-      // 提交完成，关闭输入状态
-      this.isEdit = false
-    }
-  }
-}
-</script> 
-```
-
-
-
-## 综合案例-封装MyTable组件-动态渲染数据
-
-App.vue
-
-```vue
-<template>
-  <div class="table-case">
-    <MyTable :data="goods"></MyTable>
-  </div>
-</template>
-
-<script>
-import MyTable from './components/MyTable.vue'
-export default {
-  name: 'TableCase',
-  components: { 
-    MyTable
-  },
-  data(){
-    return {
-        ....
-    }
-  },
-}
-</script> 
-```
-
-MyTable.vue
-
-```vue
-<template>
-  <table class="my-table">
-    <thead>
-      <tr>
-        <th>编号</th>
-        <th>名称</th>
-        <th>图片</th>
-        <th width="100px">标签</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="(item, index) in data" :key="item.id">
-       <td>{{ index + 1 }}</td>
-        <td>{{ item.name }}</td>
-        <td>
-          <img
-            :src="item.picture"
-          />
-        </td>
-        <td>
-          标签内容
-         <!-- <MyTag v-model="item.tag"></MyTag> -->
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</template>
-
-<script>
-export default {
-  props: {
-    data: {
-      type: Array,
-      required: true
-    }
-  }
-};
-</script>
-
-<style lang="less" scoped>
-
-.my-table {
-  width: 100%;
-  border-spacing: 0;
-  img {
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
-    vertical-align: middle;
-  }
-  th {
-    background: #f5f5f5;
-    border-bottom: 2px solid #069;
-  }
-  td {
-    border-bottom: 1px dashed #ccc;
-  }
-  td,
-  th {
-    text-align: center;
-    padding: 10px;
-    transition: all .5s;
-    &.red {
-      color: red;
-    }
-  }
-  .none {
-    height: 100px;
-    line-height: 100px;
-    color: #999;
-  }
-}
-
-</style>
-```
-
-## 综合案例-封装MyTable组件-自定义结构
-
-App.vue
-
-```vue
-<template>
-  <div class="table-case">
-    <MyTable :data="goods">
-      <template #head>
-        <th>编号</th>
-        <th>名称</th>
-        <th>图片</th>
-        <th width="100px">标签</th>
-      </template>
-
-      <template #body="{ item, index }">
-        <td>{{ index + 1 }}</td>
-        <td>{{ item.name }}</td>
-        <td>
-          <img
-            :src="item.picture"
-          />
-        </td>
-        <td>
-          <MyTag v-model="item.tag"></MyTag>
-        </td>
-      </template>
-    </MyTable>
-  </div>
-</template>
-
-<script>
-import MyTag from './components/MyTag.vue'
-import MyTable from './components/MyTable.vue'
-export default {
-  name: 'TableCase',
-  components: {
-    MyTag,
-    MyTable
-  },
-  data () {
-    return {
-      ....
-  }
-}
-</script>
- 
-```
-
-MyTable.vue
-
-```vue
-<template>
-  <table class="my-table">
-    <thead>
-      <tr>
-        <slot name="head"></slot>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="(item, index) in data" :key="item.id">
-        <slot name="body" :item="item" :index="index" ></slot>
-      </tr>
-    </tbody>
-  </table>
-</template>
-
-<script>
-export default {
-  props: {
-    data: {
-      type: Array,
-      required: true
-    }
-  }
-};
-</script>
-```
-
-## 单页应用程序介绍
-
-### 1.概念
-
-单页应用程序：SPA【Single Page Application】是指所有的功能都在**一个html页面**上实现
-
-### 2.具体示例
-
-单页应用网站： 网易云音乐  <https://music.163.com/>
-
-多页应用网站：京东  https://jd.com/
-
-### 3.单页应用 VS 多页面应用
-
-![68244191297](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682441912977.png)
-
-单页应用类网站：系统类网站 / 内部网站 / 文档类网站 / 移动端站点
-
-多页应用类网站：公司官网 / 电商类网站 
-
-### 4.总结
-
-1.什么是单页面应用程序?
-
-2.单页面应用优缺点?
-
-3.单页应用场景？
-
-
-
-## 路由介绍
-
-### 1.思考
-
-单页面应用程序，之所以开发效率高，性能好，用户体验好
-
-最大的原因就是：**页面按需更新**
-
-![68244269977](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682442699775.png)
-
-比如当点击【发现音乐】和【关注】时，**只是更新下面部分内容**，对于头部是不更新的
-
-要按需更新，首先就需要明确：**访问路径**和 **组件**的对应关系！
-
-访问路径 和 组件的对应关系如何确定呢？ **路由**
-
-
-
-### 2.路由的介绍
-
-生活中的路由：设备和ip的映射关系
-
-![68244294505](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682442945057.png)
-
-Vue中的路由：**路径和组件**的**映射**关系
-
-![68244304037](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682443040372.png)
-
-### 3.总结
-
-- 什么是路由
-- Vue中的路由是什么
-
-## 路由的基本使用
-
-### 1.目标
-
-认识插件 VueRouter，掌握 VueRouter 的基本使用步骤
-
-### 2.作用
-
-**修改**地址栏路径时，**切换显示**匹配的**组件**
-
-### 3.说明
-
-Vue 官方的一个路由插件，是一个第三方包
-
-### 4.官网
-
-<https://v3.router.vuejs.org/zh/>
-
-### 5.VueRouter的使用（5+2）
-
-固定5个固定的步骤（不用死背，熟能生巧）
-
-1. 下载 VueRouter 模块到当前工程，版本3.6.5
-
-   ```bash
-   yarn add vue-router@3.6.5
-   ```
-
-2. main.js中引入VueRouter
-
-   ```vue
-   import VueRouter from 'vue-router'
-   ```
-
-3. 安装注册
-
-   ```vue
-   Vue.use(VueRouter)
-   ```
-
-4. 创建路由对象
-
-   ```vue
-   const router = new VueRouter()
-   ```
-
-5. 注入，将路由对象注入到new Vue实例中，建立关联
-
-   ```vue
-   new Vue({
-     render: h => h(App),
-     router:router
-   }).$mount('#app')
-   
-   ```
-
-
-当我们配置完以上5步之后 就可以看到浏览器地址栏中的路由 变成了 /#/的形式。表示项目的路由已经被Vue-Router管理了
-
-![68247920745](E:\BaiduNetdiskDownload\Vue2-Vue3\day05\assets\1682479207453.png)
-
-### 6.代码示例
-
-main.js
-
-```vue
-// 路由的使用步骤 5 + 2
-// 5个基础步骤
-// 1. 下载 v3.6.5
-// yarn add vue-router@3.6.5
-// 2. 引入
-// 3. 安装注册 Vue.use(Vue插件)
-// 4. 创建路由对象
-// 5. 注入到new Vue中，建立关联
-
-
-import VueRouter from 'vue-router'
-Vue.use(VueRouter) // VueRouter插件初始化
-
-const router = new VueRouter()
-
-new Vue({
-  render: h => h(App),
-  router
-}).$mount('#app')
-```
-
-
-
-### 7.两个核心步骤
-
-1. 创建需要的组件 (views目录)，配置路由规则
-
-   ![image-20250508174546179](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250508174546179.png)
-
-2. 配置导航，配置路由出口(路径匹配的组件显示的位置)
-
-   App.vue
-
-   ```vue
-   <div class="footer_wrap">
-     <a href="#/find">发现音乐</a>
-     <a href="#/my">我的音乐</a>
-     <a href="#/friend">朋友</a>
-   </div>
-   <div class="top">
-     <router-view></router-view>
-   </div>
-   ```
-
-### 8.总结
-
-1. 如何实现 路径改变，对应组件 切换,应该使用哪个插件?
-2. Vue-Router的使用步骤是什么(5+2)?
-
-## 路由的封装抽离
-
-问题：所有的路由配置都在main.js中合适吗？
-
-目标：将路由模块抽离出来。  好处：**拆分模块，利于维护**
-
-![68248141030](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682481410304.png)
-
-路径简写：
-
-**脚手架环境下** @指代src目录，可以用于快速引入组件
-
-
-
-总结：
-
-- 路由模块的封装抽离的好处是什么？
-- 以后如何快速引入组件？
-
-![image-20250508175811387](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/image-20250508175811387.png)
-
-## 声明式导航-导航链接
-
-### 1.需求
-
-实现导航高亮效果
-
-![68249204474](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682492044744.png)
-
-如果使用a标签进行跳转的话，需要给当前跳转的导航加样式，同时要移除上一个a标签的样式，太麻烦！！！
-
-### 2.解决方案
-
-vue-router 提供了一个全局组件 router-link (取代 a 标签)
-
-- **能跳转**，配置 to 属性指定路径(**必须**) 。本质还是 a 标签 ，**to 无需 #**
-- **能高亮**，默认就会提供**高亮类名**，可以直接设置高亮样式
-
-语法： <router-link to="path的值">发现音乐</router-link>
-
-```vue
   <div>
-    <div class="footer_wrap">
-      <router-link to="/find">发现音乐</router-link>
-      <router-link to="/my">我的音乐</router-link>
-      <router-link to="/friend">朋友</router-link>
-    </div>
-    <div class="top">
-      <!-- 路由出口 → 匹配的组件所展示的位置 -->
-      <router-view></router-view>
-    </div>
-  </div>
-```
-
-### 3.通过router-link自带的两个样式进行高亮
-
-使用router-link跳转后，我们发现。当前点击的链接默认加了两个class的值 `router-link-exact-active`和`router-link-active`
-
-我们可以给任意一个class属性添加高亮样式即可实现功能
-
-
-
-### 4.总结
-
-- router-link是什么？
-- router-link怎么用？
-- router-link的好处是什么？
-
-## 声明式导航-两个类名
-
-当我们使用<router-link></router-link>跳转时，自动给当前导航加了**两个类名**
-
-![68249312105](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682493121052.png)
-
-
-
-### 1.router-link-active
-
-**模糊匹配（用的多）**
-
-to="/my"  可以匹配 /my    /my/a    /my/b    ....  
-
-只要是以/my开头的路径 都可以和 to="/my"匹配到
-
-
-
-### 2.router-link-exact-active
-
-**精确匹配**
-
-to="/my" 仅可以匹配  /my
-
-
-
-### 3.在地址栏中输入二级路由查看类名的添加
-
-
-
-### 4.总结
-
-- router-link 会自动给当前导航添加两个类名，有什么区别呢？
-
-## 声明式导航-查询参数传参
-
-### 1.目标
-
-在跳转路由时，进行传参
-
-比如：现在我们在搜索页点击了热门搜索链接，跳转到详情页，**需要把点击的内容带到详情页**，改怎么办呢？
-
-### 2.跳转传参
-
-我们可以通过两种方式，在跳转的时候把所需要的参数传到其他页面中
-
-- 查询参数传参
-- 动态路由传参
-
-
-
-### 3.查询参数传参
-
-- 如何传参？
-
-  <router-link to="/path?参数名=值"></router-link>
-
-- 如何接受参数
-
-  固定用法：$router.query.参数名
-
-
-
-### 4.代码演示
-
-App.vue
-
-```vue
-<template>
-  <div id="app">
-    <div class="link">
-      <router-link to="/home">首页</router-link>
-      <router-link to="/search">搜索页</router-link>
-    </div>
-
-    <router-view></router-view>
-  </div>
-</template>
-
-<script>
-export default {};
-</script>
-
-<style scoped>
-.link {
-  height: 50px;
-  line-height: 50px;
-  background-color: #495150;
-  display: flex;
-  margin: -8px -8px 0 -8px;
-  margin-bottom: 50px;
-}
-.link a {
-  display: block;
-  text-decoration: none;
-  background-color: #ad2a26;
-  width: 100px;
-  text-align: center;
-  margin-right: 5px;
-  color: #fff;
-  border-radius: 5px;
-}
-</style>
-```
-
-Home.vue
-
-```vue
-<template>
-  <div class="home">
-    <div class="logo-box"></div>
-    <div class="search-box">
-      <input type="text">
-      <button>搜索一下</button>
-    </div>
-    <div class="hot-link">
-      热门搜索：
-      <router-link to="">蓝桥</router-link>
-      <router-link to="">前端培训</router-link>
-      <router-link to="">如何成为前端大牛</router-link>
-    </div>
+    <h1>404 Not Found</h1>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'FindMusic'
+
 }
 </script>
 
 <style>
-.logo-box {
-  height: 150px;
-  background: url('@/assets/logo.jpeg') no-repeat center;
-}
-.search-box {
-  display: flex;
-  justify-content: center;
-}
-.search-box input {
-  width: 400px;
-  height: 30px;
-  line-height: 30px;
-  border: 2px solid #c4c7ce;
-  border-radius: 4px 0 0 4px;
-  outline: none;
-}
-.search-box input:focus {
-  border: 2px solid #ad2a26;
-}
-.search-box button {
-  width: 100px;
-  height: 36px;
-  border: none;
-  background-color: #ad2a26;
-  color: #fff;
-  position: relative;
-  left: -2px;
-  border-radius: 0 4px 4px 0;
-}
-.hot-link {
-  width: 508px;
-  height: 60px;
-  line-height: 60px;
-  margin: 0 auto;
-}
-.hot-link a {
-  margin: 0 5px;
-}
-</style>
-```
 
-Search.vue
-
-```vue
-<template>
-  <div class="search">
-    <p>搜索关键字: 蓝桥云课</p>
-    <p>搜索结果: </p>
-    <ul>
-      <li>.............</li>
-      <li>.............</li>
-      <li>.............</li>
-      <li>.............</li>
-    </ul>
-  </div>
-</template>
-
-<script>
-export default {
-  name: 'MyFriend',
-  created () {
-    // 在created中，获取路由参数
-  }
-}
-</script>
-
-<style>
-.search {
-  width: 400px;
-  height: 240px;
-  padding: 0 20px;
-  margin: 0 auto;
-  border: 2px solid #c4c7ce;
-  border-radius: 5px;
-}
 </style>
 ```
 
 router/index.js
 
 ```js
-import Home from '@/views/Home'
-import Search from '@/views/Search'
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-Vue.use(VueRouter) // VueRouter插件初始化
+...
+import NotFound from '@/views/NotFound'
+...
 
 // 创建了一个路由对象
 const router = new VueRouter({
   routes: [
-    { path: '/home', component: Home },
-    { path: '/search', component: Search }
+     ...
+    { path: '*', component: NotFound }
   ]
 })
 
 export default router
 ```
 
-main.js
+## Vue路由-模式设置
+
+### 1.问题
+
+路由的路径看起来不自然, 有#，能否切成真正路径形式?
+
+- hash路由(默认)        例如:  http://localhost:8080/#/home
+- history路由(常用)     例如: http://localhost:8080/home   (以后上线需要服务器端支持，开发环境webpack给规避掉了history模式的问题)
+
+### 2.语法
+
+```js
+const router = new VueRouter({
+    mode:'history', //默认是hash
+    routes:[]
+})
+```
+
+
+
+## 十、编程式导航-两种路由跳转方式
+
+### 1.问题
+
+点击按钮跳转如何实现？
+
+### 2.方案
+
+编程式导航：用JS代码来进行跳转
+
+### 3.语法
+
+两种语法：
+
+- path 路径跳转 （简易方便）
+- name 命名路由跳转 (适合 path 路径长的场景)
+
+### 4.path路径跳转语法
+
+特点：简易方便
+
+```js
+//简单写法
+this.$router.push('路由路径')
+
+//完整写法
+this.$router.push({
+  path: '路由路径'
+})
+```
+
+### 5.代码演示 path跳转方式
+
+```js
+methods:{
+    jump(){
+      //编程式导航path 路径跳转 （简易方便）
+      //简单写法
+      // this.$router.push('路由路径')
+      //完整写法
+      // this.$router.push({
+      //   path: '路由路径'
+      // })
+      // this.$router.push("/search/蓝桥")
+      this.$router.push({
+        path: '/search/蓝桥'
+      })
+    }
+  }
+```
+
+### 6.nam·e命名路由跳转
+
+特点：适合 path 路径长的场景
+
+语法：
+
+- 路由规则，必须配置name配置项
+
+  ```js
+  { name: '路由名', path: '/path/xxx', component: XXX },
+  ```
+
+  
+
+- 通过name来进行跳转
+
+  ```js
+  this.$router.push({
+    name: '路由名'
+  })
+  ```
+
+
+
+### 7.代码演示通过name命名路由跳转
+
+
+
+### 8.总结
+
+编程式导航有几种跳转方式？
+
+## 编程式导航-path路径跳转传参
+
+### 1.问题
+
+点击搜索按钮，跳转需要把文本框中输入的内容传到下一个页面如何实现？
+
+### 2.两种传参方式
+
+1.查询参数 
+
+2.动态路由传参
+
+
+
+### 3.传参
+
+两种跳转方式，对于两种传参方式都支持：
+
+① path 路径跳转传参
+
+② name 命名路由跳转传参
+
+
+
+### 4.path路径跳转传参（query传参）
+
+```js
+//简单写法
+this.$router.push('/路径?参数名1=参数值1&参数2=参数值2')
+//完整写法
+this.$router.push({
+  path: '/路径',
+  query: {
+    参数名1: '参数值1',
+    参数名2: '参数值2'
+  }
+})
+```
+
+接受参数的方式依然是：$route.query.参数名
+
+### 5.path路径跳转传参（动态路由传参）
 
 ```
-...
-import router from './router/index'
-...
-new Vue({
-  render: h => h(App),
-  router
-}).$mount('#app')
+//简单写法
+this.$router.push('/路径/参数值')
+//完整写法
+this.$router.push({
+  path: '/路径/参数值'
+})
 ```
 
-替换蓝桥云课
+接受参数的方式依然是：$route.params.参数值
 
-```vue
-{{ $route.query.key }}
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+**注意：**path不能配合params使用
 
