@@ -6909,7 +6909,7 @@ const router = new VueRouter({
 
 
 
-## 十、编程式导航-两种路由跳转方式
+## 编程式导航-两种路由跳转方式
 
 ### 1.问题
 
@@ -7035,7 +7035,7 @@ this.$router.push({
 
 ### 5.path路径跳转传参（动态路由传参）
 
-```
+```vue
 //简单写法
 this.$router.push('/路径/参数值')
 //完整写法
@@ -7047,4 +7047,539 @@ this.$router.push({
 接受参数的方式依然是：$route.params.参数值
 
 **注意：**path不能配合params使用
+
+## 面经基础版-案例效果分析
+
+### 1.面经效果演示
+
+### 2.功能分析
+
+- 通过演示效果发现，主要的功能页面有两个，一个是**列表页**，一个是**详情页**，并且在列表页点击时可以跳转到详情页
+- 底部导航可以来回切换，并且切换时，只有上面的主题内容在动态渲染
+
+![68255978464](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682559784643.png)
+
+### 3.实现思路分析：配置路由+功能实现
+
+1.配置路由
+
+- 首页和面经详情页，两个一级路由
+- 首页内嵌套4个可切换的页面（嵌套二级路由）
+
+2.实现功能
+
+- 首页请求渲染
+- **跳转传参** 到 详情页，详情页动态渲染
+- 组件缓存，性能优化
+
+![68256025535](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682560255356.png)
+
+## 面经基础版-一级路由配置
+
+1.把文档中准备的素材拷贝到项目中
+
+2.针对router/index.js文件 进行一级路由配置
+
+```js
+...
+import Layout from '@/views/Layout.vue'
+import ArticleDetail from '@/views/ArticleDetail.vue'
+...
+
+
+const router = new VueRouter({
+  routes: [
+    {
+      path: '/',
+      component: Layout
+    },
+    {
+      path: '/detail',
+      component: ArticleDetail
+    }
+  ]
+})
+```
+
+
+
+## 面经基础版-二级路由配置
+
+二级路由也叫嵌套路由，当然也可以嵌套三级、四级...
+
+### 1.使用场景
+
+当在页面中点击链接跳转，只是部分内容切换时，我们可以使用嵌套路由
+
+### 2.语法
+
+- 在一级路由下，配置children属性即可
+- 配置二级路由的出口
+
+
+
+ 1.在一级路由下，配置children属性
+
+ **注意**:一级的路由path 需要加 `/`   二级路由的path不需要加 `/`
+
+```js
+const router = new VueRouter({
+  routes: [
+    {
+      path: '/',
+      component: Layout,
+      children:[
+        //children中的配置项 跟一级路由中的配置项一模一样 
+        {path:'xxxx',component:xxxx.vue},
+        {path:'xxxx',component:xxxx.vue},
+      ]
+    }
+  ]
+})
+```
+
+技巧：二级路由应该配置到哪个一级路由下呢？
+
+**这些二级路由对应的组件渲染到哪个一级路由下，children就配置到哪个路由下边**
+
+
+
+2.配置二级路由的出口 <router-view></router-view>
+
+**注意：** 配置了嵌套路由，一定配置对应的路由出口，否则不会渲染出对应的组件
+
+Layout.vue
+
+```vue
+<template>
+  <div class="h5-wrapper">
+    <div class="content">
+      <router-view></router-view>
+    </div>
+  ....
+  </div>
+</template>
+```
+
+### 3.代码实现
+
+router/index.js
+
+```js
+...
+import Article from '@/views/Article.vue'
+import Collect from '@/views/Collect.vue'
+import Like from '@/views/Like.vue'
+import User from '@/views/User.vue'
+...
+
+const router = new VueRouter({
+  routes: [
+    {
+      path: '/',
+      component: Layout,
+      redirect: '/article',
+      children:[
+        {
+          path:'/article',
+          component:Article
+        },
+        {
+          path:'/collect',
+          component:Collect
+        },
+        {
+          path:'/like',
+          component:Like
+        },
+        {
+          path:'/user',
+          component:User
+        }
+      ]
+    },
+    ....
+  ]
+})
+
+```
+
+Layout.vue
+
+```vue
+<template>
+  <div class="h5-wrapper">
+    <div class="content">
+      <!-- 内容部分 -->
+      <router-view></router-view>
+    </div>
+    <nav class="tabbar">
+      <a href="#/article">面经</a>
+      <a href="#/collect">收藏</a>
+      <a href="#/like">喜欢</a>
+      <a href="#/user">我的</a>
+    </nav>
+  </div>
+</template>
+```
+
+
+
+## 面经基础版-二级导航高亮
+
+### 1.实现思路
+
+- 将a标签替换成 <router-link></router-link>组件，配置to属性，不用加 #
+- 结合高亮类名实现高亮效果 (推荐模糊匹配：router-link-active)
+
+### 2.代码实现
+
+Layout.vue
+
+```vue
+....
+    <nav class="tabbar">
+      <router-link to="/article">面经</router-link>
+      <router-link to="/collect">收藏</router-link>
+      <router-link to="/like">喜欢</router-link>
+      <router-link to="/user">我的</router-link>
+    </nav>
+
+<style>
+   a.router-link-active {
+      color: orange;
+    }
+</style>
+```
+
+
+
+## 面经基础版-首页请求渲染
+
+### 1.步骤分析
+
+1.安装axios 
+
+2.看接口文档，确认请求方式，请求地址，请求参数
+
+3.created中发送请求，获取数据，存储到data中
+
+4.页面动态渲染
+
+
+
+### 2.代码实现
+
+1.安装axios
+
+`yarn add axios `  `npm i axios`
+
+2.接口文档
+
+```vue
+请求地址: https://mock.boxuegu.com/mock/3083/articles
+请求方式: get
+```
+
+3.created中发送请求，获取数据，存储到data中
+
+```vue
+ data() {
+    return {
+      articelList: [],
+    }
+  },
+  async created() {
+    const {  data: { result: { rows } }} = await axios.get('https://mock.boxuegu.com/mock/3083/articles')
+    this.articelList = rows
+  },
+```
+
+4.页面动态渲染
+
+```vue
+<template>
+  <div class="article-page">
+    <div class="article-item" v-for="item in articelList" :key="item.id">
+      <div class="head">
+        <img :src="item.creatorAvatar" alt="" />
+        <div class="con">
+          <p class="title">{{ item.stem }}</p>
+          <p class="other">{{ item.creatorName }} | {{ item.createdAt }}</p>
+        </div>
+      </div>
+      <div class="body">
+        {{item.content}}
+      </div>
+      <div class="foot">点赞 {{item.likeCount}} | 浏览 {{item.views}}</div>
+    </div>
+  </div>
+</template>
+```
+
+
+
+## 面经基础版-查询参数传参
+
+### 1.说明
+
+跳转详情页需要把当前点击的文章id传给详情页，获取数据
+
+- 查询参数传参  this.$router.push('/detail?参数1=参数值&参数2=参数值') 
+- 动态路由传参  先改造路由 在传参  this.$router.push('/detail/参数值')
+
+
+
+### 2.查询参数传参实现
+
+Article.vue
+
+```vue
+<template>
+  <div class="article-page">
+    <div class="article-item" 
+      v-for="item in articelList" :key="item.id" 
+      @click="$router.push(`/detail?id=${item.id}`)">
+     ...
+    </div>
+  </div>
+</template>
+```
+
+ArticleDetail.vue
+
+```vue
+  created(){
+    console.log(this.$route.query.id)
+  }
+```
+
+
+
+## 面经基础版-动态路由传参
+
+### 1.实现步骤
+
+- 改造路由
+- 动态传参
+- 在详情页获取参数
+
+### 2.代码实现
+
+改造路由
+
+router/index.js
+
+```js
+...
+  {
+      path: '/detail/:id',
+      component: ArticleDetail
+  }
+```
+
+Article.vue
+
+```vue
+<div class="article-item" 
+     v-for="item in articelList" :key="item.id" 
+     @click="$router.push(`/detail/${item.id}`)">
+       ....
+ </div>
+```
+
+ArticleDetail.vue
+
+```vue
+  created(){
+    console.log(this.$route.params.id)
+  }
+```
+
+
+
+### 3.额外优化功能点-点击回退跳转到上一页
+
+ArticleDetail.vue
+
+```vue
+<template>
+  <div class="article-detail-page">
+    <nav class="nav"><span class="back" @click="$router.back()">&lt;</span> 面经详情</nav>
+     ....
+  </div>
+</template>
+```
+
+
+
+## 面经基础版-详情页渲染
+
+### 1.实现步骤分析
+
+- 导入axios
+- 查看接口文档
+- 在created中发送请求
+- 页面动态渲染
+
+
+
+### 2.代码实现
+
+接口文档
+
+```vue
+ 请求地址: https://mock.boxuegu.com/mock/3083/articles/:id
+ 请求方式: get
+```
+
+
+
+在created中发送请求
+
+```vue
+ data() {
+    return {
+      articleDetail:{}
+    }
+  },
+  async created() {
+    const id = this.$route.params.id
+    const {data:{result}} = await axios.get(
+      `https://mock.boxuegu.com/mock/3083/articles/${id}`
+    )
+    this.articleDetail = result
+  },
+```
+
+
+
+页面动态渲染
+
+```vue
+<template>
+  <div class="article-detail-page">
+    <nav class="nav">
+      <span class="back" @click="$router.back()">&lt;</span> 面经详情
+    </nav>
+    <header class="header">
+      <h1>{{articleDetail.stem}}</h1>
+      <p>{{articleDetail.createAt}} | {{articleDetail.views}} 浏览量 | {{articleDetail.likeCount}} 点赞数</p>
+      <p>
+        <img
+          :src="articleDetail.creatorAvatar"
+          alt=""
+        />
+        <span>{{articleDetail.creatorName}}</span>
+      </p>
+    </header>
+    <main class="body">
+      {{articleDetail.content}}
+    </main>
+  </div>
+</template>
+
+```
+
+
+
+## 面经基础版-缓存组件
+
+### 1.问题
+
+从面经列表 点到 详情页，又点返回，数据重新加载了 →  **希望回到原来的位置**
+
+![68257863006](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/1682578630060.png)
+
+### 2.原因
+
+当路由被**跳转**后，原来所看到的组件就**被销毁**了（会执行组件内的beforeDestroy和destroyed生命周期钩子），**重新返回**后组件又被**重新创建**了（会执行组件内的beforeCreate,created,beforeMount,Mounted生命周期钩子），**所以数据被加载了**
+
+
+
+### 3.解决方案
+
+利用keep-alive把原来的组件给缓存下来
+
+
+
+### 4.什么是keep-alive
+
+keep-alive 是 Vue 的内置组件，当它包裹动态组件时，**会缓存不活动的组件实例，而不是销毁**它们。
+
+keep-alive 是一个抽象组件：它自身不会渲染成一个 DOM 元素，也不会出现在父组件中。
+
+**优点：**
+
+在组件切换过程中把切换出去的组件保留在内存中，防止重复渲染DOM，
+
+减少加载时间及性能消耗，提高用户体验性。
+
+App.vue
+
+```vue
+<template>
+  <div class="h5-wrapper">
+    <keep-alive>
+      <router-view></router-view>
+    </keep-alive>
+  </div>
+</template>
+```
+
+
+
+**问题：**
+
+缓存了所有被切换的组件
+
+
+
+### 5.keep-alive的三个属性
+
+① include  ： 组件名数组，只有匹配的组件**会被缓存**
+
+② exclude ： 组件名数组，任何匹配的组件都**不会被缓存**
+
+③ max       ： 最多可以**缓存多少**组件实例
+
+
+
+App.vue
+
+```vue
+<template>
+  <div class="h5-wrapper">
+    <keep-alive :include="['LayoutPage']">
+      <router-view></router-view>
+    </keep-alive>
+  </div>
+</template>
+```
+
+
+
+### 6.额外的两个生命周期钩子
+
+**keep-alive的使用会触发两个生命周期函数**
+
+**activated** 当组件被激活（使用）的时候触发 →  进入这个页面的时候触发
+
+**deactivated** 当组件不被使用的时候触发      →  离开这个页面的时候触发
+
+组件**缓存后**就**不会执行**组件的**created, mounted, destroyed** 等钩子了
+
+所以其提供了**actived 和deactived**钩子，帮我们实现业务需求。
+
+
+
+### 7.总结
+
+1.keep-alive是什么
+
+2.keep-alive的优点
+
+3.keep-alive的三个属性 (了解)
+
+4.keep-alive的使用会触发两个生命周期函数(了解)
 
