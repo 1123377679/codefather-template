@@ -385,7 +385,7 @@ onMounted(()=>{
 
 ### 1. 作用和场景
 
-> 顶层组件向任意的底层组件传递数据和方法，实现跨层组件通信
+> 顶层组件向任意的底层组件传递数据和方法，实现跨层组件通信。
 
 ![image.png](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/11.png)
 
