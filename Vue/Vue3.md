@@ -376,7 +376,7 @@ onMounted(()=>{
 
 ### 2. defineExpose
 
-> 默认情况下在 <script setup>语法糖下组件内部的属性和方法是不开放给父组件访问的，可以通过defineExpose编译宏指定哪些属性和方法容许访问
+> 默认情况下在 script setup语法糖下组件内部的属性和方法是不开放给父组件访问的，可以通过defineExpose编译宏指定哪些属性和方法容许访问
 > 说明：指定testMessage属性可以被访问到
 
 ![image.png](https://gitee.com/try-to-be-better/cloud-images/raw/master/img/10.png)
