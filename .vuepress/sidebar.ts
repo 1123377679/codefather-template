@@ -1,4 +1,4 @@
-import {SidebarConfig4Multiple} from "vuepress/config";
+import { SidebarConfig4Multiple } from "vuepress/config";
 
 import JavaSideBar from "./sidebars/JavaSideBar";
 import LinuxSideBar from "./sidebars/LinuxSideBar";
@@ -21,7 +21,7 @@ export default {
     "/Mysql/Mysql基础/": mysqlBasicsSideBar,
     "/Mysql/Mysql进阶/": mysqlAdvancedSideBar,
     "/JavaWeb/": JavaWebSideBar,
-    "/Mybatis/": mybatisSideBar,
+    "/Mybatis基础/": mybatisSideBar,
     "/后端项目/": BackEndProject,
     "/Spring/": SpringSideBar,
     "/Springboot/": Springboot,

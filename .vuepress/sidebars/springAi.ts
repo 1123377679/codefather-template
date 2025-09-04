@@ -1,7 +1,7 @@
 export default [
     "",
     {
-        title: "学习路线",
+        title: "SpringAI学习",
         collapsable: false,
         children: [
             "SpringAI.md",

@@ -1,7 +1,7 @@
 export default [
     "",
     {
-        title: "学习路线",
+        title: "面试指南",
         collapsable: false,
         children: [
             "面试.md",
