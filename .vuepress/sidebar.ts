@@ -11,10 +11,8 @@ import SpringSideBar from "./sidebars/SpringSideBar";
 import Springboot from "./sidebars/Springboot";
 import selfStudy from "./sidebars/selfStudy";
 import MybatisPlusSideBar from "./sidebars/mybatisPlusSideBar";
-import Vue from "./sidebars/Vue";
 import joininterview from "./sidebars/joininterview";
 import springAi from "./sidebars/springAi";
-import frontEnd from "./sidebars/frontEnd";
 // @ts-ignore
 export default {
     "/Java基础/": JavaSideBar,
@@ -28,10 +26,8 @@ export default {
     "/Springboot/": Springboot,
     "/自考/": selfStudy,
     "/MybatisPlus/": MybatisPlusSideBar,
-    "/Vue/": Vue,
     "/面试/": joininterview,
     "/SpringAI/": springAi,
-    "/前端/": frontEnd,
     // 降级，默认根据文章标题渲染侧边栏
     "/": "auto",
 } as SidebarConfig4Multiple;
