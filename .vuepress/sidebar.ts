@@ -13,6 +13,7 @@ import selfStudy from "./sidebars/selfStudy";
 import MybatisPlusSideBar from "./sidebars/mybatisPlusSideBar";
 import joininterview from "./sidebars/joininterview";
 import springAi from "./sidebars/springAi";
+import frontEnd from "./sidebars/frontEnd";
 // @ts-ignore
 export default {
     "/Java基础/": JavaSideBar,
@@ -28,6 +29,7 @@ export default {
     "/MybatisPlus/": MybatisPlusSideBar,
     "/面试/": joininterview,
     "/SpringAI/": springAi,
+    "/前端/": frontEnd,
     // 降级，默认根据文章标题渲染侧边栏
     "/": "auto",
 } as SidebarConfig4Multiple;
